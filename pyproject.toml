@@ -1,0 +1,16 @@
+[project]
+name = "ptools"
+version = "1.0.0"
+description = "Omar Ibrahim Power Tools"
+requires-python = ">=3.10"
+dependencies = [
+    "click>=8.1",
+    "watchdog>=3.0",
+]
+
+[project.scripts]
+ptools  = "ptools.main:cli"
+
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"
