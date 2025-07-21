@@ -18,9 +18,10 @@ def code():
     os.system(cmd)
 
 @cli.command()
-def install():
+@click.option('--pip', default='pip3', help='Path to pip executable.')
+def install(pip):
     """(re)install the tool."""
-    cmd = f"pip install -e {get_project_root()}"
+    cmd = f"{pip} install -e {get_project_root()}"
     os.system(cmd)
 
 @cli.command()
@@ -31,6 +32,14 @@ def update():
 
     install()
 
+@cli.command()
+def push():
+    """Commit and push changes to the repository."""
+    cmd = f"git -C {get_project_root()} add . && git -C {get_project_root()} commit -m 'Update power tools' && git -C {get_project_root()} push"
+    os.system(cmd)
+    
+
 cli.add_command(code, name="code")
 cli.add_command(install, name="install")
 cli.add_command(update, name="update")
+cli.add_command(push, name="push")
