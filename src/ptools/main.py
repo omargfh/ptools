@@ -8,7 +8,7 @@ def cli():
 
 cli.add_command(rsync.cli, name="rsync")
 cli.add_command(watch.cli, name="watch")
-cli.add_command(dev.cli, name="__dev")
+cli.add_command(dev.cli, name="dev")
 
 cli.add_command(projects.cli, name="projects")
 cli.add_command(shell.cli, name="shell")

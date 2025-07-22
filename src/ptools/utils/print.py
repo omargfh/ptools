@@ -4,22 +4,39 @@ class FormatUtils:
     @staticmethod
     def error(*args):
         msg = " ".join(args)
-        return f"\033[91m Error:\t\t \033[0m{msg}"
+        return f"\033[91m Error  \033[0m{msg}"
 
     @staticmethod
     def info(*args):
         msg = " ".join(args)
-        return f"\033[94m INFO:\t\t \033[0m{msg}"
+        return f"\033[94m INFO  \033[0m{msg}"
 
     @staticmethod
     def success(*args):
         msg = " ".join(args)
-        return f"\033[92m Success:\t\t \033[0m{msg}"
+        return f"\033[92m Success  \033[0m{msg}"
 
     @staticmethod
     def warning(*args):
         msg = " ".join(args)
-        return f"\033[93m Warning:\t\t \033[0m{msg}"
+        return f"\033[93m Warning  \033[0m{msg}"
+    
+    @staticmethod
+    def highlight(text: str, color: Optional[str] = 'yellow') -> str:
+        color_code = {
+            'yellow': '\033[93m',
+            'green': '\033[92m',
+            'blue': '\033[94m',
+            'red': '\033[91m',
+            'reset': '\033[0m'
+        }.get(color, '\033[93m')
+        return f"{color_code}{text}\033[0m"
+    
+    @staticmethod
+    def bold(text: str) -> str:
+        return f"\033[1m{text}\033[0m"
+    
+    
 
 class PrintUtils:
     def __init__(self):
