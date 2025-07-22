@@ -36,7 +36,7 @@ class ConfigFile():
 
     def _echo(self, *args, **kwargs):
         if not self.quiet:
-            self._echo(*args, **kwargs)
+            click.echo(*args, **kwargs)
 
     def get(self, key, default=None):
         return self.data.get(key, default)

@@ -1,5 +1,5 @@
 import click
-from . import rsync, dev, watch, projects, shell
+from . import rsync, dev, watch, projects, shell, secrets
 
 @click.group()
 def cli():
@@ -12,3 +12,4 @@ cli.add_command(dev.cli, name="dev")
 
 cli.add_command(projects.cli, name="projects")
 cli.add_command(shell.cli, name="shell")
+cli.add_command(secrets.cli, name="secrets")
