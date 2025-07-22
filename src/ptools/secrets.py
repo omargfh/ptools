@@ -99,8 +99,9 @@ def with_secrets(query, regex, command):
 @click.command()
 @click.option('--query', '-q', help="Query to filter secrets")
 @click.option('--regex', is_flag=True, help="Use regex for filtering")
+@click.option('--match', is_flag=True, help="Match query exactly")
 @click.option('--show-values', is_flag=True, help="Show secret values")
-def list_secrets(query, show_values, regex):
+def list_secrets(query, show_values, regex, match):
     """List all secrets."""
     secrets_config = SecretsConfig()
     secrets = secrets_config.config.list()
