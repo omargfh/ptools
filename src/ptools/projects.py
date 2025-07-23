@@ -129,9 +129,9 @@ def chdir(name, quiet):
 def list_projects():
     """List all projects."""
     projects = Projects.get_instance().get_projects()
-    click.echo(FormatUtils.info(f"Listing {len(projects)} projects:"))
+    click.echo(FormatUtils.info(f"Listing {FormatUtils.bold(len(projects))} projects:"))
     for name, path in projects.items():
-        click.echo(f"Project: {name}, Path: {path}")
+        click.echo(f"Project: {FormatUtils.highlight(name)}, Path: {FormatUtils.highlight(path)}")
 
 @cli.command()
 @click.argument('name')
