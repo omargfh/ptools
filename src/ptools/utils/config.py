@@ -3,33 +3,33 @@ import json
 import click
 
 from ptools.utils.print import FormatUtils
+from ptools.utils.encrypt import Encryption, EncryptionError
+
 
 class ConfigFile():
-    def __init__(self, name, path="~/.ptools", quiet=False):
+    def __init__(self, name, path="~/.ptools", quiet=False, encrypt=False):
         self.name = name
         self.path = os.path.expanduser(path)
         self.file_path = os.path.join(self.path, f"{self.name}.json")
         self.data = {}
         self.quiet = quiet
 
+        if encrypt:
+            encryption_service_name = f"com.ptools.config.{self.name}"
+            self.encryption = Encryption(service_name=encryption_service_name)
+        else:
+            self.encryption = None
+
         if not os.path.exists(self.path):
             os.makedirs(self.path)
 
         if os.path.exists(self.file_path):
-            with open(self.file_path, 'r') as f:
-                try:
-                    self.data = json.load(f)
-                except json.JSONDecodeError:
-                    msg = f"Error reading config file {self.file_path}. File may be corrupted."
-                    self._echo(FormatUtils.error(msg))
-                    raise ValueError(msg)
-                except Exception as e:
-                    msg = f"Unexpected error reading config file {self.file_path}: {str(e)}"
-                    self._echo(FormatUtils.error(msg))
-                    raise e
+            with open(self.file_path, 'r') as f: # r+ for possible write
+                self.data = self._reads(f)
         else:
             with open(self.file_path, 'w') as f:
-                json.dump(self.data, f, indent=4)
+                self.data = {}
+                self._writes(f, self.data)
                 self._echo(FormatUtils.info(f"Created new config file at {self.file_path}"))
         
         self._echo(FormatUtils.success(f"Loaded config file {self.file_path}"))
@@ -38,13 +38,79 @@ class ConfigFile():
         if not self.quiet:
             click.echo(*args, **kwargs)
 
+    def _reads(self, f):
+        try: 
+            content = json.load(f)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"Invalid JSON format in config file {self.file_path}: {e}")
+        except FileNotFoundError:   
+            raise RuntimeError(f"Config file {self.file_path} not found.")
+        except PermissionError:
+            raise RuntimeError(f"Permission denied when accessing config file {self.file_path}.")
+        except Exception as e:
+            raise RuntimeError(f"Failed to read config file {self.file_path}: {e}")
+        
+        if content.get('encrypted') is None and content.get('data') is None:
+            """Backwards compatibility for old config files."""
+            return content
+
+        
+        """There are 2 degrees of freedom here:
+        1. Content encryption
+        2. Encryption service availability
+        
+        A content can be encrypted if it wasn't before, but not the
+        other way around.
+        """
+        if content.get('encrypted', False):         # Content is encrypted
+            if not self.encryption:                 # But no encryption service is configured
+                raise EncryptionError("Encryption is enabled but no encryption service is configured.")
+            else:
+                try:
+                    # { encrypted: True, data: EncryptedString(jsonString) }
+                    # Call decrypt on the data field to get the original JSON
+                    # string then parse it as JSON
+                    content = json.loads(self.encryption.decrypt(content.get('data')))
+                except Exception as e:
+                    raise EncryptionError(f"Failed to decrypt config file {self.file_path}: {e}")
+        else:                         # Content is not encrypted
+            content = content.get('data') if isinstance(content, dict) else content
+
+        if not isinstance(content, dict):
+            raise TypeError("Config file content must be a dictionary.")
+        return content
+
+    
+    def _writes(self, f, data):
+        """Write data to the config file."""
+        if self.encryption:
+            content = {
+                'encrypted': True,
+                'data': self.encryption.encrypt(json.dumps(data, indent=4))
+            }
+        else:
+            content = {
+                'encrypted': False,
+                'data': data
+            }
+        
+        if not isinstance(content, dict):
+            raise TypeError("Data must be a dictionary.")
+        if not self.quiet:
+            self._echo(FormatUtils.info(f"Writing config file {self.file_path}..."))
+        
+        try:
+            json.dump(content, f, indent=4)
+        except Exception as e:
+            raise RuntimeError(f"Failed to write config file {self.file_path}: {e}")
+
     def get(self, key, default=None):
         return self.data.get(key, default)
     
     def set(self, key, value):
         self.data[key] = value
         with open(self.file_path, 'w') as f:
-            json.dump(self.data, f, indent=4)
+            self._writes(f, self.data)
         self._echo(FormatUtils.success(f"Updated config file {self.file_path} with key '{key}'"))
         return self.data[key]
     
@@ -52,7 +118,7 @@ class ConfigFile():
         if key in self.data:
             del self.data[key]
             with open(self.file_path, 'w') as f:
-                json.dump(self.data, f, indent=4)
+                self._writes(f, self.data)
             self._echo(FormatUtils.success(f"Deleted key '{key}' from config file {self.file_path}"))
         else:
             self._echo(FormatUtils.warning(f"Key '{key}' not found in config file {self.file_path}"))
@@ -70,7 +136,7 @@ class ConfigFile():
     def clear(self):
         self.data = {}
         with open(self.file_path, 'w') as f:
-            json.dump(self.data, f, indent=4)
+            self._writes(f, self.data)
         self._echo(FormatUtils.success(f"Cleared all data from config file {self.file_path}"))
         return self.data
     
@@ -119,13 +185,13 @@ class ConfigFile():
         raise AttributeError(f"'ConfigFile' object has no attribute '{item}'")
     
     def __setattr__(self, key, value):
-        if key in ['name', 'path', 'file_path', 'data', 'quiet']:
+        if key in ['name', 'path', 'file_path', 'data', 'quiet', 'encryption']:
             super().__setattr__(key, value)
         else:
             self.set(key, value)
     
     def __delattr__(self, item):
-        if item in ['name', 'path', 'file_path', 'data', 'quiet']:
+        if item in ['name', 'path', 'file_path', 'data', 'quiet', 'encryption']:
             super().__delattr__(item)
         else:
             self.delete(item)

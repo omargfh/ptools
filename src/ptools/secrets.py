@@ -12,7 +12,7 @@ class SecretsConfig():
         global config_instance
         if config_instance is None:
             config_instance = self
-        self.config = ConfigFile(config_name, quiet=True)
+        self.config = ConfigFile(config_name, quiet=True, encrypt=True)
         config_instance = self
 
     def get_secret(self, key, default=None):
@@ -121,7 +121,16 @@ def list_secrets(query, show_values, regex, match):
         for key, value in secrets.items():
             click.echo(f"{key}: {value}")
 
+@click.command()
+@click.confirmation_option(prompt="Are you sure you want to delete all secrets?")
+def delete_all_secrets():
+    """Delete all secrets."""
+    secrets_config = SecretsConfig()
+    secrets_config.config.clear()
+    click.echo(FormatUtils.success("All secrets have been deleted."))
+
 cli.add_command(set_secret, name="set")
 cli.add_command(get_secret, name="get")
 cli.add_command(list_secrets, name="list")
 cli.add_command(with_secrets, name="exec")
+cli.add_command(delete_all_secrets, name="dangerous-delete-all-secrets")

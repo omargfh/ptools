@@ -33,9 +33,10 @@ def update():
     install()
 
 @cli.command()
-def push():
+@click.option('-m', '--message', default='Update power tools', help='Commit message for the changes.')
+def push(message):
     """Commit and push changes to the repository."""
-    cmd = f"git -C {get_project_root()} add . && git -C {get_project_root()} commit -m 'Update power tools' && git -C {get_project_root()} push"
+    cmd = f"git -C {get_project_root()} add . && git -C {get_project_root()} commit -m '{message}' && git -C {get_project_root()} push"
     os.system(cmd)
     
 
