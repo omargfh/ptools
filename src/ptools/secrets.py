@@ -47,13 +47,23 @@ def cli():
 
 @click.command()
 @click.argument('key')
-@click.argument('value')
+@click.argument('value', required=False)
 @click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
 def set_secret(key, value, config_name):
     """Set a secret value."""
     secrets_config = SecretsConfig(config_name=config_name)
-    secrets_config.set_secret(key, value)
-    click.echo(FormatUtils.success(f"Secret '{key}' set to '{value}'"))
+    if value is None:
+        # Confirm deletion
+        if click.confirm(FormatUtils.warning(f"Are you sure you want to delete the secret '{key}'?")):
+            secrets_config.delete_secret(key)
+            click.echo(FormatUtils.success(f"Secret '{key}' deleted."))
+            return
+        else:
+            click.echo(FormatUtils.info("Operation cancelled."))
+            return
+    else:
+        secrets_config.set_secret(key, value)
+        click.echo(FormatUtils.success(f"Secret '{key}' set to '{value}'"))
 
 @click.command()
 @click.argument('key')
