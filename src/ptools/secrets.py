@@ -7,8 +7,9 @@ from ptools.utils.config import ConfigFile
 
 config_instance = None
 class SecretsConfig():
-    def __init__(self, config_name='secrets'):
+    def __init__(self, config_name=None):
         """Initialize the secrets configuration."""
+        config_name = config_name or 'secrets'
         global config_instance
         if config_instance is None:
             config_instance = self
@@ -47,18 +48,20 @@ def cli():
 @click.command()
 @click.argument('key')
 @click.argument('value')
-def set_secret(key, value):
+@click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
+def set_secret(key, value, config_name):
     """Set a secret value."""
-    secrets_config = SecretsConfig()
+    secrets_config = SecretsConfig(config_name=config_name)
     secrets_config.set_secret(key, value)
     click.echo(FormatUtils.success(f"Secret '{key}' set to '{value}'"))
 
 @click.command()
 @click.argument('key')
 @click.option('--quiet', is_flag=True, help="Suppress output messages")
-def get_secret(key, quiet):
+@click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
+def get_secret(key, quiet, config_name):
     """Get a secret value."""
-    secrets_config = SecretsConfig()
+    secrets_config = SecretsConfig(config_name=config_name)
     value = secrets_config.get_secret(key)
     if value is not None:
         if not quiet:
@@ -73,10 +76,11 @@ def get_secret(key, quiet):
 @click.command()
 @click.option('--query', '-q', help="Query to filter secrets")
 @click.option('--regex', is_flag=True, help="Use regex for filtering")
+@click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
 @click.argument('command', nargs=-1)
-def with_secrets(query, regex, command):
+def with_secrets(query, regex, command, config_name):
     """Run a command with secrets."""
-    secrets_config = SecretsConfig()
+    secrets_config = SecretsConfig(config_name=config_name)
     if query:
         secrets = filter(dict(secrets_config), query, regex)
     else:
@@ -99,11 +103,11 @@ def with_secrets(query, regex, command):
 @click.command()
 @click.option('--query', '-q', help="Query to filter secrets")
 @click.option('--regex', is_flag=True, help="Use regex for filtering")
-@click.option('--match', is_flag=True, help="Match query exactly")
 @click.option('--show-values', is_flag=True, help="Show secret values")
-def list_secrets(query, show_values, regex, match):
+@click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
+def list_secrets(query, show_values, regex, config_name):
     """List all secrets."""
-    secrets_config = SecretsConfig()
+    secrets_config = SecretsConfig(config_name=config_name)
     secrets = secrets_config.config.list()
     if not secrets:
         click.echo(FormatUtils.warning("No secrets found."))
@@ -123,14 +127,36 @@ def list_secrets(query, show_values, regex, match):
 
 @click.command()
 @click.confirmation_option(prompt="Are you sure you want to delete all secrets?")
-def delete_all_secrets():
+@click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
+def delete_all_secrets(config_name):
     """Delete all secrets."""
-    secrets_config = SecretsConfig()
+    secrets_config = SecretsConfig(config_name=config_name)
     secrets_config.config.clear()
     click.echo(FormatUtils.success("All secrets have been deleted."))
+
+@click.command()
+@click.argument('key')
+@click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
+def copy_secret(key, config_name):
+    """Copy a secret value to clipboard."""
+    try:
+        import pyperclip
+    except ImportError:
+        click.echo(FormatUtils.error("pyperclip module not found. Please install it to use this feature."))
+        return
+
+    secrets_config = SecretsConfig(config_name=config_name)
+    value = secrets_config.get_secret(key)
+    if value is not None:
+        pyperclip.copy(value)
+        click.echo(FormatUtils.success(f"Secret '{key}' copied to clipboard."))
+    else:
+        click.echo(FormatUtils.warning(f"Secret '{key}' not found."))
+
 
 cli.add_command(set_secret, name="set")
 cli.add_command(get_secret, name="get")
 cli.add_command(list_secrets, name="list")
 cli.add_command(with_secrets, name="exec")
+cli.add_command(copy_secret, name="copy")
 cli.add_command(delete_all_secrets, name="dangerous-delete-all-secrets")

@@ -52,10 +52,10 @@ class Projects():
 
         return self.projects
 
-    def add_project(self, name, path):
+    def add_project(self, name, path, force=False):
         """Add a new project."""
-        if name in self.projects:
-            click.echo(FormatUtils.error(f"Project '{name}' already exists."))
+        if name in self.projects and not force:
+            click.echo(FormatUtils.error(f"Project '{name}' already exists. Use --force to overwrite."))
             return
         
         self.projects[name] = os.path.abspath(path)
@@ -136,10 +136,11 @@ def list_projects():
 @cli.command()
 @click.argument('name')
 @click.argument('path', default='.', type=click.Path(exists=True, file_okay=False, resolve_path=True))
-def add_project(name, path):
+@click.option('--force', is_flag=True, help="Force add project even if it already exists.")
+def add_project(name, path, force):
     """Add a new project with NAME at PATH."""
     projects = Projects.get_instance()
-    projects.add_project(name, path)
+    projects.add_project(name, path, force)
 
 @cli.command()
 @click.argument('name')
