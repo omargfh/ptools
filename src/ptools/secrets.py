@@ -159,7 +159,6 @@ def copy_secret(key, config_name):
     value = secrets_config.get_secret(key)
     if value is not None:
         pyperclip.copy(value)
-        click.echo(FormatUtils.success(f"Secret '{key}' copied to clipboard."))
     else:
         click.echo(FormatUtils.warning(f"Secret '{key}' not found."))
 
