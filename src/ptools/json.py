@@ -46,7 +46,7 @@ def cli():
     pass
 
 @click.command()
-@resolve_input
+@resolve_input()
 @click.option('--separator', '-s', default=',', help='CSV separator character.')
 @click.option('--na-rep', default='', help='Representation for missing data.')
 @click.option('--float-format', default=None, help='Format string for floating point numbers.')

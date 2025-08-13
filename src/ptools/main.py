@@ -1,5 +1,5 @@
 import click
-from . import rsync, dev, watch, projects, shell, secrets, json
+from . import rsync, dev, watch, projects, shell, secrets, json, clip
 
 @click.group()
 def cli():
@@ -15,3 +15,4 @@ cli.add_command(shell.cli, name="shell")
 cli.add_command(secrets.cli, name="secrets")
 
 cli.add_command(json.cli, name="json")
+cli.add_command(clip.cli, name="clip")
