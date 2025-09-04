@@ -41,7 +41,7 @@ def cli(ctx, path, events, delay):
         def run_command(self):
             click.echo(FormatUtils.info(f"Running command: {' '.join(command)}..."))
             try:
-                subprocess.run(command, check=True)
+                subprocess.run(command, shell=True, check=True)
             except subprocess.CalledProcessError as e:
                 click.echo(FormatUtils.error(f"Command failed: {e}"), err=True)
 

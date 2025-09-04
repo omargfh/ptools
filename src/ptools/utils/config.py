@@ -5,7 +5,6 @@ import click
 from ptools.utils.print import FormatUtils
 from ptools.utils.encrypt import Encryption, EncryptionError
 
-
 class ConfigFile():
     def __init__(self, name, path="~/.ptools", quiet=False, encrypt=False):
         self.name = name

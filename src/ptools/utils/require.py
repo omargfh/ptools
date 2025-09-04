@@ -1,5 +1,7 @@
 import click
 from functools import wraps
+from enum import Enum
+from typing import List
 
 # Methods
 def _require_library(library):
@@ -39,12 +41,30 @@ def library(library, prompt_install=False):
         return wrapper
     return decorator
 
-def binary(binary):
+class LogicalOperators(Enum):
+    AND = 'and'
+    OR = 'or'
+
+def binary(names: List[str] | str, logical_operator=LogicalOperators.AND, key=None):
     "Click decorator to ensure a binary is available."
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
-            _require_binary(binary)
+            binaries = names if isinstance(names, list) else [names]
+            binaries_found = []
+            for binary in binaries:
+                try:
+                    _require_binary(binary)
+                    binaries_found.append(binary)
+                except ImportError:
+                    if logical_operator == LogicalOperators.AND:
+                        raise
+            if logical_operator == LogicalOperators.OR and not binaries_found:
+                raise ImportError(f"None of the specified binaries were found: {', '.join(binaries)}")
+            
+            if key:
+                kwargs[key] = binaries_found 
+                
             return f(*args, **kwargs)
         return wrapper
     return decorator

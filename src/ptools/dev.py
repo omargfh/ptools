@@ -38,7 +38,6 @@ def push(message):
     """Commit and push changes to the repository."""
     cmd = f"git -C {get_project_root()} add . && git -C {get_project_root()} commit -m '{message}' && git -C {get_project_root()} push"
     os.system(cmd)
-    
 
 cli.add_command(code, name="code")
 cli.add_command(install, name="install")

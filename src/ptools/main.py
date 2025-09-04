@@ -1,7 +1,9 @@
 import click
 from . import rsync, dev, watch, projects, shell, secrets, json, clip
+from ptools.models.default_config import load_default_config
 
 @click.group()
+@click.version_option()
 def cli():
     """power tools command line interface."""
     pass

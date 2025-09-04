@@ -5,7 +5,6 @@ from ptools.utils.print import FormatUtils
 
 import json
 import sys
-from functools import wraps
 
 def read_json(json_string):
     if not json_string:
@@ -43,9 +42,11 @@ def output_result(result, output_path):
 
 @click.group()
 def cli():
+    """JSON manipulation tools."""
     pass
 
 @click.command()
+@require.library('pandas', prompt_install=True)
 @resolve_input()
 @click.option('--separator', '-s', default=',', help='CSV separator character.')
 @click.option('--na-rep', default='', help='Representation for missing data.')
@@ -66,14 +67,10 @@ def cli():
 @click.option('--escapechar', default=None, help='Character used to escape sep and quotechar when appropriate.')
 @click.option('--decimal', default='.', help='Character recognized as decimal separator.')
 @click.option('--output', '-o', 'output_path', help="Path to output CSV file", default=None, required=False)
-@require.library('pandas', prompt_install=True)
 def to_csv(source_type, content, separator, na_rep, float_format, header, index,
            index_label, mode, encoding, compression, quoting, quotechar, lineterminator,
            chunksize, date_format, doublequote, escapechar, decimal, output_path):
     """Convert JSON input to CSV format."""
-    import pandas as pd
-
-
     json_string = content
     data = read_json(json_string)
     df = json_to_pd(data)
@@ -99,4 +96,64 @@ def to_csv(source_type, content, separator, na_rep, float_format, header, index,
     )
     output_result(csv, output_path)
 
+@click.command()
+@resolve_input()
+@click.option('--indent', default=4, help='Number of spaces to use for indentation.')
+@click.option('--ensure-ascii/--no-ensure-ascii', default=True, help='Whether to escape non-ASCII characters.')
+@click.option('--sort-keys/--no-sort-keys', default=False, help='Whether to sort the output of dictionaries by key.')
+@click.option('--separators', default=None, help='Item and key separators.')
+@click.option('--allow-nan/--no-allow-nan', default=True, help='Whether to allow NaN and Infinity values.')
+@click.option('--output', '-o', 'output_path', help="Path to output file", default=None, required=False)
+def format(source_type, content, indent, ensure_ascii, sort_keys,
+           separators, allow_nan, output_path):
+    """Pretty-print JSON input."""
+    json_string = content
+    data = read_json(json_string)
+    pretty_json = \
+        json.dumps(data, indent=indent, ensure_ascii=ensure_ascii, 
+                   sort_keys=sort_keys, separators=separators, allow_nan=allow_nan)
+    output_result(pretty_json, output_path)
+
+@click.command()
+@require.binary(['node', 'deno', 'bun'], logical_operator=require.LogicalOperators.OR, key="runtime")
+@resolve_input()
+@click.option('--output', '-o', 'output_path', help="Path to output file", default=None, required=False)
+def from_js(source_type, content, output_path, runtime):
+    """Convert JavaScript Object to JSON format."""
+    import subprocess
+
+    runtime = runtime[0]
+    js_string = "var input = " + content + ";"
+    if runtime == 'node':
+        js_code = f"""
+        {js_string}
+        console.log(JSON.stringify(input, null, 4));
+        """
+        cmd = ['node', '-e', js_code]
+    elif runtime == 'deno':
+        js_code = f"""
+        {js_string}
+        console.log(JSON.stringify(input, null, 4));
+        """
+        cmd = ['deno', 'eval', js_code]
+    elif runtime == 'bun':
+        js_code = f"""
+        {js_string}
+        console.log(JSON.stringify(input, null, 4));
+        """
+        cmd = ['bun', 'eval', js_code]
+    else:
+        click.echo(FormatUtils.error("No suitable JavaScript runtime found."), err=True)
+        sys.exit(1)
+    
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        json_output = result.stdout
+        output_result(json_output, output_path)
+    except subprocess.CalledProcessError as e:
+        click.echo(FormatUtils.error(f"Error executing JavaScript: {e.stderr}"), err=True)
+        sys.exit(1)
+
 cli.add_command(to_csv, name='to-csv')
+cli.add_command(format, name='format')
+cli.add_command(from_js, name='from-js')
