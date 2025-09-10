@@ -1,7 +1,10 @@
 import click
+
 import ptools.utils.require as require
 from ptools.utils.files import resolve_input
 from ptools.utils.print import FormatUtils
+
+import ptools.formats as formats
 
 import json
 import sys
@@ -98,20 +101,13 @@ def to_csv(source_type, content, separator, na_rep, float_format, header, index,
 
 @click.command()
 @resolve_input()
-@click.option('--indent', default=4, help='Number of spaces to use for indentation.')
-@click.option('--ensure-ascii/--no-ensure-ascii', default=True, help='Whether to escape non-ASCII characters.')
-@click.option('--sort-keys/--no-sort-keys', default=False, help='Whether to sort the output of dictionaries by key.')
-@click.option('--separators', default=None, help='Item and key separators.')
-@click.option('--allow-nan/--no-allow-nan', default=True, help='Whether to allow NaN and Infinity values.')
+@formats.json.dump.decorate()
 @click.option('--output', '-o', 'output_path', help="Path to output file", default=None, required=False)
-def format(source_type, content, indent, ensure_ascii, sort_keys,
-           separators, allow_nan, output_path):
+def format(source_type, content, output_path, **kwargs):
     """Pretty-print JSON input."""
     json_string = content
     data = read_json(json_string)
-    pretty_json = \
-        json.dumps(data, indent=indent, ensure_ascii=ensure_ascii, 
-                   sort_keys=sort_keys, separators=separators, allow_nan=allow_nan)
+    pretty_json = json.dumps(data, **kwargs)
     output_result(pretty_json, output_path)
 
 @click.command()
@@ -154,6 +150,20 @@ def from_js(source_type, content, output_path, runtime):
         click.echo(FormatUtils.error(f"Error executing JavaScript: {e.stderr}"), err=True)
         sys.exit(1)
 
+@click.command()
+@resolve_input()
+@formats.yaml.dump.decorate()
+@click.option('--output', '-o', 'output_path', help="Path to output file", default=None, required=False)
+def to_yaml(source_type, content, output_path, **kwargs):
+    """Convert JSON input to YAML format."""
+    import yaml
+
+    json_string = content
+    data = read_json(json_string)
+    yaml_output = yaml.dump(data, **kwargs)
+    output_result(yaml_output, output_path)
+
 cli.add_command(to_csv, name='to-csv')
 cli.add_command(format, name='format')
 cli.add_command(from_js, name='from-js')
+cli.add_command(to_yaml, name='to-yaml')

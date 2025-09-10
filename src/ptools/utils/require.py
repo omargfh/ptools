@@ -17,7 +17,7 @@ def _require_binary(binary):
         raise ImportError(f"Binary '{binary}' is not found in PATH.")
 
 # Decorators
-def library(library, prompt_install=False):
+def library(library, pypi_name=None, prompt_install=False):
     "Click decorator to ensure a library is installed."
     def decorator(f):
         @wraps(f)
@@ -30,13 +30,13 @@ def library(library, prompt_install=False):
                     if click.confirm(f"Do you want to install {library} now?"):
                         import subprocess
                         import sys
-                        subprocess.check_call([sys.executable, "-m", "pip", "install", library])
+                        subprocess.check_call([sys.executable, "-m", "pip", "install", pypi_name or library],  stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                        sys.exit(0)
                     else:
                         click.echo("Operation cancelled.")
-                        return
+                        sys.exit(1)
                 else:
                     raise e
-            
             return f(*args, **kwargs)
         return wrapper
     return decorator
