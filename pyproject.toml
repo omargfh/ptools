@@ -9,6 +9,8 @@ dependencies = [
     "keyring>=25.6.0",
     "pycryptodome>=3.14.0",
     "pydantic>=2.10",
+    "lark>=1.1",
+    "humanize>=4.8.0",
 ]
 
 [project.scripts]

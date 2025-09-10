@@ -4,7 +4,7 @@ import click
 
 from ptools.utils import require
 
-from ._factory import DecoratorCompositor
+from ..utils.decorator_compistor import DecoratorCompositor
 
 dump = DecoratorCompositor.from_list([
     require.library('yaml', pypi_name='PyYAML', prompt_install=True),

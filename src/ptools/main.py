@@ -1,5 +1,5 @@
 import click
-from . import rsync, dev, watch, projects, shell, secrets, json, clip
+from . import rsync, dev, watch, projects, shell, secrets, json, clip, flow, fs
 from ptools.models.default_config import load_default_config
 
 @click.group()
@@ -18,3 +18,6 @@ cli.add_command(secrets.cli, name="secrets")
 
 cli.add_command(json.cli, name="json")
 cli.add_command(clip.cli, name="clip")
+
+cli.add_command(flow.cli, name="flow")
+cli.add_command(fs.cli, name="fs")

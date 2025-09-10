@@ -32,6 +32,17 @@ class FormatUtils:
         }.get(color, '\033[93m')
         return f"{color_code}{text}\033[0m"
     
+    @staticmethod   
+    def background(text: str, color: Optional[str] = 'yellow') -> str:
+        color_code = {
+            'yellow': '\033[43m',
+            'green': '\033[42m',
+            'blue': '\033[44m',
+            'red': '\033[41m',
+            'reset': '\033[0m'
+        }.get(color, '\033[43m')
+        return f"{color_code}{text}\033[0m"
+    
     @staticmethod
     def bold(text: str) -> str:
         return f"\033[1m{text}\033[0m"
@@ -71,3 +82,10 @@ class FormattedText:
     @staticmethod
     def percent(i: int, total: int):
         return f"[{(i/total)*100:.2f}%]"
+    
+def fdebug(title, **kwargs):
+    msg = "\n   ".join([
+        FormatUtils.background("[DEBUG]", "yellow") + FormatUtils.bold(f" {title}"),
+        *[f"- {FormatUtils.highlight(str(k), 'yellow')}={FormatUtils.highlight(repr(v), 'green')}" for k, v in kwargs.items()]
+    ])
+    return msg

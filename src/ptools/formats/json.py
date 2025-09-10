@@ -2,7 +2,7 @@ from functools import wraps
 
 import click
 
-from ._factory import DecoratorCompositor
+from ..utils.decorator_compistor import DecoratorCompositor
 
 dump = DecoratorCompositor.from_list([
     click.option('--indent', default=4, help='Number of spaces to use for indentation.'),

@@ -157,10 +157,10 @@ def from_js(source_type, content, output_path, runtime):
 def to_yaml(source_type, content, output_path, **kwargs):
     """Convert JSON input to YAML format."""
     import yaml
-
+    
     json_string = content
     data = read_json(json_string)
-    yaml_output = yaml.dump(data, **kwargs)
+    yaml_output = yaml.dump(data, **kwargs).decode('utf-8')
     output_result(yaml_output, output_path)
 
 cli.add_command(to_csv, name='to-csv')
