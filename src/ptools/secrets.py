@@ -85,7 +85,7 @@ def get_secret(key, quiet, config_name):
 
 @click.command()
 @click.option('--query', '-q', help="Query to filter secrets")
-@click.option('--regex', is_flag=True, help="Use regex for filtering")
+@click.option('--regex', '-g', is_flag=True, help="Use regex for filtering")
 @click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
 @click.argument('command', nargs=-1)
 def with_secrets(query, regex, command, config_name):
@@ -112,7 +112,7 @@ def with_secrets(query, regex, command, config_name):
     
 @click.command()
 @click.option('--query', '-q', help="Query to filter secrets")
-@click.option('--regex', is_flag=True, help="Use regex for filtering")
+@click.option('--regex', '-g', is_flag=True, help="Use regex for filtering")
 @click.option('--show-values', is_flag=True, help="Show secret values")
 @click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
 def list_secrets(query, show_values, regex, config_name):
