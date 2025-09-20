@@ -50,7 +50,7 @@ class NodeWorkspace:
             self.package_manager = 'npm'
 
     def __init__read_projects__(self):
-        pattern = DirsGlob.get(self.type)
+        pattern = DirsGlob[self.type]
         projectDirs = flatten([self.path.glob(p) for p in pattern])
         self.projects = NodeProjects(
             [NodeProject(Path(dir)) for dir in projectDirs],

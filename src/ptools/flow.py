@@ -2,9 +2,14 @@ import click
 
 from ptools.lib.flow.values import StreamValue, OutputValue
 from ptools.lib.flow.runner import FlowRunner
-from ptools.lib.flow.decorators import output_flavor, debug_scope
-from ptools.lib.flow.utils import read_stream, stream, yield_scope, create_global_scope
-from ptools.utils.print import fdebug 
+from ptools.lib.flow.decorators import (
+    output_flavor,
+    debug_scope,
+    flow_expression,
+    parse_flow_expression,
+    parse_expression
+)
+from ptools.lib.flow.utils import stream, create_global_scope
 
 globals = create_global_scope()
 Runner = FlowRunner(globals=globals)
@@ -21,7 +26,7 @@ def read():
         click.echo(f"{flow_value} (type: {type(flow_value.value).__name__})")
         
 @click.command()
-@click.argument('expression')
+@flow_expression.decorate()
 @debug_scope.decorate()
 @output_flavor.decorate()
 def map(expression, flavor, debug):
@@ -44,7 +49,7 @@ def frange(start, end, step, flavor):
     click.echo(output.format(result))
         
 @click.command()
-@click.argument('expression')
+@flow_expression.decorate()
 @debug_scope.decorate()
 @output_flavor.decorate()
 def filter(expression, flavor, debug):
@@ -57,7 +62,7 @@ def filter(expression, flavor, debug):
     click.echo(output.format(results))
 
 @click.command()
-@click.argument('expression')
+@flow_expression.decorate()
 @click.option('--accumulator', '-a', default=None, help='Initial value for the accumulator.')
 @debug_scope.decorate()
 @output_flavor.decorate()
@@ -73,7 +78,7 @@ def reduce(expression, accumulator, flavor, debug):
     click.echo(f"{output.format(accumulator)}")
     
 @click.command()
-@click.argument('expression')
+@flow_expression.decorate()
 @output_flavor.decorate()
 def exec(expression, flavor):
     """Execute a Python expression with access to the global scope."""
@@ -84,7 +89,7 @@ def exec(expression, flavor):
         click.echo(f"Error: {e}")
         
 @click.command()
-@click.argument('expression', required=False, default='x')
+@flow_expression.decorate()
 @debug_scope.decorate()
 @output_flavor.decorate()
 def unique(expression, flavor, debug):
@@ -102,7 +107,7 @@ def unique(expression, flavor, debug):
     click.echo(output.format(results))
 
 @click.command()
-@click.argument('expression', required=False, default='x')
+@flow_expression.decorate()
 @debug_scope.decorate()
 @output_flavor.decorate()
 def group(expression, flavor, debug):
@@ -117,7 +122,7 @@ def group(expression, flavor, debug):
     click.echo(OutputValue(flavor=flavor).format(dict(groups)))
     
 @click.command()
-@click.argument('expression')
+@flow_expression.decorate()
 @debug_scope.decorate()
 @output_flavor.decorate()
 def foreach(expression, flavor, debug):
