@@ -55,6 +55,24 @@ def either_none_or(items_nonempty, items_empty):
         return items_nonempty(items)
     return wrapper
 
+class AttributeDict(dict):
+    """Dictionary that allows access to keys as attributes."""
+    def __getattr__(self, name):
+        try:
+            return self[name]
+        except KeyError:
+            raise AttributeError(f"No such attribute: {name}")
+        
+    def __setattr__(self, name, value):
+        self[name] = value 
+        
+    def __delattr__(self, name):
+        try:
+            del self[name]
+        except KeyError:
+            raise AttributeError(f"No such attribute: {name}")
+    
+
 class StreamTransformer(Transformer):
     @v_args(inline=True)
     def number(self, tok):
@@ -72,7 +90,7 @@ class StreamTransformer(Transformer):
     def list(self, items): return either_none_or(list, [])(items)
     def tuple(self, items): return either_none_or(tuple, ())(items)
     def set(self, items): return either_none_or(set, {})(items)
-    def dict(self, items): return either_none_or(dict, {})(items)
+    def dict(self, items): return either_none_or(AttributeDict, {})(items)
 
     def pair(self, kv): return (kv[0], kv[1])
 

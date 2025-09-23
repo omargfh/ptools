@@ -21,3 +21,4 @@ class DecoratorCompositor:
         def decorator(f):
             return self.apply(f)
         return decorator
+    

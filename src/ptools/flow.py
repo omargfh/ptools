@@ -6,8 +6,6 @@ from ptools.lib.flow.decorators import (
     output_flavor,
     debug_scope,
     flow_expression,
-    parse_flow_expression,
-    parse_expression
 )
 from ptools.lib.flow.utils import stream, create_global_scope
 
@@ -136,7 +134,7 @@ def foreach(expression, flavor, debug):
             click.echo(f"{output.format(result)}")
             
 @click.command()
-@click.argument('expression')
+@flow_expression.decorate()
 @click.option('--initial', '-i', default=None, help='Initial value for the x variable.')
 @click.option('--condition', '-c', default='True', help='Loop condition as a Python expression.')
 @click.option('--update-on-none', is_flag=True, default=False, help='Continue updating x even if the expression returns None.')

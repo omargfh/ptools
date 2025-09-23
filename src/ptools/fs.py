@@ -31,15 +31,14 @@ def info(path):
     
 # walkdir
 @click.command()
-@click.argument('path', type=click.Path(exists=True), default=".")
+@click.argument('query', required=False, default=None, nargs=1)
+@click.option('--path', '-i', type=click.Path(exists=True), default=".")
 @click.option('--max-depth', type=int, default=3)
-@click.option('--no-files/--files', is_flag=True, default=False)
-@click.option('--no-dirs/--dirs', is_flag=True, default=False)
-@click.option('--symlinks/--no-symlinks', is_flag=True, default=False)
-@click.option('--query', '-q', default=None, help="Filter files by name")
+@click.option('--no-files/--files', '-f/-F', is_flag=True, default=False)
+@click.option('--no-dirs/--dirs', '-d/-D', is_flag=True, default=False)
+@click.option('--symlinks/--no-symlinks', '-s/-S', is_flag=True, default=False)
 @click.option('--regex', '-g', is_flag=True, default=False, help="Use regex for filtering")
 @click.option('--ignore-hidden', is_flag=True, default=True, help="Ignore hidden files and directories")
-@click.option('--as-dict', is_flag=True, default=False, help="Output as a flat list instead of a tree")
 @output_flavor.decorate()
 def walkdir(
     path,
@@ -51,7 +50,6 @@ def walkdir(
     query,
     regex,
     flavor,
-    as_dict
 ):
     """Recursively list files and directories."""
     import os
@@ -62,8 +60,7 @@ def walkdir(
         children: List[Result] (if dir)
     }
     """
-    result = defaultdict(lambda: { 'kind': 'dir', 'children': [] })
-    result_list = []
+    result = []
     
     test_file = test(query, regex) if query else lambda x: True
 
@@ -83,15 +80,13 @@ def walkdir(
                         
                     if entry.is_dir():
                         if not no_dirs:
-                            result[entry.path] = { 'kind': 'dir', 'children': [] }
-                            result_list.append({ 'kind': 'dir', 'name': entry.name, 'path': entry.path })
+                            result.append({ 'kind': 'dir', 'name': entry.name, 'path': entry.path })
                         _walk(entry.path, depth - 1)
                     elif entry.is_file():
                         if test_file(entry.name):
                             if not no_files:
                                 dirpath = os.path.dirname(entry.path)
-                                result[dirpath]['children'].append({ 'kind': 'file', 'name': entry.name, 'path': entry.path })
-                                result_list.append({ 'kind': 'file', 'name': entry.name, 'path': entry.path, 'dirpath': dirpath })
+                                result.append({ 'kind': 'file', 'name': entry.name, 'path': entry.path, 'dirpath': dirpath })
         except PermissionError:
             return
 
@@ -103,8 +98,36 @@ def walkdir(
 
     _walk(path, max_depth)
 
-    result = dict(result) if as_dict else result_list
     click.echo(OutputValue(flavor=flavor).format(result))
+    
+@cli.command()
+@click.argument('query', required=False, default=None, nargs=1)
+@click.option('--path', '-i', type=click.Path(exists=True), default=".")
+@click.option('--max-depth', type=int, default=3)
+@click.option('--symlinks/--no-symlinks', '-s/-S', is_flag=True, default=False)
+@click.option('--regex', '-g', is_flag=True, default=False, help="Use regex for filtering")
+@click.option('--ignore-hidden', is_flag=True, default=True, help="Ignore hidden files and directories")
+@output_flavor.decorate()
+def findfiles(
+    path,
+    max_depth,
+    symlinks,
+    ignore_hidden,
+    query,
+    regex,
+    flavor
+):
+    return walkdir.callback(
+        path=path,
+        max_depth=max_depth,
+        no_files=False,
+        no_dirs=True,   
+        symlinks=symlinks,
+        ignore_hidden=ignore_hidden,
+        query=query,
+        regex=regex,
+        flavor=flavor,
+    )
 
 cli.add_command(info, name='info')
 cli.add_command(walkdir, name='walkdir')
