@@ -18,10 +18,9 @@ def code():
     os.system(cmd)
 
 @cli.command()
-@click.option('--pip', default='pip3', help='Path to pip executable.')
-def install(pip):
+def install():
     """(re)install the tool."""
-    cmd = f"{pip} install -e {get_project_root()}"
+    cmd = f"{os.sys.executable} -m pip install -e {get_project_root()}"
     os.system(cmd)
 
 @cli.command()

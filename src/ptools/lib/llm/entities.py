@@ -62,10 +62,14 @@ class LLMChatFile(pydantic.BaseModel):
         if self.file is None:
             raise ValueError("file must be provided and be a KeyValueStore instance.")
         return self
+    
+    @staticmethod
+    def get_relative_path_by_name(name: str) -> str:
+        return os.path.join('llm', 'chat_files', name)
 
     @classmethod
     def from_json(cls, name: str) -> "LLMChatFile":
-        relative_path = os.path.join('llm', 'chat_files', name)
+        relative_path = LLMChatFile.get_relative_path_by_name(name)
         cf = KeyValueStore(name=relative_path, quiet=True, encrypt=True)
 
         if not cf.get('name'):
@@ -82,7 +86,7 @@ class LLMChatFile(pydantic.BaseModel):
             import random
             name = f"tmp_chat_{random.randint(1000, 9999)}"
 
-        relative_path = os.path.join('llm', 'chat_files', f"{name}")
+        relative_path = LLMChatFile.get_relative_path_by_name(name)
         cf = KeyValueStore(name=relative_path, quiet=True, encrypt=True)
 
         cf.set('name', name)

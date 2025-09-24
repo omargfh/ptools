@@ -118,7 +118,7 @@ def add_profile(name: str, file: str, copy: bool):
     from ptools.lib.llm.stores import profiles_store
     if copy:
         import shutil
-        dest_path = os.path.join(profiles_store.config_dir, 'profiles', os.path.basename(file))
+        dest_path = profiles_store.get_profile_path_from_name(os.path.basename(file).rsplit('.', 1)[0])
         os.makedirs(os.path.dirname(dest_path), exist_ok=True)
         shutil.copy(file, dest_path)
         file = dest_path
