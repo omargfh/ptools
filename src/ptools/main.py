@@ -23,5 +23,5 @@ cli.add_command(flow.cli, name="flow")
 cli.add_command(fs.cli, name="fs")
 cli.add_command(workspaces.cli, name="ws")
 
-cli.add_command(llm.chat, name="gpt")
+cli.add_command(llm.chat, name="chat")
 cli.add_command(llm.cli, name="llm")

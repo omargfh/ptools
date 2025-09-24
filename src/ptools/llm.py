@@ -93,6 +93,19 @@ def set_api_key(service: str, key: str | None):
     key_store.set(key_name, key)
     click.echo(FormatUtils.success(f'Set API key for {service} in config file.'))
 
+@cli.command(name='list-api-keys')
+def list_api_keys():
+    """List all stored API keys."""
+    from ptools.lib.llm.stores import key_store
+    keys = key_store.list()
+    if not keys:
+        click.echo(FormatUtils.info('No API keys found.'))
+        return
+    for name, value in keys.items():
+        display_value = "*" * len(value) if value else "(not set)"
+        click.echo(FormatUtils.bold(f'{name}: '), nl=False)
+        click.echo(FormatUtils.highlight(display_value, 'yellow'))
+
 @cli.command(name='add-profile')
 @click.argument('name', required=True)
 @click.argument('file', type=click.Path(exists=True), required=True)
@@ -147,3 +160,22 @@ def prune_chats():
         chats_store.delete_chat(name)
         click.echo(FormatUtils.success(f'Deleted chat file "{name}".'))
     click.echo(FormatUtils.success('Pruned all chat files.'))
+
+@cli.command(name='list-chats')
+def list_chats():
+    """List all chat files."""
+    from ptools.lib.llm.stores import chats_store
+    chat_files = chats_store.list()
+
+    if not chat_files:
+        click.echo(FormatUtils.info('No chat files found.'))
+        return
+
+    for name, path in chat_files.items():
+        import datetime
+        last_modified = os.path.getmtime(path)
+        last_modified = datetime.datetime.fromtimestamp(last_modified).strftime('%Y-%m-%d %H:%M:%S')
+
+        click.echo(FormatUtils.highlight(f'  - {name}: '), nl=False)
+        click.echo(FormatUtils.highlight(f'{path})', 'yellow'), nl=False)
+        click.echo(f" (Last modified: {last_modified})")
