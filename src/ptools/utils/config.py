@@ -7,6 +7,7 @@ from ptools.utils.print import FormatUtils
 from ptools.utils.encrypt import Encryption, EncryptionError
 
 class ConfigFile():
+    reserved = ['name', 'path', 'file_path', 'data', 'quiet', 'encryption', 'ref']
     def __init__(self, name, path="~/.ptools", quiet=False, encrypt=False):
         self.name = name
         self.path = os.path.expanduser(path)
@@ -34,7 +35,7 @@ class ConfigFile():
                 self._echo(FormatUtils.info(f"Created new config file at {self.file_path}"))
 
         self._echo(FormatUtils.success(f"Loaded config file {self.file_path}"))
-
+        
     def _echo(self, *args, **kwargs):
         if not self.quiet:
             click.echo(*args, **kwargs)
@@ -195,13 +196,13 @@ class ConfigFile():
         raise AttributeError(f"'ConfigFile' object has no attribute '{item}'")
 
     def __setattr__(self, key, value):
-        if key in ['name', 'path', 'file_path', 'data', 'quiet', 'encryption']:
+        if key in self.reserved:
             super().__setattr__(key, value)
         else:
             self.set(key, value)
 
     def __delattr__(self, item):
-        if item in ['name', 'path', 'file_path', 'data', 'quiet', 'encryption']:
+        if item in self.reserved:
             super().__delattr__(item)
         else:
             self.delete(item)
@@ -216,8 +217,44 @@ class ConfigFile():
 
         return self
     
+    def close(self):
+        if self.ref and not self.ref.closed:
+            self.ref.close()
+            self._echo(FormatUtils.info(f"Closed config file {self.file_path}"))
+    
 class KeyValueStore(ConfigFile):
     # This started as a simple key-value store for config purposes
     # but has evolved into a more general key-value store.
     # We offer an alias for semantic clarity.
     pass
+
+class DummyKeyValueStore(ConfigFile):
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def get(self, key, default=None):
+        return default
+
+    def set(self, key, value):
+        return value
+
+    def delete(self, key):
+        return None
+
+    def list(self):
+        return {}
+
+    def clear(self):
+        return {}
+
+    def upsert(self, key, value):
+        return value
+
+    def exists(self, key):
+        return False
+    
+    def replace(self, new_data):
+        return new_data
+    
+    def close(self):
+        pass

@@ -1,20 +1,17 @@
 from ptools.lib.llm.client import ChatClient
-from ptools.lib.llm.stores import chats_store, profiles_store
 from ptools.lib.llm.history import PassThroughHistoryTransformer
-
+from ptools.lib.llm.entities import LLMChatFile, LLMProfile
 class ChatSession():
     def __init__(
         self,
         provider: ChatClient,
-        profile: str | None = None,
-        chat_file: str | None = None,
+        profile: LLMProfile | None = None,
+        chat_file: LLMChatFile | None = None,
         history_transformer = PassThroughHistoryTransformer(),
     ):
-        self.provider = provider
-        self.profile = profiles_store.get_profile_by_name(profile)
-        self.chat_file = chats_store.get_chat_by_name(chat_file) if chat_file else chats_store.new_chat()
-        if not self.chat_file.file:
-            raise ValueError("Chat file is not properly initialized.")
+        self.provider  = provider
+        self.profile   = profile
+        self.chat_file = chat_file or LLMChatFile.new_file()
         self.history_transformer = history_transformer
 
     def send_message(self, content: str) -> str:

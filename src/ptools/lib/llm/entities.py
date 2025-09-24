@@ -3,7 +3,7 @@ import os
 
 import pydantic
 
-from ptools.utils.config import KeyValueStore
+from ptools.utils.config import KeyValueStore, DummyKeyValueStore
 from ptools.utils.xml_repr import xmlclass
 
 class LLMHistoryType(Enum):
@@ -21,8 +21,7 @@ class LLMProfile(pydantic.BaseModel):
     presence_penalty: float = 0.0
     frequency_penalty: float = 0.0
 
-    system_prompt: str | None = None
-    history_length: int | None = None
+    system_prompt: str | None = "You are a helpful assistant."
 
     @classmethod
     def from_json(cls, file_path: str) -> "LLMProfile":
@@ -30,7 +29,7 @@ class LLMProfile(pydantic.BaseModel):
         with open(file_path, 'r') as f:
             data = json.load(f)
         return cls(**data)
-
+    
 @xmlclass
 class LLMMessage(pydantic.BaseModel):
     role: str
@@ -48,12 +47,13 @@ class LLMChatFile(pydantic.BaseModel):
     messages: list[LLMMessage] = []
     metadata: dict = {}
 
-    file: KeyValueStore | None
+    file: KeyValueStore | DummyKeyValueStore| None
 
     model_config = {
         "arbitrary_types_allowed": True,
         "json_encoders": {
-            KeyValueStore: lambda v: v.file_path if v else None
+            KeyValueStore: lambda v: v.file_path if v else None,
+            DummyKeyValueStore: lambda v: "DummyKeyValueStore",
         }
     }
     
@@ -81,12 +81,21 @@ class LLMChatFile(pydantic.BaseModel):
         return cls(name=name, messages=messages, metadata=metadata, file=cf)
 
     @staticmethod
-    def new_file(name: str | None = None) -> "LLMChatFile":
+    def new_file(name: str | None = None, persist=True) -> "LLMChatFile":
         if not name:
             import random
             name = f"tmp_chat_{random.randint(1000, 9999)}"
 
+        if not persist:
+            return LLMChatFile(
+                name=name,
+                messages=[],
+                metadata={},
+                file=DummyKeyValueStore()
+            )
+            
         relative_path = LLMChatFile.get_relative_path_by_name(name)
+        
         cf = KeyValueStore(name=relative_path, quiet=True, encrypt=True)
 
         cf.set('name', name)

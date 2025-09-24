@@ -8,10 +8,11 @@ from ptools.utils.print import FormatUtils
 from ptools.lib.llm.constants import model_choices, openai_models, google_models
 from ptools.lib.llm.session import ChatSession
 from ptools.lib.llm.prompt import parse_prompt
-from ptools.lib.llm.stores import key_store
+from ptools.lib.llm.stores import key_store, chats_store, profiles_store
 import ptools.lib.llm.decorators as llm_decorators
 from ptools.lib.llm.client import ChatClient
 from ptools.lib.llm.history import HistoryTransformerFactory
+from ptools.lib.llm.entities import LLMProfile
 
 @click.command()
 @require.library('openai', prompt_install=True)
@@ -27,31 +28,47 @@ from ptools.lib.llm.history import HistoryTransformerFactory
     type=click.Choice(HistoryTransformerFactory.list_transformers()),
     help='History transformer to use.'
 )
-@click.option('--chat-file', '-c', help='Name of the chat file to use.')
+@click.option('--history', '-h', help='Name of the history file to use.')
 @click.option('--profile', '-p',  help='Name of the profile to use.', default='default')
-@click.option('--chat/--no-chat', default=False, help='Use chat interface.')
+@click.option('--interactive/--no-interactive', '-i/-I', default=False, help='Use chat interface.')
+@click.option('--persist/--no-persist', '-s/-S', default=False, help='Persist chat file to disk when creating a new chat session without --chat-file.')
 @llm_decorators.before_call.decorate()
-def chat(
+def cli(
     message: str | None,
     client: ChatClient,
-    chat_file: str | None,
+    history: str | None,
     profile: str | None,
     history_transformer: str,
-    chat: bool,
+    interactive: bool,
+    persist: bool,
 ):
     """Interact with a chat interface."""
+    chat_file = None
+    if history:
+        chat_file = chats_store.get_chat_by_name(history)
+    elif persist:
+        chat_file = chats_store.new_chat()
+    else:
+        chat_file = chats_store.no_persist_chat()
+
+    profile = None
+    if profile:
+        profile = profiles_store.get_profile_by_name(profile)
+    if profile is None:
+        profile = LLMProfile()
+        
     session = ChatSession(
         provider=client,
-        profile=profile,
         history_transformer= \
             HistoryTransformerFactory.get_transformer(history_transformer),
         chat_file=chat_file,
+        profile=profile
     )
 
     if message:
         message = parse_prompt(' '.join(message))
         session.send_message(message)
-    elif chat:
+    elif interactive:
         click.echo(FormatUtils.highlight("Starting chat session. Type 'exit' or 'quit' to end.", 'green'))
         for message in session.chat_file.messages:
             role = message.role
@@ -79,11 +96,11 @@ def chat(
 
 
 @click.group()
-def cli():
+def opts():
     """AI related commands."""
     pass
 
-@cli.command(name='set-api-key')
+@opts.command(name='set-api-key')
 @click.option('--service', '-s', type=click.Choice(['openai', 'serperdev', 'google']), required=True, help='Service to set the API key for.')
 @click.argument('key', required=False)
 def set_api_key(service: str, key: str | None):
@@ -96,7 +113,7 @@ def set_api_key(service: str, key: str | None):
     key_store.set(key_name, key)
     click.echo(FormatUtils.success(f'Set API key for {service} in config file.'))
 
-@cli.command(name='list-api-keys')
+@opts.command(name='list-api-keys')
 def list_api_keys():
     """List all stored API keys."""
     from ptools.lib.llm.stores import key_store
@@ -109,12 +126,12 @@ def list_api_keys():
         click.echo(FormatUtils.bold(f'{name}: '), nl=False)
         click.echo(FormatUtils.highlight(display_value, 'yellow'))
 
-@cli.command(name='add-profile')
+@opts.command(name='add-profile')
 @click.argument('name', required=True)
 @click.argument('file', type=click.Path(exists=True), required=True)
 @click.option('--copy', '-c', is_flag=True, help='Copy the file to the config directory instead of linking it.')
 def add_profile(name: str, file: str, copy: bool):
-    """Add a new profile."""
+    """Add a new LLM profile."""
     from ptools.lib.llm.stores import profiles_store
     if copy:
         import shutil
@@ -127,9 +144,9 @@ def add_profile(name: str, file: str, copy: bool):
     profiles_store.set(name, file)
     click.echo(FormatUtils.success(f'Added profile "{name}" with file "{file}" to config.'))
 
-@cli.command(name='list-profiles')
+@opts.command(name='list-profiles')
 def list_profiles():
-    """List all profiles."""
+    """List all LLM profiles."""
     from ptools.lib.llm.stores import profiles_store
     profiles = profiles_store.list()
     if not profiles:
@@ -138,11 +155,11 @@ def list_profiles():
     for name, path in profiles.items():
         click.echo(FormatUtils.info(f'{name}: {path}'))
 
-@cli.command(name='delete-profile')
+@opts.command(name='delete-profile')
 @click.confirmation_option(prompt='Are you sure you want to delete this profile?')
 @click.argument('name', required=True)
 def delete_profile(name: str):
-    """Delete a profile."""
+    """Delete an LLM profile."""
     from ptools.lib.llm.stores import profiles_store
     if profiles_store.get(name) is None:
         click.echo(FormatUtils.error(f'Profile "{name}" does not exist.'))
@@ -150,7 +167,7 @@ def delete_profile(name: str):
     profiles_store.delete(name)
     click.echo(FormatUtils.success(f'Deleted profile "{name}".'))
 
-@cli.command(name='prune-chats')
+@opts.command(name='prune-chats')
 @click.confirmation_option(prompt='Are you sure you want to prune all chat files? This action cannot be undone.')
 def prune_chats():
     """Delete all chat files."""
@@ -164,7 +181,7 @@ def prune_chats():
         click.echo(FormatUtils.success(f'Deleted chat file "{name}".'))
     click.echo(FormatUtils.success('Pruned all chat files.'))
 
-@cli.command(name='list-chats')
+@opts.command(name='list-chats')
 def list_chats():
     """List all chat files."""
     from ptools.lib.llm.stores import chats_store

@@ -13,7 +13,7 @@ class ProfilesStore(KeyValueStore):
         return Path(self.file_path).parent
 
     def get_profile_path_from_name(self, name: str) -> str:
-        return os.path.join('profiles', name + '.json')
+        return os.path.join(self.config_dir, 'profiles', name + '.json')
     
     def get_profile_by_name(self, name: str) -> LLMProfile | None:
         file_path = self.get_profile_path_from_name(name)
@@ -43,6 +43,9 @@ class ChatsStore(KeyValueStore):
         chat_file = LLMChatFile.new_file(name=name)
         self.set(chat_file.name, chat_file.file.file_path)
         return chat_file
+    
+    def no_persist_chat(self) -> LLMChatFile:
+        return LLMChatFile.new_file(persist=False)
 
     def delete_chat(self, name: str) -> None:
         path = self.get(name)
