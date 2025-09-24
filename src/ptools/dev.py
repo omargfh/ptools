@@ -29,7 +29,7 @@ def update():
     cmd = f"git -C {get_project_root()} pull"
     os.system(cmd)
 
-    install()
+    install.callback()
 
 @cli.command()
 @click.option('-m', '--message', default='Update power tools', help='Commit message for the changes.')
