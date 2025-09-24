@@ -176,6 +176,6 @@ def list_chats():
         last_modified = os.path.getmtime(path)
         last_modified = datetime.datetime.fromtimestamp(last_modified).strftime('%Y-%m-%d %H:%M:%S')
 
-        click.echo(FormatUtils.highlight(f'  - {name}: '), nl=False)
+        click.echo(FormatUtils.bold(f'  - {name}: '), nl=False)
         click.echo(FormatUtils.highlight(f'{path})', 'yellow'), nl=False)
         click.echo(f" (Last modified: {last_modified})")
