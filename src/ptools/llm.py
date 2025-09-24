@@ -1,0 +1,149 @@
+import click
+import os
+
+import ptools.utils.require as require
+from ptools.utils.print import FormatUtils
+
+from ptools.lib.llm.constants import model_choices, openai_models, google_models
+from ptools.lib.llm.session import ChatSession
+from ptools.lib.llm.prompt import parse_prompt
+
+@click.command()
+@require.library('openai')
+@click.argument('message', required=False, nargs=-1)
+@click.option('--model', '-m', default='gemini-1.5-flash', type=click.Choice(model_choices), help='Language model to use.')
+@click.option('--chat-file', '-c', help='Name of the chat file to use.')
+@click.option('--profile', '-p',  help='Name of the profile to use.', default='default')
+@click.option('--chat/--no-chat', default=False, help='Use chat interface.')
+def chat(
+    message: str | None,
+    model: str,
+    chat_file: str | None,
+    profile: str | None,
+    chat: bool,
+):
+    """Interact with a chat interface."""
+    from ptools.lib.llm.stores import key_store
+    chat_provider = None
+
+    os.environ['OPENAI_API_KEY'] = \
+        os.environ.get('OPENAI_API_KEY') or key_store.get('OPENAI_API_KEY', '')
+    os.environ['GOOGLE_API_KEY'] = \
+        os.environ.get('GOOGLE_API_KEY') or key_store.get('GOOGLE_API_KEY', '')
+
+    if model in openai_models:
+        from ptools.lib.llm.client import OpenAIChatClient
+        chat_provider = OpenAIChatClient(model=model)
+
+    elif model in google_models:
+        from ptools.lib.llm.client import GoogleChatClient
+        chat_provider = GoogleChatClient(model=model)
+
+    session = ChatSession(
+        provider=chat_provider,
+        profile=profile,
+        chat_file=chat_file,
+    )
+
+    if message:
+        message = parse_prompt(' '.join(message))
+        session.send_message(message)
+    elif chat:
+        click.echo(FormatUtils.highlight("Starting chat session. Type 'exit' or 'quit' to end.", 'green'))
+        for message in session.chat_file.messages:
+            role = message.role
+            content = message.content
+            if role == 'user':
+                click.echo(FormatUtils.bold("You: "), nl=False)
+                click.echo(content, nl=False)
+            elif role == 'assistant':
+                click.echo(FormatUtils.highlight("Assistant: ", 'blue'), nl=False)
+                click.echo(content, nl=False)
+        while True:
+            try:
+                user_input = click.prompt(FormatUtils.bold("You"))
+                if user_input.lower() in ['exit', 'quit']:
+                    click.echo(FormatUtils.info("Exiting chat session."))
+                    break
+                user_input = parse_prompt(user_input)
+                print(FormatUtils.highlight("Assistant: ", 'blue'), end="")
+                session.send_message(user_input)
+            except (KeyboardInterrupt, EOFError):
+                click.echo(FormatUtils.highlight("\nExiting chat session.", 'red'))
+                break
+    else:
+        click.echo(FormatUtils.error("No message provided. Use --chat for interactive mode."))
+
+
+@click.group()
+def cli():
+    """AI related commands."""
+    pass
+
+@cli.command(name='set-api-key')
+@click.option('--service', '-s', type=click.Choice(['openai', 'serperdev', 'google']), required=True, help='Service to set the API key for.')
+@click.argument('key', required=False)
+def set_api_key(service: str, key: str | None):
+    """Set the API key for a specific service."""
+    from ptools.lib.llm.stores import key_store
+    if not key:
+        key = click.prompt(f'Enter API key for {service}', hide_input=True)
+
+    key_name = f'{service.upper()}_API_KEY'
+    key_store.set(key_name, key)
+    click.echo(FormatUtils.success(f'Set API key for {service} in config file.'))
+
+@cli.command(name='add-profile')
+@click.argument('name', required=True)
+@click.argument('file', type=click.Path(exists=True), required=True)
+@click.option('--copy', '-c', is_flag=True, help='Copy the file to the config directory instead of linking it.')
+def add_profile(name: str, file: str, copy: bool):
+    """Add a new profile."""
+    from ptools.lib.llm.stores import profiles_store
+    if copy:
+        import shutil
+        dest_path = os.path.join(profiles_store.config_dir, 'profiles', os.path.basename(file))
+        os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+        shutil.copy(file, dest_path)
+        file = dest_path
+    else:
+        file = os.path.abspath(file)
+    profiles_store.set(name, file)
+    click.echo(FormatUtils.success(f'Added profile "{name}" with file "{file}" to config.'))
+
+@cli.command(name='list-profiles')
+def list_profiles():
+    """List all profiles."""
+    from ptools.lib.llm.stores import profiles_store
+    profiles = profiles_store.all()
+    if not profiles:
+        click.echo(FormatUtils.info('No profiles found.'))
+        return
+    for name, path in profiles.items():
+        click.echo(FormatUtils.info(f'{name}: {path}'))
+
+@cli.command(name='delete-profile')
+@click.confirmation_option(prompt='Are you sure you want to delete this profile?')
+@click.argument('name', required=True)
+def delete_profile(name: str):
+    """Delete a profile."""
+    from ptools.lib.llm.stores import profiles_store
+    if profiles_store.get(name) is None:
+        click.echo(FormatUtils.error(f'Profile "{name}" does not exist.'))
+        return
+    profiles_store.delete(name)
+    click.echo(FormatUtils.success(f'Deleted profile "{name}".'))
+
+@cli.command(name='prune-chats')
+@click.confirmation_option(prompt='Are you sure you want to prune all chat files? This action cannot be undone.')
+def prune_chats():
+    """Delete all chat files."""
+    from ptools.lib.llm.stores import chats_store
+    chat_files = chats_store.list()
+    if not chat_files:
+        click.echo(FormatUtils.info('No chat files to prune.'))
+        return
+    for name in list(chat_files.keys()):
+        chats_store.delete_chat(name)
+        click.echo(FormatUtils.success(f'Deleted chat file "{name}".'))
+    click.echo(FormatUtils.success('Pruned all chat files.'))
