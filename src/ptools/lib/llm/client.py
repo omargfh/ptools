@@ -1,7 +1,7 @@
 import os
 from typing import List, Any
 
-from .schemas import LLMMessage
+from .entities import LLMMessage
 
 class ChatClient():
     def __init__(self):
@@ -9,11 +9,12 @@ class ChatClient():
         self.client: "OpenAI" | None = None
         self.model: str | None = None
 
-    def run(self, messages: List[LLMMessage], show=True) -> Any:
+    def run(self, messages: List[LLMMessage], show=True, **kwargs) -> Any:
         stream = self.client.chat.completions.create(
             messages=messages,
             model=self.model,
-            stream=True
+            stream=True,
+            **kwargs
         )
 
         output = ""

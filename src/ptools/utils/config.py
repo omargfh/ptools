@@ -155,7 +155,16 @@ class ConfigFile():
         else:
             self._echo(FormatUtils.warning(f"Key '{key}' does not exist in config file {self.file_path}"))
         return exists
-
+    
+    def replace(self, new_data):
+        if not isinstance(new_data, dict):
+            raise TypeError("New data must be a dictionary.")
+        self.data = new_data
+        with open(self.file_path, 'w') as f:
+            self._writes(f, self.data)
+        self._echo(FormatUtils.success(f"Replaced all data in config file {self.file_path}"))
+        return self.data
+    
     def __repr__(self):
         return f"<ConfigFile(name={self.name}, path={self.path})>"
 
@@ -206,3 +215,9 @@ class ConfigFile():
             raise TypeError("ConfigFile can be called with either one string argument (key) or two arguments (key, value).")
 
         return self
+    
+class KeyValueStore(ConfigFile):
+    # This started as a simple key-value store for config purposes
+    # but has evolved into a more general key-value store.
+    # We offer an alias for semantic clarity.
+    pass

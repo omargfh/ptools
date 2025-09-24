@@ -3,13 +3,16 @@ import os
 
 import pydantic
 
-from ptools.utils.config import ConfigFile
+from ptools.utils.config import KeyValueStore
 from ptools.utils.xml_repr import xmlclass
 
 class LLMHistoryType(Enum):
     full = 'full'
     last = 'last'
     none = 'none'
+    
+    def __repr__(self):
+        return self.value
 
 class LLMProfile(pydantic.BaseModel):
     top_p: float = 0.9
@@ -19,7 +22,6 @@ class LLMProfile(pydantic.BaseModel):
     frequency_penalty: float = 0.0
 
     system_prompt: str | None = None
-    history_mode: LLMHistoryType = LLMHistoryType.full
     history_length: int | None = None
 
     @classmethod
@@ -47,19 +49,25 @@ class LLMChatFile(pydantic.BaseModel):
     messages: list[LLMMessage] = []
     metadata: dict = {}
 
-    file: ConfigFile | None
+    file: KeyValueStore | None
 
     model_config = {
         "arbitrary_types_allowed": True,
         "json_encoders": {
-            ConfigFile: lambda v: v.file_path if v else None
+            KeyValueStore: lambda v: v.file_path if v else None
         }
     }
+    
+    @pydantic.model_validator(mode='after')
+    def validate_model(self):
+        if self.file is None:
+            raise ValueError("file must be provided and be a KeyValueStore instance.")
+        return self
 
     @classmethod
     def from_json(cls, name: str) -> "LLMChatFile":
         relative_path = os.path.join('llm', 'chat_files', name)
-        cf = ConfigFile(name=relative_path, quiet=True, encrypt=True)
+        cf = KeyValueStore(name=relative_path, quiet=True, encrypt=True)
 
         if not cf.get('name'):
             cf.set('name', name)
@@ -76,7 +84,7 @@ class LLMChatFile(pydantic.BaseModel):
             name = f"tmp_chat_{random.randint(1000, 9999)}"
 
         relative_path = os.path.join('llm', 'chat_files', f"{name}")
-        cf = ConfigFile(name=relative_path, quiet=True, encrypt=True)
+        cf = KeyValueStore(name=relative_path, quiet=True, encrypt=True)
 
         cf.set('name', name)
         if not cf.get('messages'):

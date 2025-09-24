@@ -1,0 +1,33 @@
+from .entities import LLMProfile
+
+def default():
+    return "default", {
+        "temperature": 0.7,
+        "max_tokens": 150,
+        "top_p": 1.0,
+        "frequency_penalty": 0.0,
+        "presence_penalty": 0.0,
+        "system_prompt": "You are a helpful assistant.",
+    }
+    
+def unix_commands():
+    return "unix", {
+        "temperature": 0.3,
+        "max_tokens": 100,
+        "top_p": 1.0,
+        "frequency_penalty": 0.0,
+        "presence_penalty": 0.0,
+        "system_prompt": (
+            "You are an expert in Unix commands with Linus Torvalds level expertise. "
+            "When given a task, provide the most efficient and effective Unix command to accomplish it."
+            "Unless asked, you must provide concise commands without additional explanations. "
+            "Limit answers to one command per line. "
+            "If the user asks for multiple commands, provide them in a numbered list. "
+            "If the user asks for an explanation, provide a brief one after the command. "
+            "If there are flags that can be added to the command to improve it, include them. "
+            "Explain all flags. "
+            "Highlight dependencies and prerequisites for the command to work. "
+        ),
+    }
+    
+profiles = { k : LLMProfile(**v) for k, v in [default(), unix_commands()] }

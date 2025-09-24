@@ -2,46 +2,49 @@ import click
 import os
 
 import ptools.utils.require as require
+from ptools.utils.enums import LogicalOperators
 from ptools.utils.print import FormatUtils
 
 from ptools.lib.llm.constants import model_choices, openai_models, google_models
 from ptools.lib.llm.session import ChatSession
 from ptools.lib.llm.prompt import parse_prompt
+from ptools.lib.llm.stores import key_store
+import ptools.lib.llm.decorators as llm_decorators
+from ptools.lib.llm.client import ChatClient
+from ptools.lib.llm.history import HistoryTransformerFactory
 
 @click.command()
-@require.library('openai')
+@require.library('openai', prompt_install=True)
+@require.key({
+    'OPENAI_API_KEY': ['OPENAI_API_KEY'],
+    'GOOGLE_API_KEY': ['GOOGLE_API_KEY']
+}, stores=[os.environ, key_store], logical_operator=LogicalOperators.OR)
 @click.argument('message', required=False, nargs=-1)
 @click.option('--model', '-m', default='gemini-1.5-flash', type=click.Choice(model_choices), help='Language model to use.')
+@click.option(
+    '--history-transformer', '-t',
+    default='pass_through',
+    type=click.Choice(HistoryTransformerFactory.list_transformers()),
+    help='History transformer to use.'
+)
 @click.option('--chat-file', '-c', help='Name of the chat file to use.')
 @click.option('--profile', '-p',  help='Name of the profile to use.', default='default')
 @click.option('--chat/--no-chat', default=False, help='Use chat interface.')
+@llm_decorators.before_call.decorate()
 def chat(
     message: str | None,
-    model: str,
+    client: ChatClient,
     chat_file: str | None,
     profile: str | None,
+    history_transformer: str,
     chat: bool,
 ):
     """Interact with a chat interface."""
-    from ptools.lib.llm.stores import key_store
-    chat_provider = None
-
-    os.environ['OPENAI_API_KEY'] = \
-        os.environ.get('OPENAI_API_KEY') or key_store.get('OPENAI_API_KEY', '')
-    os.environ['GOOGLE_API_KEY'] = \
-        os.environ.get('GOOGLE_API_KEY') or key_store.get('GOOGLE_API_KEY', '')
-
-    if model in openai_models:
-        from ptools.lib.llm.client import OpenAIChatClient
-        chat_provider = OpenAIChatClient(model=model)
-
-    elif model in google_models:
-        from ptools.lib.llm.client import GoogleChatClient
-        chat_provider = GoogleChatClient(model=model)
-
     session = ChatSession(
-        provider=chat_provider,
+        provider=client,
         profile=profile,
+        history_transformer= \
+            HistoryTransformerFactory.get_transformer(history_transformer),
         chat_file=chat_file,
     )
 
@@ -128,7 +131,7 @@ def add_profile(name: str, file: str, copy: bool):
 def list_profiles():
     """List all profiles."""
     from ptools.lib.llm.stores import profiles_store
-    profiles = profiles_store.all()
+    profiles = profiles_store.list()
     if not profiles:
         click.echo(FormatUtils.info('No profiles found.'))
         return

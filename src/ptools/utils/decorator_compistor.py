@@ -13,7 +13,7 @@ class DecoratorCompositor:
         self.decorators.append(decorator)
 
     def apply(self, f):
-        for dec in self.decorators:
+        for dec in reversed(self.decorators):
             f = dec(f)
         return f
     
