@@ -12,6 +12,11 @@ def cli():
     pass
 
 @cli.command()
+def root():
+    """Print the root directory of the project."""
+    click.echo(get_project_root())
+    
+@cli.command()
 def code():
     """Make changes to this tool in VSCode."""
     cmd = f"code {get_project_root()}"
