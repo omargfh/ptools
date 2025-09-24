@@ -12,19 +12,24 @@ class ProfilesStore(KeyValueStore):
     def config_dir(self) -> Path:
         return Path(self.file_path).parent
 
+    def get_profile_path_from_name(self, name: str) -> str:
+        return os.path.join('profiles', name + '.json')
+    
     def get_profile_by_name(self, name: str) -> LLMProfile | None:
-        file_path = self.get(name)
-        return LLMProfile.from_json(file_path) if file_path else None
+        file_path = self.get_profile_path_from_name(name)
+        if not os.path.exists(file_path):
+            return None
+        return LLMProfile.from_json(file_path)
     
     def add(self, name: str, profile: LLMProfile) -> None:
         if self.get(name):
             raise ValueError(f"Profile with name '{name}' already exists.")
-        file_path_no_extension = os.path.join(self.config_dir, "profiles", name)
-        os.makedirs(os.path.dirname(file_path_no_extension + '.json'), exist_ok=True)
+        file_path = self.get_profile_path_from_name(name)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         
-        store = KeyValueStore(name=file_path_no_extension, quiet=True, encrypt=False)
-        store.replace(profile.model_dump())
-        self.set(name, store.file_path)
+        with open(file_path, 'w') as f:
+            f.write(profile.model_dump_json(indent=4))
+        self.set(name, file_path)
 
 profiles_store = ProfilesStore(name=os.path.join('llm', 'profiles'), quiet=True, encrypt=False)
 

@@ -31,7 +31,6 @@ class LLMProfile(pydantic.BaseModel):
             data = json.load(f)
         return cls(**data)
 
-
 @xmlclass
 class LLMMessage(pydantic.BaseModel):
     role: str

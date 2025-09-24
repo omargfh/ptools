@@ -25,6 +25,7 @@ class ChatSession():
 
         messages = self.chat_file.messages
         history  = self.history_transformer.transform(messages)
+        
         response = self.provider.run(messages=[
             {
                 "role": "system",
