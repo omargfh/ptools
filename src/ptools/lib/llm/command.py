@@ -8,10 +8,29 @@ class CommandArgument(BaseModel):
     required: bool = False
     kind: str = 'posarg'
     parser: Callable[[Any], Any] = lambda x: x
+    parser_name: str | None = None
 
     model_config = {
         'arbitrary_types_allowed': True
     }
+    
+    def __repr__(self):
+        name = self.name if self.name else "arg"
+        
+        if self.parser in (int, float, str, bool):
+            type_name = self.parser.__name__
+        elif self.parser_name:
+            type_name = self.parser_name
+        else:
+            type_name = "custom"
+            
+        required = "?" if not self.required else ""
+        
+        if self.kind == 'kwarg':
+            return f"{name}{required}={type_name}"
+        else:
+            return f"{name}{required}:{type_name}"
+        
 
 class CommandSchema(BaseModel):
     arguments: list[CommandArgument] = []
@@ -30,6 +49,12 @@ class CommandSchema(BaseModel):
     @property
     def arg_map(self):
         return {arg.name: arg for arg in self.arguments if arg.name}
+    
+    def __repr__(self):
+        posargs = map(repr, filter(lambda arg: arg.kind == 'posarg' and arg.name, self.arguments))
+        kwargs = map(repr, filter(lambda arg: arg.kind == 'kwarg' and arg.name, self.arguments))
+        allargs = list(posargs) + list(kwargs)
+        return f"{' '.join(allargs)} @/"
 
 class Command(BaseModel):
     name: str

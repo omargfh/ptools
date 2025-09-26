@@ -38,7 +38,7 @@ class ChatSession():
         Use parentheses for additional information or asides.
         Use colons to introduce lists or explanations.
         """
-        
+
         response = self.provider.run(messages=[
             {
                 "role": "system",
@@ -46,7 +46,10 @@ class ChatSession():
             },
             *history,
         ])
+        
+        for chunk in response:
+            yield chunk
+            
+        response = ''.join(response)
 
         self.chat_file.add_message(role="assistant", content=response)
-
-        return response

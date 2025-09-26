@@ -64,7 +64,7 @@ class NodeProject:
         return self.__internals_valid
           
     def __getattribute__(self, name: str):
-        if name in self.reserved_names:
+        if name in NodeProject.reserved_names:
             def method(prefix=True):
                 return self.__internals_exec_script__(name, prefix=prefix)
             return method

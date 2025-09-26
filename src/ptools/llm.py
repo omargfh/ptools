@@ -13,15 +13,19 @@ import ptools.lib.llm.decorators as llm_decorators
 from ptools.lib.llm.client import ChatClient
 from ptools.lib.llm.history import HistoryTransformerFactory
 from ptools.lib.llm.entities import LLMProfile
+from ptools.lib.llm.repl import start_chat
+from ptools.lib.llm.commands import commands
 
 @click.command()
 @require.library('openai', prompt_install=True)
+@require.library('prompt_toolkit', prompt_install=True)
+@require.library('pygments', prompt_install=True)
 @require.key({
     'OPENAI_API_KEY': ['OPENAI_API_KEY'],
     'GOOGLE_API_KEY': ['GOOGLE_API_KEY']
 }, stores=[os.environ, key_store], logical_operator=LogicalOperators.OR)
 @click.argument('message', required=False, nargs=-1)
-@click.option('--model', '-m', default='gemini-1.5-flash', type=click.Choice(model_choices), help='Language model to use.')
+@click.option('--model', '-m', default='gemini-2.0-flash', type=click.Choice(model_choices), help='Language model to use.')
 @click.option(
     '--history-transformer', '-t',
     default='pass_through',
@@ -43,6 +47,8 @@ def cli(
     persist: bool,
 ):
     """Interact with a chat interface."""
+    from prompt_toolkit import prompt
+
     chat_file = None
     if history:
         chat_file = chats_store.get_chat_by_name(history)
@@ -67,30 +73,16 @@ def cli(
 
     if message:
         message = parse_prompt(' '.join(message))
-        session.send_message(message)
+        response = session.send_message(message)
+        for chunk in response:
+            print(chunk, end='', flush=True)
     elif interactive:
-        click.echo(FormatUtils.highlight("Starting chat session. Type 'exit' or 'quit' to end.", 'green'))
-        for message in session.chat_file.messages:
-            role = message.role
-            content = message.content
-            if role == 'user':
-                click.echo(FormatUtils.bold("You: "), nl=False)
-                click.echo(content, nl=False)
-            elif role == 'assistant':
-                click.echo(FormatUtils.highlight("Assistant: ", 'blue'), nl=False)
-                click.echo(content, nl=False)
-        while True:
-            try:
-                user_input = click.prompt(FormatUtils.bold("You"))
-                if user_input.lower() in ['exit', 'quit']:
-                    click.echo(FormatUtils.info("Exiting chat session."))
-                    break
-                user_input = parse_prompt(user_input)
-                print(FormatUtils.highlight("Assistant: ", 'blue'), end="")
-                session.send_message(user_input)
-            except (KeyboardInterrupt, EOFError):
-                click.echo(FormatUtils.highlight("\nExiting chat session.", 'red'))
-                break
+        start_chat(
+            commands,
+            exit_commands=("/exit", "/quit", '/q'),
+            on_user_message=lambda msg: session.send_message(msg),
+            history=session.chat_file.messages,
+        )
     else:
         click.echo(FormatUtils.error("No message provided. Use --chat for interactive mode."))
 
@@ -143,6 +135,32 @@ def add_profile(name: str, file: str, copy: bool):
         file = os.path.abspath(file)
     profiles_store.set(name, file)
     click.echo(FormatUtils.success(f'Added profile "{name}" with file "{file}" to config.'))
+    
+@opts.command(name='create-profile')
+def create_profile():
+    """Create a new LLM profile interactively."""
+    from ptools.lib.llm.stores import profiles_store
+    name = click.prompt('Enter profile name')
+    if profiles_store.get(name):
+        click.echo(FormatUtils.error(f'Profile with name "{name}" already exists.'))
+        return
+
+    temperature = click.prompt('Enter temperature', type=float, default=0.7)
+    max_tokens = click.prompt('Enter max tokens', type=int, default=1024)
+    presence_penalty = click.prompt('Enter presence penalty', type=float, default=0.0)
+    frequency_penalty = click.prompt('Enter frequency penalty', type=float, default=0.0)
+    system_prompt = click.prompt('Enter system prompt', type=str, default="You are a helpful assistant.", )
+    
+    profile = LLMProfile(
+        temperature=temperature,
+        max_tokens=max_tokens,
+        presence_penalty=presence_penalty,
+        frequency_penalty=frequency_penalty,
+        system_prompt=system_prompt
+    )
+    
+    profiles_store.add(name, profile)
+    click.echo(FormatUtils.success(f'Created profile "{name}".'))
 
 @opts.command(name='list-profiles')
 def list_profiles():

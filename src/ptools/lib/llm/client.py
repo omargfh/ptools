@@ -18,16 +18,18 @@ class ChatClient():
         )
 
         output = ""
-        if show:
+        if kwargs.get("stream", True):
             for chunk in stream:
                 if type(chunk.choices[0].delta.content) == str:
                     output += chunk.choices[0].delta.content
-                    print(chunk.choices[0].delta.content or "", end="")
+                    yield chunk.choices[0].delta.content or ""
 
             if output[-1] != "\n":
                 output += "\n"
-                print()
-        return output
+                yield "\n"
+        else:
+            output = stream.choices[0].message.content
+            yield output
 
 class OpenAIChatClient(ChatClient):
     def __init__(self, model: str = "gpt-4o-mini"):

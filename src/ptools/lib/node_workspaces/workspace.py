@@ -13,7 +13,7 @@ class WorkspaceType(Enum):
     Default = 'default'
     
     
-DirsGlob = defaultdict(lambda: ['packages/*', 'apps/*'], {
+DirsGlob = defaultdict(lambda: ['*'], {
     WorkspaceType.Turbo: ['packages/*', 'apps/*'],
 })
 
