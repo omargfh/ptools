@@ -45,7 +45,11 @@ class ChatSession():
                 "content": (system_prompt + formatting).strip()
             },
             *history,
-        ])
+        ], temperature=self.profile.temperature,
+           max_tokens=self.profile.max_tokens,
+           top_p=self.profile.top_p,
+           presence_penalty=self.profile.presence_penalty,
+        )
         
         for chunk in response:
             yield chunk

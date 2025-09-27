@@ -9,6 +9,7 @@ class CommandArgument(BaseModel):
     kind: str = 'posarg'
     parser: Callable[[Any], Any] = lambda x: x
     parser_name: str | None = None
+    nargs: int | str  = 1 # number of args, or '*' for all remaining
 
     model_config = {
         'arbitrary_types_allowed': True
@@ -25,11 +26,12 @@ class CommandArgument(BaseModel):
             type_name = "custom"
             
         required = "?" if not self.required else ""
+        veriadic = "*" if self.nargs == "*" else (f"[{self.nargs}]" if self.nargs > 1 else "")
         
         if self.kind == 'kwarg':
-            return f"{name}{required}={type_name}"
+            return f"{name}{required}:{type_name}=<value>"
         else:
-            return f"{name}{required}:{type_name}"
+            return f"{name}{veriadic}{required}:{type_name}"
         
 
 class CommandSchema(BaseModel):
@@ -61,7 +63,7 @@ class Command(BaseModel):
     description: str | None = None
     possible_schemas: List[CommandSchema] = []
 
-    def wrap(self, obj):
+    def wrap(self, obj, context=None) -> Callable[[], Any]:
         if obj['command'] != self.name:
             raise ValueError(f"Command name mismatch: expected {self.name}, got {obj['command']}")
 
@@ -74,11 +76,11 @@ class Command(BaseModel):
             if any(arg.required and arg.name not in parsed_args for arg in schema.arguments):
                 continue
 
-            return lambda: schema.call(**parsed_args)
+            return lambda: schema.call(**parsed_args, context=context)
 
         raise ValueError("No matching schema found for command arguments")
 
-    def parse_kwarg(self, schema, arg, has_seen_kwargs):
+    def parse_kwarg(self, schema, arg, has_seen_kwargs, index):
         has_seen_kwargs = True
         arg_name = arg.get('name')
         arg_value = arg.get('value')
@@ -87,12 +89,18 @@ class Command(BaseModel):
             raise ValueError("Invalid keyword argument format")
         if arg_name not in schema.arg_map:
             raise ValueError(f"Unexpected keyword argument: {arg_name}")
+        
 
         schema_arg = schema.arg_map[arg_name]
+        if schema_arg.kind != 'kwarg':
+            raise ValueError(f"Expected keyword argument, got positional argument: {arg_name}")
+        
+        if schema_arg.nargs != 1:
+            raise ValueError(f"Expected exactly one value for keyword argument: {arg_name}")
 
-        return schema_arg, arg_name, arg_value, has_seen_kwargs
+        return schema_arg, arg_name, arg_value, has_seen_kwargs, index + 1
 
-    def parse_posarg(self, schema, arg, has_seen_kwargs, index):
+    def parse_posarg(self, schema, arg, has_seen_kwargs, index, args):
         if has_seen_kwargs:
             raise ValueError("Positional arguments cannot follow keyword arguments")
         if index >= len(schema.arguments):
@@ -100,24 +108,40 @@ class Command(BaseModel):
         schema_arg = schema.arguments[index]
         if schema_arg.kind != 'posarg':
             raise ValueError(f"Expected positional argument, got keyword argument: {schema_arg.name}")
-        return schema_arg, schema_arg.name, arg, index + 1
+        
+        if schema_arg.nargs == "*" or schema_arg.nargs > 1:
+            remaining_posargs = filter(lambda a: not isinstance(a, dict), args[index:])
+            if schema_arg.nargs == "*":
+                arg = list(remaining_posargs)
+                index = len(args)
+            else:
+                arg = list(remaining_posargs)[:schema_arg.nargs]
+                index += schema_arg.nargs
+                if len(arg) < schema_arg.nargs:
+                    raise ValueError(f"Expected {schema_arg.nargs} values for argument: {schema_arg.name}")
+        else:
+            arg = arg
+            index += 1
+
+        return schema_arg, schema_arg.name, arg, index
 
     def parse_schema(self, args, schema):
         has_seen_kwargs = False
-        index = 0
         parsed_args = {}
-
-        for arg in args:
+        index = 0
+        
+        while index < len(args):
+            arg = args[index]
             schema_arg = None
             arg_name = None
             arg_value = None
 
             if isinstance(arg, dict):
-                schema_arg, arg_name, arg_value, has_seen_kwargs = \
-                    self.parse_kwarg(schema, arg, has_seen_kwargs)
+                schema_arg, arg_name, arg_value, has_seen_kwargs, index = \
+                    self.parse_kwarg(schema, arg, has_seen_kwargs, index)
             else:
                 schema_arg, arg_name, arg_value, index = \
-                    self.parse_posarg(schema, arg, has_seen_kwargs, index)
+                    self.parse_posarg(schema, arg, has_seen_kwargs, index, args)
 
             if schema_arg is None:
                 raise ValueError("Could not determine schema argument")

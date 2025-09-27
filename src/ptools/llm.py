@@ -71,8 +71,14 @@ def cli(
         profile=profile
     )
 
+    context = {
+        'history': lambda: session.chat_file.messages,
+        'profile': lambda: session.profile,
+        'commands': commands
+    }
+    
     if message:
-        message = parse_prompt(' '.join(message))
+        message = parse_prompt(' '.join(message), context=context)
         response = session.send_message(message)
         for chunk in response:
             print(chunk, end='', flush=True)
@@ -82,6 +88,7 @@ def cli(
             exit_commands=("/exit", "/quit", '/q'),
             on_user_message=lambda msg: session.send_message(msg),
             history=session.chat_file.messages,
+            context=context
         )
     else:
         click.echo(FormatUtils.error("No message provided. Use --chat for interactive mode."))

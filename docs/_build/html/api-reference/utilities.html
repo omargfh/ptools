@@ -1,0 +1,500 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; PTools 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=0c468a07" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#core-capabilities">Core Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#file-system-data-operations">File System &amp; Data Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#ai-language-models">AI &amp; Language Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#development-tools">Development Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#data-processing-workflows">Data Processing &amp; Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#configuration-security">Configuration &amp; Security</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#design-patterns">Design Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#decorator-based-configuration">Decorator-Based Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#modular-cli-structure">Modular CLI Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#stream-processing">Stream Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/utilities.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p># Utilities</p>
+<p>Documentation for utility modules and helper functions used throughout PTools.</p>
+<p>## Configuration Utilities</p>
+<dl class="py class" id="module-ptools.utils.config">
+<dt class="sig sig-object py" id="ptools.utils.config.ConfigFile">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ConfigFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'~/.ptools'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encrypt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#ConfigFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.ConfigFile" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ptools.utils.config.ConfigFile.reserved">
+<span class="sig-name descname"><span class="pre">reserved</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['name',</span> <span class="pre">'path',</span> <span class="pre">'file_path',</span> <span class="pre">'data',</span> <span class="pre">'quiet',</span> <span class="pre">'encryption',</span> <span class="pre">'ref']</span></em><a class="headerlink" href="#ptools.utils.config.ConfigFile.reserved" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.ConfigFile.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#ConfigFile.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.ConfigFile.get" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.ConfigFile.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#ConfigFile.set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.ConfigFile.set" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.ConfigFile.delete">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#ConfigFile.delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.ConfigFile.delete" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.ConfigFile.list">
+<span class="sig-name descname"><span class="pre">list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#ConfigFile.list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.ConfigFile.list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.ConfigFile.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#ConfigFile.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.ConfigFile.clear" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.ConfigFile.upsert">
+<span class="sig-name descname"><span class="pre">upsert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#ConfigFile.upsert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.ConfigFile.upsert" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.ConfigFile.exists">
+<span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#ConfigFile.exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.ConfigFile.exists" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.ConfigFile.replace">
+<span class="sig-name descname"><span class="pre">replace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#ConfigFile.replace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.ConfigFile.replace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.ConfigFile.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#ConfigFile.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.ConfigFile.close" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ptools.utils.config.KeyValueStore">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">KeyValueStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'~/.ptools'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quiet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encrypt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#KeyValueStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.KeyValueStore" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ptools.utils.config.ConfigFile" title="ptools.utils.config.ConfigFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigFile</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ptools.utils.config.DummyKeyValueStore">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DummyKeyValueStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#DummyKeyValueStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.DummyKeyValueStore" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ptools.utils.config.ConfigFile" title="ptools.utils.config.ConfigFile"><code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigFile</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.DummyKeyValueStore.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#DummyKeyValueStore.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.DummyKeyValueStore.get" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.DummyKeyValueStore.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#DummyKeyValueStore.set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.DummyKeyValueStore.set" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.DummyKeyValueStore.delete">
+<span class="sig-name descname"><span class="pre">delete</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#DummyKeyValueStore.delete"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.DummyKeyValueStore.delete" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.DummyKeyValueStore.list">
+<span class="sig-name descname"><span class="pre">list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#DummyKeyValueStore.list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.DummyKeyValueStore.list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.DummyKeyValueStore.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#DummyKeyValueStore.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.DummyKeyValueStore.clear" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.DummyKeyValueStore.upsert">
+<span class="sig-name descname"><span class="pre">upsert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#DummyKeyValueStore.upsert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.DummyKeyValueStore.upsert" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.DummyKeyValueStore.exists">
+<span class="sig-name descname"><span class="pre">exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#DummyKeyValueStore.exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.DummyKeyValueStore.exists" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.DummyKeyValueStore.replace">
+<span class="sig-name descname"><span class="pre">replace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#DummyKeyValueStore.replace"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.DummyKeyValueStore.replace" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.config.DummyKeyValueStore.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/config.html#DummyKeyValueStore.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.config.DummyKeyValueStore.close" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<p>## Decorator Compositor</p>
+<dl class="py class" id="module-ptools.utils.decorator_compistor">
+<dt class="sig sig-object py" id="ptools.utils.decorator_compistor.DecoratorCompositor">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DecoratorCompositor</span></span><a class="reference internal" href="../_modules/ptools/utils/decorator_compistor.html#DecoratorCompositor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.decorator_compistor.DecoratorCompositor" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.decorator_compistor.DecoratorCompositor.from_list">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decorator_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/decorator_compistor.html#DecoratorCompositor.from_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.decorator_compistor.DecoratorCompositor.from_list" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.decorator_compistor.DecoratorCompositor.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">decorator</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/decorator_compistor.html#DecoratorCompositor.add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.decorator_compistor.DecoratorCompositor.add" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.decorator_compistor.DecoratorCompositor.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/decorator_compistor.html#DecoratorCompositor.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.decorator_compistor.DecoratorCompositor.apply" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.decorator_compistor.DecoratorCompositor.decorate">
+<span class="sig-name descname"><span class="pre">decorate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/decorator_compistor.html#DecoratorCompositor.decorate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.decorator_compistor.DecoratorCompositor.decorate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<p>## Encryption Utilities</p>
+<dl class="py exception" id="module-ptools.utils.encrypt">
+<dt class="sig sig-object py" id="ptools.utils.encrypt.EncryptionError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">EncryptionError</span></span><a class="reference internal" href="../_modules/ptools/utils/encrypt.html#EncryptionError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.encrypt.EncryptionError" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></a></p>
+<p>Custom exception for encryption errors.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ptools.utils.encrypt.Encryption">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Encryption</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/encrypt.html#Encryption"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.encrypt.Encryption" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.encrypt.Encryption.encrypt">
+<span class="sig-name descname"><span class="pre">encrypt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/encrypt.html#Encryption.encrypt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.encrypt.Encryption.encrypt" title="Link to this definition"></a></dt>
+<dd><p>Encrypt a value using the keyring service.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.encrypt.Encryption.decrypt">
+<span class="sig-name descname"><span class="pre">decrypt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encrypted_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/encrypt.html#Encryption.decrypt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.encrypt.Encryption.decrypt" title="Link to this definition"></a></dt>
+<dd><p>Decrypt a value using the keyring service.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ptools.utils.encrypt.DummyEncryption">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DummyEncryption</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">service_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/encrypt.html#DummyEncryption"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.encrypt.DummyEncryption" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Pass-through encryption for utility purposes.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.encrypt.DummyEncryption.encrypt">
+<span class="sig-name descname"><span class="pre">encrypt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/encrypt.html#DummyEncryption.encrypt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.encrypt.DummyEncryption.encrypt" title="Link to this definition"></a></dt>
+<dd><p>Return the value as is.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.encrypt.DummyEncryption.decrypt">
+<span class="sig-name descname"><span class="pre">decrypt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/encrypt.html#DummyEncryption.decrypt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.encrypt.DummyEncryption.decrypt" title="Link to this definition"></a></dt>
+<dd><p>Return the value as is.</p>
+</dd></dl>
+
+</dd></dl>
+
+<p>## Enumerations</p>
+<dl class="py class" id="module-ptools.utils.enums">
+<dt class="sig sig-object py" id="ptools.utils.enums.LogicalOperators">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">LogicalOperators</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/enums.html#LogicalOperators"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.enums.LogicalOperators" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Enum</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ptools.utils.enums.LogicalOperators.AND">
+<span class="sig-name descname"><span class="pre">AND</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'and'</span></em><a class="headerlink" href="#ptools.utils.enums.LogicalOperators.AND" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ptools.utils.enums.LogicalOperators.OR">
+<span class="sig-name descname"><span class="pre">OR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'or'</span></em><a class="headerlink" href="#ptools.utils.enums.LogicalOperators.OR" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ptools.utils.enums.LogicalOperators.NONE">
+<span class="sig-name descname"><span class="pre">NONE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'none'</span></em><a class="headerlink" href="#ptools.utils.enums.LogicalOperators.NONE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ptools.utils.enums.LogicalOperators.TRUE">
+<span class="sig-name descname"><span class="pre">TRUE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'true'</span></em><a class="headerlink" href="#ptools.utils.enums.LogicalOperators.TRUE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ptools.utils.enums.LogicalOperators.FALSE">
+<span class="sig-name descname"><span class="pre">FALSE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'false'</span></em><a class="headerlink" href="#ptools.utils.enums.LogicalOperators.FALSE" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.enums.LogicalOperators.apply">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logical_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span></span><a class="reference internal" href="../_modules/ptools/utils/enums.html#LogicalOperators.apply"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.enums.LogicalOperators.apply" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.enums.LogicalOperators.ensure">
+<span class="sig-name descname"><span class="pre">ensure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logical_results</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/enums.html#LogicalOperators.ensure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.enums.LogicalOperators.ensure" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<p>## File Utilities</p>
+<dl class="py function" id="module-ptools.utils.files">
+<dt class="sig sig-object py" id="ptools.utils.files.resolve_input">
+<span class="sig-name descname"><span class="pre">resolve_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allow_stdin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/files.html#resolve_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.files.resolve_input" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<p>## Print and Formatting Utilities</p>
+<dl class="py class" id="module-ptools.utils.print">
+<dt class="sig sig-object py" id="ptools.utils.print.FormatUtils">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FormatUtils</span></span><a class="reference internal" href="../_modules/ptools/utils/print.html#FormatUtils"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.FormatUtils" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.FormatUtils.error">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/print.html#FormatUtils.error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.FormatUtils.error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.FormatUtils.info">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/print.html#FormatUtils.info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.FormatUtils.info" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.FormatUtils.success">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">success</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/print.html#FormatUtils.success"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.FormatUtils.success" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.FormatUtils.warning">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/print.html#FormatUtils.warning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.FormatUtils.warning" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.FormatUtils.highlight">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">highlight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'yellow'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/ptools/utils/print.html#FormatUtils.highlight"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.FormatUtils.highlight" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.FormatUtils.background">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">background</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'yellow'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/ptools/utils/print.html#FormatUtils.background"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.FormatUtils.background" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.FormatUtils.bold">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></span><a class="reference internal" href="../_modules/ptools/utils/print.html#FormatUtils.bold"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.FormatUtils.bold" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ptools.utils.print.PrintUtils">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PrintUtils</span></span><a class="reference internal" href="../_modules/ptools/utils/print.html#PrintUtils"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.PrintUtils" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.PrintUtils.error">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/print.html#PrintUtils.error"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.PrintUtils.error" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.PrintUtils.info">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/print.html#PrintUtils.info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.PrintUtils.info" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.PrintUtils.success">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">success</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/print.html#PrintUtils.success"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.PrintUtils.success" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.PrintUtils.warning">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">warning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/print.html#PrintUtils.warning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.PrintUtils.warning" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ptools.utils.print.FormattedText">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">FormattedText</span></span><a class="reference internal" href="../_modules/ptools/utils/print.html#FormattedText"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.FormattedText" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.FormattedText.progress">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">progress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/print.html#FormattedText.progress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.FormattedText.progress" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.print.FormattedText.percent">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">percent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">i</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">total</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/print.html#FormattedText.percent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.FormattedText.percent" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ptools.utils.print.fdebug">
+<span class="sig-name descname"><span class="pre">fdebug</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">title</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/print.html#fdebug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.print.fdebug" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<p>## Protocol Definitions</p>
+<dl class="py class" id="module-ptools.utils.protocols">
+<dt class="sig sig-object py" id="ptools.utils.protocols.ImplementsGet">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ImplementsGet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/protocols.html#ImplementsGet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.protocols.ImplementsGet" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ptools.utils.protocols.ImplementsGet.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.13)"><span class="pre">Any</span></a></span></span><a class="reference internal" href="../_modules/ptools/utils/protocols.html#ImplementsGet.get"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.protocols.ImplementsGet.get" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<p>## Regular Expression Utilities</p>
+<dl class="py function" id="module-ptools.utils.re">
+<dt class="sig sig-object py" id="ptools.utils.re.test">
+<span class="sig-name descname"><span class="pre">test</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regex</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/re.html#test"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.re.test" title="Link to this definition"></a></dt>
+<dd><p>Test if a string matches a query, optionally using regex.</p>
+</dd></dl>
+
+<p>## Requirement Checking</p>
+<dl class="py function" id="module-ptools.utils.require">
+<dt class="sig sig-object py" id="ptools.utils.require.library">
+<span class="sig-name descname"><span class="pre">library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">library</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pypi_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_install</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/require.html#library"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.require.library" title="Link to this definition"></a></dt>
+<dd><p>Click decorator to ensure a library is installed.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ptools.utils.require.binary">
+<span class="sig-name descname"><span class="pre">binary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">logical_operator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">LogicalOperators.AND</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/require.html#binary"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.require.binary" title="Link to this definition"></a></dt>
+<dd><p>Click decorator to ensure a binary is available.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ptools.utils.require.key">
+<span class="sig-name descname"><span class="pre">key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stores</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ptools.utils.protocols.ImplementsGet" title="ptools.utils.protocols.ImplementsGet"><span class="pre">ImplementsGet</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logical_operator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">LogicalOperators.OR</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/require.html#key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.require.key" title="Link to this definition"></a></dt>
+<dd><p>Click decorator to ensure that at least one of the possible API key names is set in the store.</p>
+</dd></dl>
+
+<p>## XML Representation</p>
+<dl class="py class" id="module-ptools.utils.xml_repr">
+<dt class="sig sig-object py" id="ptools.utils.xml_repr.XMLRepr">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">XMLRepr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">myself</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">children</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.13)"><span class="pre">List</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">attrs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.13)"><span class="pre">Callable</span></a><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/xml_repr.html#XMLRepr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.xml_repr.XMLRepr" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ptools.utils.xml_repr.XMLRepr.INDENT_STRING">
+<span class="sig-name descname"><span class="pre">INDENT_STRING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'</span>&#160; <span class="pre">'</span></em><a class="headerlink" href="#ptools.utils.xml_repr.XMLRepr.INDENT_STRING" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ptools.utils.xml_repr.xmlclass">
+<span class="sig-name descname"><span class="pre">xmlclass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/ptools/utils/xml_repr.html#xmlclass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ptools.utils.xml_repr.xmlclass" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Omar Ibrahim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

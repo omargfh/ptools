@@ -19,7 +19,6 @@ class LLMProfile(pydantic.BaseModel):
     temperature: float = 0.7
     max_tokens: int = 2048
     presence_penalty: float = 0.0
-    frequency_penalty: float = 0.0
 
     system_prompt: str | None = "You are a helpful assistant."
 

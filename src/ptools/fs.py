@@ -83,7 +83,7 @@ def walkdir(
                             result.append({ 'kind': 'dir', 'name': entry.name, 'path': entry.path })
                         _walk(entry.path, depth - 1)
                     elif entry.is_file():
-                        if test_file(entry.name):
+                        if test_file(entry.path):
                             if not no_files:
                                 dirpath = os.path.dirname(entry.path)
                                 result.append({ 'kind': 'file', 'name': entry.name, 'path': entry.path, 'dirpath': dirpath })

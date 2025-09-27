@@ -1,0 +1,238 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; PTools 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=0c468a07" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="quickstart.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#core-capabilities">Core Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#file-system-data-operations">File System &amp; Data Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#ai-language-models">AI &amp; Language Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#development-tools">Development Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#data-processing-workflows">Data Processing &amp; Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#configuration-security">Configuration &amp; Security</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#design-patterns">Design Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#decorator-based-configuration">Decorator-Based Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#modular-cli-structure">Modular CLI Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#stream-processing">Stream Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p># Installation</p>
+<p>This guide covers how to install PTools and its dependencies on your system.</p>
+<p>## Requirements</p>
+<ul class="simple">
+<li><p>Python 3.10 or higher</p></li>
+<li><p>pip package manager</p></li>
+</ul>
+<p>## Installation Methods</p>
+<p>### Development Installation (Recommended)</p>
+<p>For development or to get the latest features, install directly from the source:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">git</span> <span class="pre">clone</span> <span class="pre">&lt;repository-url&gt;</span>
+<span class="pre">cd</span> <span class="pre">ptools</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span>
+<span class="pre">`</span></code></p>
+<p>The <cite>-e</cite> flag installs in “editable” mode, meaning changes to the source code will be immediately available without reinstalling.</p>
+<p>### From PyPI (When Available)</p>
+<p>Once published to PyPI, you can install with:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">ptools</span>
+<span class="pre">`</span></code></p>
+<p>## Verifying Installation</p>
+<p>After installation, verify that PTools is working correctly:</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>bash
+# Check if ptools is available
+ptools –version</p>
+<p># Get help for available commands
+ptools –help</p>
+<p># Test a simple command
+ptools fs info .
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>## Dependencies</p>
+<p>PTools automatically installs the following core dependencies:</p>
+<ul class="simple">
+<li><p><strong>click&gt;=8.1</strong>: Command-line interface framework</p></li>
+<li><p><strong>watchdog&gt;=3.0</strong>: File system monitoring</p></li>
+<li><p><strong>keyring&gt;=25.6.0</strong>: Secure credential storage</p></li>
+<li><p><strong>pycryptodome&gt;=3.14.0</strong>: Cryptographic operations</p></li>
+<li><p><strong>pydantic&gt;=2.10</strong>: Data validation and settings management</p></li>
+<li><p><strong>lark&gt;=1.1</strong>: Parsing library for expressions</p></li>
+<li><p><strong>humanize&gt;=4.8.0</strong>: Human-friendly data formatting</p></li>
+</ul>
+<p>## Optional Dependencies</p>
+<p>Some features require additional packages that are installed on-demand:</p>
+<p>### AI/LLM Features
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">openai&gt;=1.0.0</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">For</span> <span class="pre">OpenAI</span> <span class="pre">GPT</span> <span class="pre">models</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">google-generativeai</span>&#160; <span class="pre">#</span> <span class="pre">For</span> <span class="pre">Google</span> <span class="pre">Gemini</span> <span class="pre">models</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">prompt-toolkit</span>&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">For</span> <span class="pre">interactive</span> <span class="pre">chat</span> <span class="pre">interfaces</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pygments</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">For</span> <span class="pre">syntax</span> <span class="pre">highlighting</span>
+<span class="pre">`</span></code></p>
+<p>### Development Tools
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">watchdog[watchmedo]</span>&#160; <span class="pre">#</span> <span class="pre">Enhanced</span> <span class="pre">file</span> <span class="pre">watching</span>
+<span class="pre">`</span></code></p>
+<p>### Data Processing
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pandas</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">For</span> <span class="pre">advanced</span> <span class="pre">data</span> <span class="pre">operations</span>
+<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">numpy</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">For</span> <span class="pre">numerical</span> <span class="pre">computations</span>
+<span class="pre">`</span></code></p>
+<p>## Platform-Specific Notes</p>
+<p>### macOS
+PTools works out of the box on macOS. The keyring dependency will use the macOS Keychain for secure storage.</p>
+<p>### Linux
+On Linux systems, you may need to install additional packages for keyring support:</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>bash
+# Ubuntu/Debian
+sudo apt-get install python3-keyring</p>
+<p># CentOS/RHEL/Fedora
+sudo yum install python3-keyring
+<a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>### Windows
+PTools should work on Windows with Python 3.10+. The keyring will use Windows Credential Manager.</p>
+<p>## Configuration</p>
+<p>After installation, PTools will create configuration directories in your home folder:</p>
+<ul class="simple">
+<li><p><cite>~/.config/ptools/</cite> (Linux/macOS) or <cite>%APPDATA%/ptools/</cite> (Windows)</p></li>
+<li><p>Configuration files, profiles, and cached data are stored here</p></li>
+</ul>
+<p>## Troubleshooting</p>
+<p>### Common Issues</p>
+<ol class="arabic simple">
+<li><p><strong>Command not found</strong>: Ensure your Python scripts directory is in your PATH</p></li>
+<li><p><strong>Import errors</strong>: Check that all required dependencies are installed</p></li>
+<li><p><strong>Permission errors</strong>: On some systems, you may need to use <cite>pip install –user</cite></p></li>
+</ol>
+<p>### Getting Help</p>
+<p>If you encounter issues:</p>
+<ol class="arabic simple">
+<li><p>Check the version: <cite>ptools –version</cite></p></li>
+<li><p>Verify dependencies: <cite>pip list | grep -E “(click|watchdog|keyring)”</cite></p></li>
+<li><p>Check the logs in your configuration directory</p></li>
+<li><p>File an issue on the project repository</p></li>
+</ol>
+<p>## Next Steps</p>
+<p>Once installed, you can:</p>
+<ol class="arabic simple">
+<li><p>Read the [Quick Start Guide](quickstart.rst) for immediate usage</p></li>
+<li><p>Explore the [User Guide](user-guide/index.rst) for detailed instructions</p></li>
+<li><p>Try the [Tutorials](tutorials/index.rst) for hands-on examples</p></li>
+</ol>
+<p>## Uninstalling</p>
+<p>To remove PTools:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">pip</span> <span class="pre">uninstall</span> <span class="pre">ptools</span>
+<span class="pre">`</span></code></p>
+<p>Note that this won’t remove configuration files. To completely remove PTools:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">pip</span> <span class="pre">uninstall</span> <span class="pre">ptools</span>
+<span class="pre">rm</span> <span class="pre">-rf</span> <span class="pre">~/.config/ptools/</span>&#160; <span class="pre">#</span> <span class="pre">Linux/macOS</span>
+<span class="pre">#</span> <span class="pre">or</span>
+<span class="pre">rmdir</span> <span class="pre">/s</span> <span class="pre">%APPDATA%\ptools\</span>&#160; <span class="pre">#</span> <span class="pre">Windows</span>
+<span class="pre">`</span></code></p>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="quickstart.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Omar Ibrahim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

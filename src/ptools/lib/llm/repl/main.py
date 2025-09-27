@@ -45,29 +45,16 @@ def start_chat(
     exit_commands=("/exit", "/quit", 'quit', 'exit', 'quit()'),
     on_user_message=lambda msg: None,
     history=[],
+    context=None
 ):
     """Start an interactive chat session."""
-    print("\033c", end="")
     styled_assistant_prompt = FormatUtils.highlight("> Assistant: ", assistant_color)
+    clear_screen()
+    print_history(history, styled_assistant_prompt)
     
-    if len(history) > 0:
-        print(FormatUtils.background("Previous messages ", "yellow"))
-    for message in history:
-        role = message.role
-        content = message.content
-        if role == 'user':
-            print(FormatUtils.highlight("> You: ", 'yellow'), end='')
-            print(content, end='' if content.endswith('\n') else '\n')
-
-        elif role == 'assistant':
-            print(styled_assistant_prompt, end='')
-            print(content, end='' if content.endswith('\n') else '\n')
-    if len(history) > 0:
-        print(FormatUtils.background("End of previous messages ", "yellow"))
-        print()
-
+    smooth_print = SmoothPrint(step=3, interval=50/1000)
     
-    repl_directives = exit_commands + ("/ml",)
+    repl_directives = exit_commands + ("/help",)
     multiline = multiline_mode["enabled"]
     bottom_toolbar = lambda: f"F4: Toggle Multiline Mode ({'ON' if multiline_mode['enabled'] else 'OFF'})" + \
         f" | Type /exit or /quit to leave. Type /help for commands."
@@ -104,11 +91,13 @@ def start_chat(
                 for cmd in commands:
                     print(f"  {FormatUtils.bold(cmd.name)}: {cmd.description}")
                     for schema in cmd.possible_schemas: 
-                        print(f"    @{cmd.name} {repr(schema)} @/")
+                        print(f"    @{cmd.name} {repr(schema)}")
                         
                 continue
 
-            user_message = parse_prompt(user_input)
+            user_message = parse_prompt(user_input, context=context)
+            if not user_message:
+                continue
             print(f"{styled_assistant_prompt}", end='', flush=True)
 
             spinner = Spinner(prefix=styled_assistant_prompt)
@@ -121,16 +110,53 @@ def start_chat(
                     seen_first_chunk = True
                     spinner.stop()
                     print(f"{styled_assistant_prompt}", end='', flush=True)
-                print(chunk, end='', flush=True)
-
-
+                smooth_print.print(chunk, end='', flush=True)
 
         except KeyboardInterrupt:
             continue
         except EOFError:
             break
             
+def clear_screen():
+    """Clear the terminal screen."""
+    print("\033c", end="")
+    
+def print_history(history, assistant_prompt):
+    """Print the chat history."""
+    if len(history) == 0:
+        return
+
+    print(FormatUtils.background("Previous messages ", "yellow"))
+    for message in history:
+        role = message.role
+        content = message.content
+        if role == 'user':
+            print(FormatUtils.highlight("> You: ", 'yellow'), end='')
+            print(content, end='' if content.endswith('\n') else '\n')
+
+        elif role == 'assistant':
+            print(assistant_prompt, end='')
+            print(content, end='' if content.endswith('\n') else '\n')
+    print(FormatUtils.background("End of previous messages ", "yellow"))
+    print()
+    
+class SmoothPrint():
+    def __init__(
+        self,
+        step: int,
+        interval: float, 
+        print_func=print
+    ):
+        self.step = step
+        self.interval = interval
+        self.print_func = print_func
         
+    def print(self, text: str, *args, **kwargs):
+        """Print text smoothly in chunks."""
+        for i in range(0, len(text), self.step):
+            self.print_func(text[i:i+self.step], *args, **kwargs)
+            time.sleep(self.interval)
+            
 class Spinner():
     def __init__(self, prefix):
         self.spinner = ["|", "/", "-", "\\"]

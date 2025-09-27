@@ -1,0 +1,606 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>“ &mdash; PTools 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=0c468a07" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#core-capabilities">Core Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#file-system-data-operations">File System &amp; Data Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#ai-language-models">AI &amp; Language Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#development-tools">Development Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#data-processing-workflows">Data Processing &amp; Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#configuration-security">Configuration &amp; Security</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#design-patterns">Design Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#decorator-based-configuration">Decorator-Based Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#modular-cli-structure">Modular CLI Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#stream-processing">Stream Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">“</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user-guide/workflow-automation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p># Workflow Automation</p>
+<p>PTools excels at automating repetitive tasks and creating efficient workflows. This section covers advanced automation techniques and patterns.</p>
+<p>## File Watching and Automation</p>
+<p>The <cite>watch</cite> module provides event-driven automation capabilities.</p>
+<p>### Basic File Watching</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>bash
+# Watch current directory for any changes
+ptools watch –command “echo ‘Files changed!’”</p>
+<p># Watch specific directory
+ptools watch –path /home/user/project –command “make build”</p>
+<p># Watch with custom delay (debouncing)
+ptools watch –path ./src –delay 2.0 –command “npm run test”
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>### Advanced Watch Patterns</p>
+<p>#### Development Workflow Automation</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>bash
+# Auto-run tests when Python files change
+ptools watch –path src/ –regex “.py$” –command “python -m pytest tests/ -v”</p>
+<p># Auto-format code on save
+ptools watch –path src/ –regex “.py$” –command “black {filepath} &amp;&amp; echo ‘Formatted {filepath}’”</p>
+<p># Multi-step build process
+ptools watch –path src/ –command “</p>
+<blockquote>
+<div><p>echo ‘Building project…’
+npm run build &amp;&amp;
+npm run test &amp;&amp;
+echo ‘Build successful!’ ||
+echo ‘Build failed!’</p>
+</div></blockquote>
+<section id="id13">
+<h1>“<a class="headerlink" href="#id13" title="Link to this heading"></a></h1>
+<p>#### Content Management</p>
+<p><a href="#id14"><span class="problematic" id="id15">``</span></a><a href="#id16"><span class="problematic" id="id17">`</span></a>bash
+# Auto-generate documentation
+ptools watch –path docs/ –regex “.md$” –command “mkdocs build”</p>
+<p># Process images on upload
+ptools watch –path uploads/ –regex “.(jpg|png)$” –command “</p>
+<blockquote>
+<div><p>convert {filepath} -resize 800x600 processed/{filename}
+echo ‘Processed {filepath}’</p>
+</div></blockquote>
+<p>“</p>
+<p># Auto-backup important files
+ptools watch –path important/ –command “</p>
+<blockquote>
+<div><p>ptools rsync do -avz important/ /backup/$(date +%Y%m%d_%H%M%S)/</p>
+</div></blockquote>
+</section>
+<section id="id18">
+<h1>“<a class="headerlink" href="#id18" title="Link to this heading"></a></h1>
+<p>## Rsync Automation</p>
+<p>The <cite>rsync</cite> module provides powerful synchronization automation.</p>
+<p>### Continuous Synchronization</p>
+<p><a href="#id19"><span class="problematic" id="id20">``</span></a><a href="#id21"><span class="problematic" id="id22">`</span></a>bash
+# Sync local development to remote server
+ptools rsync watch –path ./src -avz ./src/ <a class="reference external" href="mailto:user&#37;&#52;&#48;server">user<span>&#64;</span>server</a>:/app/src/</p>
+<p># Multi-directory sync with exclusions
+ptools rsync watch –path ./ -avz </p>
+<blockquote>
+<div><p>–exclude “node_modules/” –exclude “.git/” –exclude “<a href="#id23"><span class="problematic" id="id24">*</span></a>.pyc” ./ <a class="reference external" href="mailto:user&#37;&#52;&#48;server">user<span>&#64;</span>server</a>:/backup/</p>
+</div></blockquote>
+<p># Bidirectional sync (use with caution)
+ptools rsync watch –path ./ -avz –update ./ <a class="reference external" href="mailto:user&#37;&#52;&#48;server">user<span>&#64;</span>server</a>:/shared/
+<a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a></p>
+<p>### Deployment Automation</p>
+<p><a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a>bash
+# Deploy on successful tests
+ptools watch –path src/ –command “</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if python -m pytest; then</dt><dd><p>echo ‘Tests passed, deploying…’
+ptools rsync do -avz –delete src/ <a class="reference external" href="mailto:user&#37;&#52;&#48;production">user<span>&#64;</span>production</a>:/app/
+ssh <a class="reference external" href="mailto:user&#37;&#52;&#48;production">user<span>&#64;</span>production</a> ‘systemctl restart myapp’</p>
+</dd>
+<dt>else</dt><dd><p>echo ‘Tests failed, deployment skipped’</p>
+</dd>
+</dl>
+<p>fi</p>
+</div></blockquote>
+<p>“</p>
+<p># Staged deployment process
+ptools watch –path src/ –command “</p>
+<blockquote>
+<div><p># Deploy to staging first
+ptools rsync do -avz src/ <a class="reference external" href="mailto:user&#37;&#52;&#48;staging">user<span>&#64;</span>staging</a>:/app/</p>
+<p># Run integration tests on staging
+if ssh <a class="reference external" href="mailto:user&#37;&#52;&#48;staging">user<span>&#64;</span>staging</a> ‘cd /app &amp;&amp; npm run test:integration’; then</p>
+<blockquote>
+<div><p>echo ‘Staging tests passed, deploying to production…’
+ptools rsync do -avz src/ <a class="reference external" href="mailto:user&#37;&#52;&#48;production">user<span>&#64;</span>production</a>:/app/</p>
+</div></blockquote>
+<dl class="simple">
+<dt>else</dt><dd><p>echo ‘Staging tests failed, production deployment aborted’</p>
+</dd>
+</dl>
+<p>fi</p>
+</div></blockquote>
+</section>
+<section id="id33">
+<h1>“<a class="headerlink" href="#id33" title="Link to this heading"></a></h1>
+<p>## Data Processing Automation</p>
+<p>Combine flow processing with automation for powerful data workflows.</p>
+<p>### Log Processing</p>
+<p><a href="#id34"><span class="problematic" id="id35">``</span></a><a href="#id36"><span class="problematic" id="id37">`</span></a>bash
+# Process new log entries
+ptools watch –path /var/log/app.log –command “</p>
+<blockquote>
+<div><p>tail -n 1 {filepath} |
+ptools flow filter ‘ERROR’ |
+ptools flow map ‘extract_error(x)’ |
+ptools llm ‘Analyze this error and suggest solutions’</p>
+</div></blockquote>
+<p>“</p>
+<p># Aggregate log statistics
+ptools watch –path logs/ –regex “.log$” –command “</p>
+<blockquote>
+<div><p>cat {filepath} |
+ptools flow filter ‘contains_timestamp(x)’ |
+ptools flow group ‘extract_hour(x)’ |
+ptools flow map ‘format_stats(group_key, len(group))’ |
+ptools json format &gt; hourly_stats.json</p>
+</div></blockquote>
+</section>
+<section id="id38">
+<h1>“<a class="headerlink" href="#id38" title="Link to this heading"></a></h1>
+<p>### Data Transformation Pipelines</p>
+<p><a href="#id39"><span class="problematic" id="id40">``</span></a><a href="#id41"><span class="problematic" id="id42">`</span></a>bash
+# Process CSV uploads
+ptools watch –path data/incoming/ –regex “.csv$” –command “</p>
+<blockquote>
+<div><p>cat {filepath} |
+ptools flow map ‘x.split(&quot;,&quot;)’ |
+ptools flow filter ‘len(x) &gt;= 3’ |
+ptools flow map ‘transform_row(x)’ |
+ptools json format &gt; data/processed/{filename}.json</p>
+</div></blockquote>
+<p>“</p>
+<p># ETL Pipeline
+ptools watch –path raw_data/ –command “</p>
+<blockquote>
+<div><p># Extract
+cat {filepath} |</p>
+<p># Transform
+ptools flow map ‘clean_data(x)’ |
+ptools flow filter ‘is_valid(x)’ |
+ptools flow map ‘enrich_data(x)’ |</p>
+<p># Load
+ptools json format |
+curl -X POST -H ‘Content-Type: application/json’ -d &#64;- <a class="reference external" href="http://api.example.com/data">http://api.example.com/data</a></p>
+</div></blockquote>
+</section>
+<section id="id43">
+<h1>“<a class="headerlink" href="#id43" title="Link to this heading"></a></h1>
+<p>## AI-Powered Automation</p>
+<p>Integrate AI into your automation workflows.</p>
+<p>### Intelligent Content Processing</p>
+<p><a href="#id44"><span class="problematic" id="id45">``</span></a><a href="#id46"><span class="problematic" id="id47">`</span></a>bash
+# AI-powered documentation updates
+ptools watch –path src/ –regex “.py$” –command “</p>
+<blockquote>
+<div><p>ptools llm ‘Generate documentation for this code:’ &lt; {filepath} &gt; docs/{filename}.md</p>
+</div></blockquote>
+<p>“</p>
+<p># Code review automation
+ptools watch –path pull_requests/ –command “</p>
+<blockquote>
+<div><p>ptools llm ‘Review this code change for potential issues:’ &lt; {filepath} |
+ptools flow map ‘format_review_comment(x)’ &gt; reviews/{filename}.md</p>
+</div></blockquote>
+<p>“</p>
+<p># Automated issue classification
+ptools watch –path issues/ –regex “.txt$” –command “</p>
+<blockquote>
+<div><p>CATEGORY=$(ptools llm ‘Classify this issue as bug/feature/question:’ &lt; {filepath} | head -1)
+mv {filepath} issues/$CATEGORY/{filename}</p>
+</div></blockquote>
+</section>
+<section id="id48">
+<h1>“<a class="headerlink" href="#id48" title="Link to this heading"></a></h1>
+<p>### Smart Notifications</p>
+<p><a href="#id49"><span class="problematic" id="id50">``</span></a><a href="#id51"><span class="problematic" id="id52">`</span></a>bash
+# Intelligent error alerting
+ptools watch –path logs/error.log –command “</p>
+<blockquote>
+<div><p>LAST_ERROR=$(tail -1 {filepath})
+SEVERITY=$(echo &quot;$LAST_ERROR&quot; | ptools llm ‘Rate severity 1-10:’)</p>
+<dl class="simple">
+<dt>if [ &quot;$SEVERITY&quot; -gt 7 ]; then</dt><dd><p>echo &quot;$LAST_ERROR&quot; |
+ptools llm ‘Explain this error and suggest immediate actions:’ |
+mail -s ‘URGENT: High Severity Error’ <a class="reference external" href="mailto:admin&#37;&#52;&#48;company&#46;com">admin<span>&#64;</span>company<span>&#46;</span>com</a></p>
+</dd>
+</dl>
+<p>fi</p>
+</div></blockquote>
+</section>
+<section id="id53">
+<h1>“<a class="headerlink" href="#id53" title="Link to this heading"></a></h1>
+<p>## Complex Workflow Examples</p>
+<p>### Full-Stack Development Automation</p>
+<p><a href="#id54"><span class="problematic" id="id55">``</span></a><a href="#id56"><span class="problematic" id="id57">`</span></a>bash
+#!/bin/bash
+# development-automation.sh</p>
+<p># Frontend automation
+ptools watch –path frontend/src –command “</p>
+<blockquote>
+<div><p>cd frontend &amp;&amp;
+npm run lint &amp;&amp;
+npm run test &amp;&amp;
+npm run build &amp;&amp;
+ptools rsync do -avz build/ <a class="reference external" href="mailto:user&#37;&#52;&#48;staging">user<span>&#64;</span>staging</a>:/var/www/</p>
+</div></blockquote>
+<p>“ &amp;</p>
+<p># Backend automation
+ptools watch –path backend/src –regex “.py$” –command “</p>
+<blockquote>
+<div><p>cd backend &amp;&amp;
+python -m pytest tests/ &amp;&amp;
+python -m pylint src/ &amp;&amp;</p>
+<p># Deploy if tests pass
+if [ $? -eq 0 ]; then</p>
+<blockquote>
+<div><p>ptools rsync do -avz src/ <a class="reference external" href="mailto:user&#37;&#52;&#48;staging">user<span>&#64;</span>staging</a>:/app/
+ssh <a class="reference external" href="mailto:user&#37;&#52;&#48;staging">user<span>&#64;</span>staging</a> ‘systemctl restart myapp’</p>
+</div></blockquote>
+<p>fi</p>
+</div></blockquote>
+<p>“ &amp;</p>
+<p># Database migration automation
+ptools watch –path database/migrations –regex “.sql$” –command “</p>
+<blockquote>
+<div><p>echo ‘New migration detected: {filepath}’</p>
+<p># Ask AI to review migration
+ptools llm ‘Review this SQL migration for potential issues:’ &lt; {filepath} &gt; migration_review.txt</p>
+<p># Apply to staging if review passes
+echo ‘Migration reviewed, applying to staging…’
+ssh <a class="reference external" href="mailto:user&#37;&#52;&#48;staging">user<span>&#64;</span>staging</a> ‘cd /app &amp;&amp; python manage.py migrate’</p>
+</div></blockquote>
+</section>
+<section id="id58">
+<h1>“<a class="headerlink" href="#id58" title="Link to this heading"></a></h1>
+<p>### Content Management Workflow</p>
+<p><a href="#id59"><span class="problematic" id="id60">``</span></a><a href="#id61"><span class="problematic" id="id62">`</span></a>bash
+#!/bin/bash
+# content-workflow.sh</p>
+<p># Process markdown articles
+ptools watch –path articles/ –regex “.md$” –command “</p>
+<blockquote>
+<div><p># Generate HTML
+pandoc {filepath} -o html/{filename}.html</p>
+<p># Generate summary using AI
+ptools llm ‘Write a 2-sentence summary of this article:’ &lt; {filepath} &gt; summaries/{filename}.txt</p>
+<p># Extract keywords
+ptools llm ‘List 5 keywords for this article (comma-separated):’ &lt; {filepath} |
+ptools flow map ‘x.strip()’ &gt; keywords/{filename}.txt</p>
+<p># Update search index
+echo ‘Updated content for {filename}’</p>
+</div></blockquote>
+<p>“</p>
+<p># Image processing pipeline
+ptools watch –path images/raw –regex “.(jpg|png)$” –command “</p>
+<blockquote>
+<div><p># Generate thumbnails
+convert {filepath} -resize 150x150^ -gravity center -extent 150x150 thumbnails/{filename}</p>
+<p># Optimize for web
+convert {filepath} -quality 80 -resize 800x600 optimized/{filename}</p>
+<p># Generate alt text using AI
+ptools llm ‘Generate descriptive alt text for this image filename:’ {filename} &gt; alt_text/{filename}.txt</p>
+</div></blockquote>
+</section>
+<section id="id63">
+<h1>“<a class="headerlink" href="#id63" title="Link to this heading"></a></h1>
+<p>### DevOps Automation</p>
+<p><a href="#id64"><span class="problematic" id="id65">``</span></a><a href="#id66"><span class="problematic" id="id67">`</span></a>bash
+#!/bin/bash
+# devops-automation.sh</p>
+<p># Configuration management
+ptools watch –path config/ –regex “.yaml$” –command “</p>
+<blockquote>
+<div><p># Validate configuration
+python -c ‘import yaml; yaml.safe_load(open(&quot;{filepath}&quot;))’</p>
+<dl>
+<dt>if [ $? -eq 0 ]; then</dt><dd><p>echo ‘Configuration valid, deploying…’</p>
+<p># Deploy to all environments
+for env in staging production; do</p>
+<blockquote>
+<div><p>ptools rsync do -avz config/ <a class="reference external" href="mailto:user&#37;&#52;&#48;$env">user<span>&#64;</span>$env</a>:/etc/myapp/
+ssh <a class="reference external" href="mailto:user&#37;&#52;&#48;$env">user<span>&#64;</span>$env</a> ‘systemctl reload myapp’</p>
+</div></blockquote>
+<p>done</p>
+<p># Log deployment
+echo &quot;$(date): Deployed {filepath}&quot; &gt;&gt; deployment.log</p>
+</dd>
+<dt>else</dt><dd><p>echo ‘Configuration invalid, deployment aborted’
+exit 1</p>
+</dd>
+</dl>
+<p>fi</p>
+</div></blockquote>
+<p>“</p>
+<p># Infrastructure monitoring
+ptools watch –path metrics/ –command “</p>
+<blockquote>
+<div><p># Process metrics
+cat {filepath} |
+ptools flow map ‘parse_metric(x)’ |
+ptools flow filter ‘is_anomaly(x)’ |</p>
+<p># Alert on anomalies
+while read line; do</p>
+<blockquote>
+<div><p>ALERT=$(echo &quot;$line&quot; | ptools llm ‘Should this metric trigger an alert? Yes/No:’)
+if [ &quot;$ALERT&quot; = &quot;Yes&quot; ]; then</p>
+<blockquote>
+<div><p>echo &quot;$line&quot; | mail -s ‘Metric Anomaly Detected’ <a class="reference external" href="mailto:ops&#37;&#52;&#48;company&#46;com">ops<span>&#64;</span>company<span>&#46;</span>com</a></p>
+</div></blockquote>
+<p>fi</p>
+</div></blockquote>
+<p>done</p>
+</div></blockquote>
+</section>
+<section id="id68">
+<h1>“<a class="headerlink" href="#id68" title="Link to this heading"></a></h1>
+<p>## Automation Best Practices</p>
+<p>### Design Principles</p>
+<ol class="arabic">
+<li><p><strong>Idempotent Operations</strong>: Ensure automation can be safely re-run
+<a href="#id69"><span class="problematic" id="id70">``</span></a><a href="#id71"><span class="problematic" id="id72">`</span></a>bash
+# Good: Check before creating
+ptools watch –command “</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if [ ! -f output/{filename} ]; then</dt><dd><p>process_file {filepath} &gt; output/{filename}</p>
+</dd>
+</dl>
+<p>fi</p>
+</div></blockquote>
+</li>
+<li><p><strong>Error Handling</strong>: Always handle failures gracefully
+<a href="#id73"><span class="problematic" id="id74">``</span></a><a href="#id75"><span class="problematic" id="id76">`</span></a>bash
+ptools watch –command “</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if process_file {filepath}; then</dt><dd><p>echo ‘Success: {filepath}’</p>
+</dd>
+<dt>else</dt><dd><p>echo ‘Error processing {filepath}’ &gt;&gt; error.log
+exit 0  # Don’t stop watching</p>
+</dd>
+</dl>
+<p>fi</p>
+</div></blockquote>
+</li>
+<li><p><strong>Logging and Monitoring</strong>: Keep track of automation activities
+<a href="#id77"><span class="problematic" id="id78">``</span></a><a href="#id79"><span class="problematic" id="id80">`</span></a>bash
+ptools watch –command “</p>
+<blockquote>
+<div><p>echo &quot;$(date): Processing {filepath}&quot; &gt;&gt; automation.log
+process_file {filepath}
+echo &quot;$(date): Completed {filepath}&quot; &gt;&gt; automation.log</p>
+</div></blockquote>
+</li>
+</ol>
+<p>### Performance Considerations</p>
+<ol class="arabic">
+<li><p><strong>Debouncing</strong>: Use appropriate delays to avoid excessive triggering
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">ptools</span> <span class="pre">watch</span> <span class="pre">--delay</span> <span class="pre">5.0</span> <span class="pre">--command</span> <span class="pre">&quot;expensive_operation&quot;</span>
+<span class="pre">`</span></code></p></li>
+<li><p><strong>Resource Management</strong>: Be mindful of system resources
+<a href="#id81"><span class="problematic" id="id82">``</span></a><a href="#id83"><span class="problematic" id="id84">`</span></a>bash
+# Limit concurrent operations
+ptools watch –command “</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if [ $(jobs -r | wc -l) -lt 3 ]; then</dt><dd><p>expensive_task &amp;</p>
+</dd>
+<dt>else</dt><dd><p>echo ‘Too many jobs running, skipping’</p>
+</dd>
+</dl>
+<p>fi</p>
+</div></blockquote>
+</li>
+<li><p><strong>Batch Processing</strong>: Group related operations
+<a href="#id85"><span class="problematic" id="id86">``</span></a><a href="#id87"><span class="problematic" id="id88">`</span></a>bash
+# Collect changes and process in batches
+ptools watch –delay 10.0 –command “</p>
+<blockquote>
+<div><p>find . -newer .last_processed -name ‘<a href="#id89"><span class="problematic" id="id90">*</span></a>.py’ |
+xargs python process_batch.py
+touch .last_processed</p>
+</div></blockquote>
+</li>
+</ol>
+<p>### Security Considerations</p>
+<ol class="arabic">
+<li><p><strong>Validate Inputs</strong>: Always validate file contents and paths
+<a href="#id91"><span class="problematic" id="id92">``</span></a><a href="#id93"><span class="problematic" id="id94">`</span></a>bash
+ptools watch –command “</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if [ -f {filepath} ] &amp;&amp; [ &quot;$(file -b {filepath})&quot; = ‘ASCII text’ ]; then</dt><dd><p>safe_process {filepath}</p>
+</dd>
+<dt>else</dt><dd><p>echo ‘Skipping potentially unsafe file: {filepath}’</p>
+</dd>
+</dl>
+<p>fi</p>
+</div></blockquote>
+</li>
+<li><p><strong>Limit Scope</strong>: Use specific paths and patterns
+<a href="#id95"><span class="problematic" id="id96">``</span></a><a href="#id97"><span class="problematic" id="id98">`</span></a>bash
+# Good: Specific pattern
+ptools watch –path trusted/directory –regex “.txt$”</p>
+<p># Avoid: Too broad
+ptools watch –path /
+<a href="#id99"><span class="problematic" id="id100">``</span></a><a href="#id101"><span class="problematic" id="id102">`</span></a></p>
+</li>
+<li><p><strong>User Permissions</strong>: Run with minimal required permissions
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">#</span> <span class="pre">Create</span> <span class="pre">dedicated</span> <span class="pre">user</span> <span class="pre">for</span> <span class="pre">automation</span>
+<span class="pre">sudo</span> <span class="pre">useradd</span> <span class="pre">-r</span> <span class="pre">automation-user</span>
+<span class="pre">sudo</span> <span class="pre">-u</span> <span class="pre">automation-user</span> <span class="pre">ptools</span> <span class="pre">watch</span> <span class="pre">--command</span> <span class="pre">&quot;safe_command&quot;</span>
+<span class="pre">`</span></code></p></li>
+</ol>
+<p>## Troubleshooting Automation</p>
+<p>### Common Issues</p>
+<ol class="arabic">
+<li><p><strong>Watch Not Triggering</strong>:
+<a href="#id103"><span class="problematic" id="id104">``</span></a><a href="#id105"><span class="problematic" id="id106">`</span></a>bash
+# Test file system events
+ptools watch –command “echo ‘Event detected: {event_type} on {filepath}’”</p>
+<p># Check file system permissions
+ls -la /path/being/watched
+<a href="#id107"><span class="problematic" id="id108">``</span></a><a href="#id109"><span class="problematic" id="id110">`</span></a></p>
+</li>
+<li><p><strong>Commands Failing Silently</strong>:
+<a href="#id111"><span class="problematic" id="id112">``</span></a><a href="#id113"><span class="problematic" id="id114">`</span></a>bash
+# Add explicit error handling
+ptools watch –command “</p>
+<blockquote>
+<div><dl class="simple">
+<dt>command_that_might_fail || {</dt><dd><p>echo ‘Command failed for {filepath}’ &gt;&amp;2
+exit 1</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</li>
+<li><p><strong>Resource Exhaustion</strong>:
+<a href="#id115"><span class="problematic" id="id116">``</span></a><a href="#id117"><span class="problematic" id="id118">`</span></a>bash
+# Monitor resource usage
+ptools watch –command “</p>
+<blockquote>
+<div><p>echo ‘CPU: $(top -bn1 | grep ‘Cpu(s)’ | cut -d’ ‘ -f2)’
+echo ‘Memory: $(free -h | grep Mem | awk ‘{print $3}’)’
+actual_command</p>
+</div></blockquote>
+</li>
+</ol>
+<p>### Debugging Automation</p>
+<ol class="arabic">
+<li><p><strong>Enable Debug Mode</strong>:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">export</span> <span class="pre">PTOOLS_DEBUG=1</span>
+<span class="pre">ptools</span> <span class="pre">watch</span> <span class="pre">--command</span> <span class="pre">&quot;debug_command&quot;</span>
+<span class="pre">`</span></code></p></li>
+<li><p><strong>Add Verbose Logging</strong>:
+<a href="#id119"><span class="problematic" id="id120">``</span></a><a href="#id121"><span class="problematic" id="id122">`</span></a>bash
+ptools watch –command “</p>
+<blockquote>
+<div><p>echo ‘$(date): Starting {filepath}’ &gt;&gt; debug.log
+set -x  # Enable bash debugging
+your_command
+set +x  # Disable bash debugging
+echo ‘$(date): Finished {filepath}’ &gt;&gt; debug.log</p>
+</div></blockquote>
+</li>
+<li><p><strong>Test Commands Separately</strong>:
+<a href="#id123"><span class="problematic" id="id124">``</span></a><a href="#id125"><span class="problematic" id="id126">`</span></a>bash
+# Test command outside of watch
+filepath=”/test/file.txt”
+your_command_here</p>
+<p># Then add to watch
+ptools watch –command “your_command_here”
+<a href="#id127"><span class="problematic" id="id128">``</span></a><a href="#id129"><span class="problematic" id="id130">`</span></a></p>
+</li>
+</ol>
+<p>Workflow automation with PTools enables you to create sophisticated, intelligent automation systems that can handle complex development, deployment, and data processing tasks with minimal manual intervention.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Omar Ibrahim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

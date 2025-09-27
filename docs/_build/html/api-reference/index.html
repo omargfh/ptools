@@ -1,0 +1,244 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; PTools 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=0c468a07" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="../architecture/index.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="../cli-reference/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#core-capabilities">Core Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#file-system-data-operations">File System &amp; Data Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#ai-language-models">AI &amp; Language Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#development-tools">Development Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#data-processing-workflows">Data Processing &amp; Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#configuration-security">Configuration &amp; Security</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#design-patterns">Design Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#decorator-based-configuration">Decorator-Based Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#modular-cli-structure">Modular CLI Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#stream-processing">Stream Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api-reference/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p># API Reference</p>
+<p>Complete API documentation for all PTools modules, classes, and functions.</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>{toctree}
+:maxdepth: 3
+:caption: API Documentation:</p>
+<p>core-modules
+lib-modules
+utilities
+models
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>## Overview</p>
+<p>The PTools API is organized into several layers:</p>
+<ul class="simple">
+<li><p><strong>Core Modules</strong>: Main command-line interface modules (<cite>ptools.llm</cite>, <cite>ptools.fs</cite>, etc.)</p></li>
+<li><p><strong>Library Modules</strong>: Shared implementation libraries (<cite>ptools.lib.*</cite>)</p></li>
+<li><p><strong>Utilities</strong>: Common utility functions (<cite>ptools.utils.*</cite>)</p></li>
+<li><p><strong>Models</strong>: Data models and configuration (<cite>ptools.models.*</cite>)</p></li>
+</ul>
+<p>## Module Organization</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">ptools/</span>
+<span class="pre">├──</span> <span class="pre">main.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">CLI</span> <span class="pre">entry</span> <span class="pre">point</span>
+<span class="pre">├──</span> <span class="pre">llm.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">LLM/AI</span> <span class="pre">integration</span>
+<span class="pre">├──</span> <span class="pre">fs.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">File</span> <span class="pre">system</span> <span class="pre">operations</span>
+<span class="pre">├──</span> <span class="pre">flow.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Data</span> <span class="pre">processing</span>
+<span class="pre">├──</span> <span class="pre">json.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">JSON</span> <span class="pre">utilities</span>
+<span class="pre">├──</span> <span class="pre">rsync.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Rsync</span> <span class="pre">operations</span>
+<span class="pre">├──</span> <span class="pre">watch.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">File</span> <span class="pre">watching</span>
+<span class="pre">├──</span> <span class="pre">dev.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Development</span> <span class="pre">tools</span>
+<span class="pre">├──</span> <span class="pre">projects.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Project</span> <span class="pre">management</span>
+<span class="pre">├──</span> <span class="pre">shell.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Shell</span> <span class="pre">utilities</span>
+<span class="pre">├──</span> <span class="pre">secrets.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Secrets</span> <span class="pre">management</span>
+<span class="pre">├──</span> <span class="pre">clip.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Clipboard</span> <span class="pre">operations</span>
+<span class="pre">├──</span> <span class="pre">workspaces.py</span>&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Workspace</span> <span class="pre">management</span>
+<span class="pre">├──</span> <span class="pre">lib/</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Shared</span> <span class="pre">libraries</span>
+<span class="pre">│</span>&#160;&#160; <span class="pre">├──</span> <span class="pre">llm/</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">LLM</span> <span class="pre">implementations</span>
+<span class="pre">│</span>&#160;&#160; <span class="pre">├──</span> <span class="pre">flow/</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Flow</span> <span class="pre">processing</span> <span class="pre">engine</span>
+<span class="pre">│</span>&#160;&#160; <span class="pre">└──</span> <span class="pre">node_workspaces/</span> <span class="pre">#</span> <span class="pre">Node.js</span> <span class="pre">workspace</span> <span class="pre">handling</span>
+<span class="pre">├──</span> <span class="pre">utils/</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Utility</span> <span class="pre">functions</span>
+<span class="pre">├──</span> <span class="pre">models/</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Data</span> <span class="pre">models</span>
+<span class="pre">└──</span> <span class="pre">formats/</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">Data</span> <span class="pre">format</span> <span class="pre">handlers</span>
+<span class="pre">`</span></code></p>
+<p>## Import Patterns</p>
+<p>### Core Modules
+<a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>python
+# Import main CLI groups
+from ptools import llm, fs, flow, json</p>
+<p># Import specific commands
+from ptools.llm import cli as llm_cli
+from ptools.fs import info, walkdir
+<a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>### Library Modules
+<a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>python
+# LLM library
+from ptools.lib.llm.client import ChatClient, OpenAIChatClient
+from ptools.lib.llm.session import ChatSession
+from ptools.lib.llm.entities import LLMProfile, LLMMessage</p>
+<p># Flow processing
+from ptools.lib.flow.runner import FlowRunner
+from ptools.lib.flow.values import StreamValue, OutputValue
+<a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<p>### Utilities
+<code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">#</span> <span class="pre">Common</span> <span class="pre">utilities</span>
+<span class="pre">from</span> <span class="pre">ptools.utils.config</span> <span class="pre">import</span> <span class="pre">ConfigFile</span>
+<span class="pre">from</span> <span class="pre">ptools.utils.print</span> <span class="pre">import</span> <span class="pre">FormatUtils</span>
+<span class="pre">from</span> <span class="pre">ptools.utils.require</span> <span class="pre">import</span> <span class="pre">require_library,</span> <span class="pre">require_key</span>
+<span class="pre">`</span></code></p>
+<p>## Key Classes and Functions</p>
+<p>### AI/LLM Integration
+- <cite>ChatClient</cite>: Abstract base for AI providers
+- <cite>ChatSession</cite>: Manages conversation state
+- <cite>LLMProfile</cite>: Configuration for AI behavior</p>
+<p>### Data Processing
+- <cite>FlowRunner</cite>: Executes data processing pipelines
+- <cite>StreamValue</cite>: Represents items in data streams
+- <cite>HistoryTransformer</cite>: Transforms chat history</p>
+<p>### Configuration Management
+- <cite>ConfigFile</cite>: Handles configuration persistence
+- <cite>Projects</cite>: Manages project information
+- <cite>DecoratorCompositor</cite>: Composes Click decorators</p>
+<p>### File Operations
+- File system utilities in <cite>fs.py</cite>
+- Rsync integration in <cite>rsync.py</cite>
+- File watching in <cite>watch.py</cite></p>
+<p>## Extension Points</p>
+<p>PTools is designed to be extensible:</p>
+<p>### Adding New Modules
+1. Create module with Click CLI group
+2. Add to <cite>main.py</cite> imports and command registration
+3. Follow existing patterns for consistency</p>
+<p>### Custom Data Processors
+1. Inherit from appropriate base classes
+2. Implement required interface methods
+3. Register with factory classes</p>
+<p>### Custom AI Providers
+1. Inherit from <cite>ChatClient</cite>
+2. Implement provider-specific methods
+3. Add to client factory</p>
+<p>## Type Hints and Validation</p>
+<p>PTools uses modern Python type hints and Pydantic for validation:</p>
+<p><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>python
+from typing import Optional, List, Dict, Any
+from pydantic import BaseModel, Field</p>
+<dl class="simple">
+<dt>class LLMProfile(BaseModel):</dt><dd><p>temperature: float = Field(default=0.7, ge=0.0, le=2.0)
+max_tokens: int = Field(default=1024, gt=0)
+system_prompt: Optional[str] = None</p>
+</dd>
+</dl>
+<p><a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a></p>
+<p>## Error Handling</p>
+<p>PTools implements consistent error handling patterns:</p>
+<ul class="simple">
+<li><p>Custom exception classes for different error types</p></li>
+<li><p>Graceful degradation when optional dependencies are missing</p></li>
+<li><p>User-friendly error messages with suggested solutions</p></li>
+<li><p>Proper cleanup of resources and temporary files</p></li>
+</ul>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../cli-reference/index.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../architecture/index.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Omar Ibrahim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

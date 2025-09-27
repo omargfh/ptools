@@ -1,0 +1,454 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>“ &mdash; PTools 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=0c468a07" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#core-capabilities">Core Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#file-system-data-operations">File System &amp; Data Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#ai-language-models">AI &amp; Language Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#development-tools">Development Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#data-processing-workflows">Data Processing &amp; Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#configuration-security">Configuration &amp; Security</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#design-patterns">Design Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#decorator-based-configuration">Decorator-Based Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#modular-cli-structure">Modular CLI Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#stream-processing">Stream Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">“</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user-guide/development-tools.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p># Development Tools</p>
+<p>PTools provides a comprehensive set of development tools to help manage projects, development environments, and workflows.</p>
+<p>## Core Development Module (<cite>dev</cite>)</p>
+<p>The <cite>dev</cite> module provides essential development utilities for maintaining and working with PTools itself.</p>
+<p>### Basic Development Commands</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>bash
+# Get the project root directory
+ptools dev root
+/path/to/ptools</p>
+<p># Open the project in VS Code
+ptools dev code</p>
+<p># Reinstall PTools in development mode
+ptools dev install</p>
+<p># Update PTools to latest version from git
+ptools dev update
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>### Development Workflow</p>
+<p>#### Making Changes to PTools</p>
+<ol class="arabic simple">
+<li><p><strong>Open in editor</strong>:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">ptools</span> <span class="pre">dev</span> <span class="pre">code</span>
+<span class="pre">`</span></code></p></li>
+<li><p><strong>Make your changes</strong> to the source code</p></li>
+<li><p><strong>Reinstall to test</strong>:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">ptools</span> <span class="pre">dev</span> <span class="pre">install</span>
+<span class="pre">`</span></code></p></li>
+<li><p><strong>Test your changes</strong>:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">ptools</span> <span class="pre">your-module</span> <span class="pre">--help</span>
+<span class="pre">`</span></code></p></li>
+</ol>
+<p>#### Updating PTools</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">#</span> <span class="pre">Pull</span> <span class="pre">latest</span> <span class="pre">changes</span> <span class="pre">and</span> <span class="pre">reinstall</span>
+<span class="pre">ptools</span> <span class="pre">dev</span> <span class="pre">update</span>
+<span class="pre">`</span></code></p>
+<p>This command:
+- Pulls latest changes from git
+- Automatically runs <cite>ptools dev install</cite>
+- Updates all dependencies</p>
+<p>## Project Management (<cite>projects</cite>)</p>
+<p>The projects module helps you organize and quickly access your development projects.</p>
+<p>### Adding Projects</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>bash
+# Add a new project
+ptools projects add my-webapp /home/user/code/webapp</p>
+<p># Add project with description
+ptools projects add api-server /home/user/code/api –description “REST API backend”</p>
+<p># Add project with tags
+ptools projects add mobile-app /home/user/code/mobile –tags “react-native,ios,android”
+<a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>### Managing Projects</p>
+<p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>bash
+# List all projects
+ptools projects list</p>
+<p># Get detailed project information
+ptools projects info my-webapp</p>
+<p># Remove a project
+ptools projects remove old-project</p>
+<p># Update project details
+ptools projects update my-webapp –description “Updated description”
+<a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<p>### Working with Projects</p>
+<p><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>bash
+# Open project directory in file manager
+ptools projects open my-webapp</p>
+<p># Get project path for use in scripts
+PROJECT_PATH=$(ptools projects path my-webapp)
+cd “$PROJECT_PATH”</p>
+<p># List projects with specific tags
+ptools projects list –tag python
+ptools projects list –tag web,frontend
+<a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a></p>
+<p>### Project Integration Examples</p>
+<p><a href="#id33"><span class="problematic" id="id34">``</span></a><a href="#id35"><span class="problematic" id="id36">`</span></a>bash
+# Use with other PTools modules
+ptools projects list | ptools flow map “x.split()[0]” | head -5</p>
+<p># Backup all projects
+ptools projects list | while read name path; do</p>
+<blockquote>
+<div><p>ptools rsync do -avz “$path/” “/backup/$name/”</p>
+</div></blockquote>
+<p>done</p>
+<p># Find Python projects and run tests
+ptools projects list –tag python | while read name path; do</p>
+<blockquote>
+<div><p>echo “Testing $name…”
+cd “$path” &amp;&amp; python -m pytest</p>
+</div></blockquote>
+<p>done
+<a href="#id37"><span class="problematic" id="id38">``</span></a><a href="#id39"><span class="problematic" id="id40">`</span></a></p>
+<p>## Shell Integration (<cite>shell</cite>)</p>
+<p>The shell module helps manage shell configuration, aliases, and environment variables.</p>
+<p>### Managing Aliases</p>
+<p><a href="#id41"><span class="problematic" id="id42">``</span></a><a href="#id43"><span class="problematic" id="id44">`</span></a>bash
+# Add a new alias
+ptools shell alias ll “ls -la”</p>
+<p># Add alias for common git commands
+ptools shell alias gst “git status”
+ptools shell alias gco “git checkout”</p>
+<p># List all aliases
+ptools shell alias list</p>
+<p># Remove an alias
+ptools shell alias remove old-alias
+<a href="#id45"><span class="problematic" id="id46">``</span></a><a href="#id47"><span class="problematic" id="id48">`</span></a></p>
+<p>### Environment Variables</p>
+<p><a href="#id49"><span class="problematic" id="id50">``</span></a><a href="#id51"><span class="problematic" id="id52">`</span></a>bash
+# Add export statement to shell config
+ptools shell x EDITOR “code”
+ptools shell x PATH “/new/path:$PATH”</p>
+<p># Force overwrite existing variable
+ptools shell x NODE_ENV “development” –force</p>
+<p># List exported variables
+ptools shell x list
+<a href="#id53"><span class="problematic" id="id54">``</span></a><a href="#id55"><span class="problematic" id="id56">`</span></a></p>
+<p>### Shell Configuration</p>
+<p><a href="#id57"><span class="problematic" id="id58">``</span></a><a href="#id59"><span class="problematic" id="id60">`</span></a>bash
+# Set default shell configuration file
+ptools shell set-default-shell ~/.zshrc</p>
+<p># View current shell configuration
+ptools shell info
+<a href="#id61"><span class="problematic" id="id62">``</span></a><a href="#id63"><span class="problematic" id="id64">`</span></a></p>
+<p>### Integration with Development Workflow</p>
+<p><a href="#id65"><span class="problematic" id="id66">``</span></a><a href="#id67"><span class="problematic" id="id68">`</span></a>bash
+# Set up development environment
+ptools shell x PYTHONPATH “/home/user/code/myproject:$PYTHONPATH”
+ptools shell alias pt “ptools”
+ptools shell alias serve “python -m http.server”</p>
+<p># Project-specific aliases
+ptools shell alias build-web “cd ~/code/webapp &amp;&amp; npm run build”
+ptools shell alias test-api “cd ~/code/api &amp;&amp; python -m pytest”
+<a href="#id69"><span class="problematic" id="id70">``</span></a><a href="#id71"><span class="problematic" id="id72">`</span></a></p>
+<p>## Workspace Management (<cite>ws</cite>)</p>
+<p>The workspace module provides tools for managing Node.js workspaces and monorepos.</p>
+<p>### Workspace Discovery</p>
+<p><a href="#id73"><span class="problematic" id="id74">``</span></a><a href="#id75"><span class="problematic" id="id76">`</span></a>bash
+# Find workspaces in current directory
+ptools ws find</p>
+<p># Find workspaces with specific pattern
+ptools ws find –pattern “packages/<a href="#id77"><span class="problematic" id="id78">*</span></a>”</p>
+<p># Analyze workspace structure
+ptools ws analyze
+<a href="#id79"><span class="problematic" id="id80">``</span></a><a href="#id81"><span class="problematic" id="id82">`</span></a></p>
+<p>### Package Management</p>
+<p><a href="#id83"><span class="problematic" id="id84">``</span></a><a href="#id85"><span class="problematic" id="id86">`</span></a>bash
+# List all packages in workspace
+ptools ws packages</p>
+<p># Get package dependencies
+ptools ws deps package-name</p>
+<p># Find packages with specific dependency
+ptools ws find-dep react
+<a href="#id87"><span class="problematic" id="id88">``</span></a><a href="#id89"><span class="problematic" id="id90">`</span></a></p>
+<p>### Workspace Operations</p>
+<p><a href="#id91"><span class="problematic" id="id92">``</span></a><a href="#id93"><span class="problematic" id="id94">`</span></a>bash
+# Install dependencies for all packages
+ptools ws install</p>
+<p># Run script across all packages
+ptools ws run build</p>
+<p># Run script for specific package
+ptools ws run test –package api-client
+<a href="#id95"><span class="problematic" id="id96">``</span></a><a href="#id97"><span class="problematic" id="id98">`</span></a></p>
+<p>## Development Workflow Examples</p>
+<p>### Full-Stack Development Setup</p>
+<p><a href="#id99"><span class="problematic" id="id100">``</span></a><a href="#id101"><span class="problematic" id="id102">`</span></a>bash
+# Add your projects
+ptools projects add frontend ~/code/webapp –tags “react,typescript,web”
+ptools projects add backend ~/code/api –tags “python,fastapi,api”
+ptools projects add mobile ~/code/mobile –tags “react-native,ios,android”</p>
+<p># Set up shell environment
+ptools shell x NODE_ENV “development”
+ptools shell x API_URL “<a class="reference external" href="http://localhost:8000">http://localhost:8000</a>”
+ptools shell alias serve-api “cd ~/code/api &amp;&amp; uvicorn main:app –reload”
+ptools shell alias serve-web “cd ~/code/webapp &amp;&amp; npm start”</p>
+<p># Watch for changes and auto-rebuild
+ptools watch –path ~/code/api/src –command “ptools projects path backend | xargs -I {} sh -c ‘cd {} &amp;&amp; python -m pytest’”
+<a href="#id103"><span class="problematic" id="id104">``</span></a><a href="#id105"><span class="problematic" id="id106">`</span></a></p>
+<p>### Code Quality Workflow</p>
+<p><a href="#id107"><span class="problematic" id="id108">``</span></a><a href="#id109"><span class="problematic" id="id110">`</span></a>bash
+# Set up aliases for code quality tools
+ptools shell alias lint “pylint src/”
+ptools shell alias format “black src/ &amp;&amp; isort src/”
+ptools shell alias type-check “mypy src/”</p>
+<p># Watch for changes and run quality checks
+ptools watch –path src/ –regex “.py$” –command “ptools shell alias format &amp;&amp; ptools shell alias lint”
+<a href="#id111"><span class="problematic" id="id112">``</span></a><a href="#id113"><span class="problematic" id="id114">`</span></a></p>
+<p>### Multi-Project Synchronization</p>
+<p><a href="#id115"><span class="problematic" id="id116">``</span></a><a href="#id117"><span class="problematic" id="id118">`</span></a>bash
+# Sync multiple projects to remote server
+ptools projects list –tag production | while read name path; do</p>
+<blockquote>
+<div><p>echo “Syncing $name…”
+ptools rsync watch –path “$path” -avz –exclude node_modules/ “$path/” “<a class="reference external" href="mailto:user&#37;&#52;&#48;server">user<span>&#64;</span>server</a>:/deploy/$name/”</p>
+</div></blockquote>
+<p>done
+<a href="#id119"><span class="problematic" id="id120">``</span></a><a href="#id121"><span class="problematic" id="id122">`</span></a></p>
+<p>## Advanced Development Patterns</p>
+<p>### Custom Development Scripts</p>
+<p>Create custom development commands by combining PTools modules:</p>
+<p><a href="#id123"><span class="problematic" id="id124">``</span></a><a href="#id125"><span class="problematic" id="id126">`</span></a>bash
+# Create a script: ~/bin/dev-setup
+#!/bin/bash
+PROJECT_NAME=$1
+PROJECT_PATH=$2</p>
+<p># Add project to PTools
+ptools projects add “$PROJECT_NAME” “$PROJECT_PATH”</p>
+<p># Set up development environment
+ptools shell x “${PROJECT_NAME^^}_PATH” “$PROJECT_PATH”</p>
+<p># Create useful aliases
+ptools shell alias “cd-$PROJECT_NAME” “cd $PROJECT_PATH”
+ptools shell alias “test-$PROJECT_NAME” “cd $PROJECT_PATH &amp;&amp; npm test”</p>
+<p>echo “Development environment set up for $PROJECT_NAME”
+<a href="#id127"><span class="problematic" id="id128">``</span></a><a href="#id129"><span class="problematic" id="id130">`</span></a></p>
+<p>### AI-Assisted Development</p>
+<p><a href="#id131"><span class="problematic" id="id132">``</span></a><a href="#id133"><span class="problematic" id="id134">`</span></a>bash
+# Create AI profile for code review
+ptools llm-opts create-profile
+# Name: code-reviewer
+# Temperature: 0.3
+# Max tokens: 2000
+# System prompt: You are an expert code reviewer…</p>
+<p># Use AI for code review
+git diff | ptools llm “Review these changes” –profile code-reviewer</p>
+<p># AI-assisted debugging
+ptools llm –interactive –profile debugger –history current-bug
+<a href="#id135"><span class="problematic" id="id136">``</span></a><a href="#id137"><span class="problematic" id="id138">`</span></a></p>
+<p>### Automated Testing and Deployment</p>
+<p><a href="#id139"><span class="problematic" id="id140">``</span></a><a href="#id141"><span class="problematic" id="id142">`</span></a>bash
+# Watch for changes and run tests
+ptools watch –path src/ –regex “.py$” –command “python -m pytest tests/ –verbose”</p>
+<p># Automated deployment on successful tests
+ptools watch –path src/ –command “</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if python -m pytest; then</dt><dd><p>echo ‘Tests passed, deploying…’
+ptools rsync do -avz ./ <a class="reference external" href="mailto:user&#37;&#52;&#48;server">user<span>&#64;</span>server</a>:/app/</p>
+</dd>
+<dt>else</dt><dd><p>echo ‘Tests failed, skipping deployment’</p>
+</dd>
+</dl>
+<p>fi</p>
+</div></blockquote>
+<section id="id143">
+<h1>“<a class="headerlink" href="#id143" title="Link to this heading"></a></h1>
+<p>## Integration with External Tools</p>
+<p>### IDE Integration</p>
+<p><a href="#id144"><span class="problematic" id="id145">``</span></a><a href="#id146"><span class="problematic" id="id147">`</span></a>bash
+# VS Code integration
+ptools shell alias code-project “ptools projects path $1 | xargs code”</p>
+<p># Vim integration
+ptools shell alias vim-project “ptools projects path $1 | xargs -I {} sh -c ‘cd {} &amp;&amp; vim’”
+<a href="#id148"><span class="problematic" id="id149">``</span></a><a href="#id150"><span class="problematic" id="id151">`</span></a></p>
+<p>### CI/CD Integration</p>
+<p><a href="#id152"><span class="problematic" id="id153">``</span></a><a href="#id154"><span class="problematic" id="id155">`</span></a>bash
+# Export project information for CI
+ptools projects info my-project –format json &gt; project-info.json</p>
+<p># Use in GitHub Actions or similar
+PROJECT_PATH=$(ptools projects path my-project)
+echo “PROJECT_PATH=$PROJECT_PATH” &gt;&gt; $GITHUB_ENV
+<a href="#id156"><span class="problematic" id="id157">``</span></a><a href="#id158"><span class="problematic" id="id159">`</span></a></p>
+<p>### Docker Integration</p>
+<p><a href="#id160"><span class="problematic" id="id161">``</span></a><a href="#id162"><span class="problematic" id="id163">`</span></a>bash
+# Watch and rebuild Docker images
+ptools watch –path src/ –command “docker build -t my-app:latest .”</p>
+<p># Sync with Docker containers
+ptools rsync watch –path ./ -avz ./ /container/path/
+<a href="#id164"><span class="problematic" id="id165">``</span></a><a href="#id166"><span class="problematic" id="id167">`</span></a></p>
+<p>## Best Practices</p>
+<p>### Project Organization</p>
+<ol class="arabic simple">
+<li><p><strong>Use consistent naming</strong>: Follow a naming convention for projects</p></li>
+<li><p><strong>Add meaningful tags</strong>: Tag projects by technology, status, priority</p></li>
+<li><p><strong>Keep projects current</strong>: Remove old, unused projects regularly</p></li>
+<li><p><strong>Document projects</strong>: Add descriptions for complex projects</p></li>
+</ol>
+<p>### Shell Configuration</p>
+<ol class="arabic simple">
+<li><p><strong>Test aliases before adding</strong>: Make sure commands work as expected</p></li>
+<li><p><strong>Use meaningful names</strong>: Alias names should be clear and memorable</p></li>
+<li><p><strong>Avoid conflicts</strong>: Check existing aliases before adding new ones</p></li>
+<li><p><strong>Group related aliases</strong>: Use prefixes for related functionality</p></li>
+</ol>
+<p>### Development Workflow</p>
+<ol class="arabic simple">
+<li><p><strong>Use version control</strong>: Always work with version-controlled projects</p></li>
+<li><p><strong>Automate repetitive tasks</strong>: Use watch and automation features</p></li>
+<li><p><strong>Set up consistent environments</strong>: Use shell variables for configuration</p></li>
+<li><p><strong>Monitor changes</strong>: Use file watching for continuous feedback</p></li>
+</ol>
+<p>### Security Considerations</p>
+<ol class="arabic simple">
+<li><p><strong>Protect sensitive data</strong>: Don’t add secrets to shell aliases or projects</p></li>
+<li><p><strong>Use appropriate permissions</strong>: Ensure project directories have correct permissions</p></li>
+<li><p><strong>Review shell changes</strong>: Check shell configuration files before using</p></li>
+<li><p><strong>Clean up regularly</strong>: Remove unused aliases and projects</p></li>
+</ol>
+<p>## Troubleshooting</p>
+<p>### Common Issues</p>
+<ol class="arabic">
+<li><p><strong>Project not found</strong>:
+<a href="#id168"><span class="problematic" id="id169">``</span></a><a href="#id170"><span class="problematic" id="id171">`</span></a>bash
+# Check project exists
+ptools projects list | grep project-name</p>
+<p># Re-add if missing
+ptools projects add project-name /correct/path
+<a href="#id172"><span class="problematic" id="id173">``</span></a><a href="#id174"><span class="problematic" id="id175">`</span></a></p>
+</li>
+<li><p><strong>Shell aliases not working</strong>:
+<a href="#id176"><span class="problematic" id="id177">``</span></a><a href="#id178"><span class="problematic" id="id179">`</span></a>bash
+# Check shell configuration
+cat ~/.bashrc | grep alias</p>
+<p># Reload shell configuration
+source ~/.bashrc
+<a href="#id180"><span class="problematic" id="id181">``</span></a><a href="#id182"><span class="problematic" id="id183">`</span></a></p>
+</li>
+<li><p><strong>Workspace commands failing</strong>:
+<a href="#id184"><span class="problematic" id="id185">``</span></a><a href="#id186"><span class="problematic" id="id187">`</span></a>bash
+# Check if in Node.js workspace
+ls package.json</p>
+<p># Verify workspace structure
+ptools ws find
+<a href="#id188"><span class="problematic" id="id189">``</span></a><a href="#id190"><span class="problematic" id="id191">`</span></a></p>
+</li>
+<li><p><strong>Development tools not found</strong>:
+<a href="#id192"><span class="problematic" id="id193">``</span></a><a href="#id194"><span class="problematic" id="id195">`</span></a>bash
+# Check PTools installation
+ptools dev root</p>
+<p># Reinstall if needed
+ptools dev install
+<a href="#id196"><span class="problematic" id="id197">``</span></a><a href="#id198"><span class="problematic" id="id199">`</span></a></p>
+</li>
+</ol>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Omar Ibrahim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

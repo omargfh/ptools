@@ -24,6 +24,31 @@ def read():
         click.echo(f"{flow_value} (type: {type(flow_value.value).__name__})")
         
 @click.command()
+@click.option('--multiline', '-m', is_flag=True, default=False, help='Read all lines as a single JSON array.')
+@output_flavor.decorate()
+def json(flavor, multiline):
+    """Read JSON objects"""
+    import json
+    import sys
+    if multiline:
+        results = json.load(sys.stdin)
+    else:
+        results = [json.loads(line) for line in sys.stdin if line.strip()]
+    click.echo(f"{OutputValue(flavor=flavor).format(results)}")
+    
+@click.command()
+@click.option('--multiline', '-m', is_flag=True, default=False, help='Read all lines as a single JSON array.')
+@output_flavor.decorate()
+def dict(flavor, multiline):
+    """Read Python dictionaries"""
+    import sys
+    if multiline:
+        results = eval(sys.stdin.read())
+    else:
+        results = [eval(line) for line in sys.stdin if line.strip()]
+    click.echo(f"{OutputValue(flavor=flavor).format(results)}")
+
+@click.command()
 @flow_expression.decorate()
 @debug_scope.decorate()
 @output_flavor.decorate()
@@ -165,3 +190,5 @@ cli.add_command(group, name='group')
 cli.add_command(exec, name='exec')
 cli.add_command(foreach, name='foreach')
 cli.add_command(while_loop, name='while')
+cli.add_command(json, name='json')
+cli.add_command(dict, name='dict')

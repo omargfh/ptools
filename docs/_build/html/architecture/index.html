@@ -1,0 +1,303 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; PTools 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=0c468a07" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="../contributing.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="../api-reference/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#core-capabilities">Core Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#file-system-data-operations">File System &amp; Data Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#ai-language-models">AI &amp; Language Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#development-tools">Development Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#data-processing-workflows">Data Processing &amp; Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#configuration-security">Configuration &amp; Security</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#design-patterns">Design Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#decorator-based-configuration">Decorator-Based Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#modular-cli-structure">Modular CLI Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#stream-processing">Stream Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/architecture/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p># Architecture</p>
+<p>Understanding the internal architecture and design principles of PTools.</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>{toctree}
+:maxdepth: 2
+:caption: Architecture Topics:</p>
+<p>design-principles
+module-system
+data-flow
+extension-points
+performance
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>## Overview</p>
+<p>PTools follows a modular, extensible architecture designed around Unix philosophy principles while providing modern conveniences and powerful integrations.</p>
+<p>## High-Level Architecture</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">┌─────────────────┐</span>
+<span class="pre">│</span>&#160;&#160; <span class="pre">CLI</span> <span class="pre">Interface</span> <span class="pre">│</span>&#160; <span class="pre">←</span> <span class="pre">Click-based</span> <span class="pre">command</span> <span class="pre">line</span> <span class="pre">interface</span>
+<span class="pre">├─────────────────┤</span>
+<span class="pre">│</span>&#160;&#160; <span class="pre">Core</span> <span class="pre">Modules</span>&#160; <span class="pre">│</span>&#160; <span class="pre">←</span> <span class="pre">Individual</span> <span class="pre">feature</span> <span class="pre">modules</span> <span class="pre">(llm,</span> <span class="pre">fs,</span> <span class="pre">flow,</span> <span class="pre">etc.)</span>
+<span class="pre">├─────────────────┤</span>
+<span class="pre">│</span>&#160; <span class="pre">Shared</span> <span class="pre">Libraries│</span>&#160; <span class="pre">←</span> <span class="pre">Common</span> <span class="pre">implementations</span> <span class="pre">(lib/)</span>
+<span class="pre">├─────────────────┤</span>
+<span class="pre">│</span>&#160;&#160; <span class="pre">Utilities</span>&#160;&#160;&#160;&#160; <span class="pre">│</span>&#160; <span class="pre">←</span> <span class="pre">Helper</span> <span class="pre">functions</span> <span class="pre">and</span> <span class="pre">decorators</span> <span class="pre">(utils/)</span>
+<span class="pre">├─────────────────┤</span>
+<span class="pre">│</span>&#160; <span class="pre">Configuration</span>&#160; <span class="pre">│</span>&#160; <span class="pre">←</span> <span class="pre">Settings,</span> <span class="pre">profiles,</span> <span class="pre">and</span> <span class="pre">persistence</span>
+<span class="pre">└─────────────────┘</span>
+<span class="pre">`</span></code></p>
+<p>## Design Philosophy</p>
+<p>### Unix Philosophy
+- <strong>Do one thing well</strong>: Each module focuses on specific functionality
+- <strong>Composability</strong>: Modules work together through pipes and standard interfaces
+- <strong>Text streams</strong>: Data flows as text through processing pipelines</p>
+<p>### Modern Python Practices
+- <strong>Type hints</strong>: Comprehensive type annotations for better development experience
+- <strong>Pydantic models</strong>: Data validation and serialization
+- <strong>Decorator patterns</strong>: Consistent, reusable functionality across modules
+- <strong>Async support</strong>: Ready for asynchronous operations where beneficial</p>
+<p>### User Experience
+- <strong>Consistent interfaces</strong>: All modules follow similar command patterns
+- <strong>Helpful error messages</strong>: Clear guidance on fixing issues
+- <strong>Progressive disclosure</strong>: Simple commands for common tasks, detailed options for advanced use</p>
+<p>## Key Architectural Patterns</p>
+<p>### Modular CLI Design
+Each module provides its own Click command group:</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>python
+# Module pattern
+&#64;click.group()
+def cli():</p>
+<blockquote>
+<div><p>“””Module description.”””
+pass</p>
+</div></blockquote>
+<p># Command registration
+cli.add_command(module.cli, name=”module”)
+<a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>### Decorator Composition
+Common functionality implemented as composable decorators:</p>
+<p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>python
+&#64;click.command()
+&#64;require.library(‘requests’)
+&#64;require.key([‘API_KEY’])
+def command():</p>
+<blockquote>
+<div><p>pass</p>
+</div></blockquote>
+<p><a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<p>### Stream Processing
+Data flows through processing stages using a consistent value model:</p>
+<p><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>python
+class StreamValue:</p>
+<blockquote>
+<div><p>value: Any
+line_number: int
+metadata: dict</p>
+</div></blockquote>
+<p><a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a></p>
+<p>### Configuration Hierarchy
+Settings resolved from multiple sources in priority order:
+1. Command-line options
+2. Environment variables
+3. Configuration files
+4. Default values</p>
+<p>## Component Architecture</p>
+<p>### Core Modules Layer
+- <strong>Purpose</strong>: Provide command-line interfaces for specific functionality
+- <strong>Pattern</strong>: Click-based CLI groups with commands
+- <strong>Examples</strong>: <cite>llm.py</cite>, <cite>fs.py</cite>, <cite>flow.py</cite></p>
+<p>### Library Layer
+- <strong>Purpose</strong>: Implement reusable functionality independent of CLI
+- <strong>Pattern</strong>: Object-oriented classes and functions
+- <strong>Examples</strong>: <cite>lib/llm/client.py</cite>, <cite>lib/flow/runner.py</cite></p>
+<p>### Utilities Layer
+- <strong>Purpose</strong>: Common helper functions used across modules
+- <strong>Pattern</strong>: Pure functions and utility classes
+- <strong>Examples</strong>: <cite>utils/config.py</cite>, <cite>utils/print.py</cite></p>
+<p>### Models Layer
+- <strong>Purpose</strong>: Data structures and validation
+- <strong>Pattern</strong>: Pydantic models and dataclasses
+- <strong>Examples</strong>: <cite>models/default_config.py</cite></p>
+<p>## Data Flow Architecture</p>
+<p>### Input Processing
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">User</span> <span class="pre">Input</span> <span class="pre">→</span> <span class="pre">Validation</span> <span class="pre">→</span> <span class="pre">Parsing</span> <span class="pre">→</span> <span class="pre">Processing</span> <span class="pre">→</span> <span class="pre">Output</span>
+<span class="pre">`</span></code></p>
+<p>### Stream Processing Pipeline
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">Source</span> <span class="pre">→</span> <span class="pre">Transform</span> <span class="pre">→</span> <span class="pre">Filter</span> <span class="pre">→</span> <span class="pre">Aggregate</span> <span class="pre">→</span> <span class="pre">Sink</span>
+<span class="pre">`</span></code></p>
+<p>### Configuration Flow
+<code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">Defaults</span> <span class="pre">←</span> <span class="pre">Config</span> <span class="pre">Files</span> <span class="pre">←</span> <span class="pre">Environment</span> <span class="pre">←</span> <span class="pre">CLI</span> <span class="pre">Options</span>
+<span class="pre">`</span></code></p>
+<p>## Extension Architecture</p>
+<p>PTools is designed to be extensible at multiple levels:</p>
+<p>### Module Extensions
+- Add new CLI modules by following existing patterns
+- Register with main CLI in <cite>main.py</cite>
+- Inherit common functionality from base classes</p>
+<p>### Processing Extensions
+- Custom flow transformers
+- New AI providers
+- Additional data formats</p>
+<p>### Configuration Extensions
+- Custom profile types
+- New storage backends
+- Additional validation rules</p>
+<p>## Performance Considerations</p>
+<p>### Memory Efficiency
+- Stream processing avoids loading entire datasets
+- Lazy evaluation where possible
+- Configurable buffer sizes</p>
+<p>### CPU Optimization
+- Native Python performance for most operations
+- Optional compiled extensions for heavy computation
+- Parallel processing for independent operations</p>
+<p>### I/O Optimization
+- Async I/O for network operations
+- Efficient file handling
+- Minimal disk writes</p>
+<p>## Security Architecture</p>
+<p>### Credential Management
+- System keyring integration for secure storage
+- No plaintext credentials in configuration
+- Proper cleanup of sensitive data</p>
+<p>### Input Validation
+- Pydantic models for data validation
+- Sanitization of user inputs
+- Protection against injection attacks</p>
+<p>### Privilege Management
+- Minimal required permissions
+- Clear indication of privileged operations
+- Safe handling of file operations</p>
+<p>## Error Handling Architecture</p>
+<p>### Error Categories
+1. <strong>User Errors</strong>: Invalid input, missing files, etc.
+2. <strong>System Errors</strong>: Permission denied, network issues, etc.
+3. <strong>Configuration Errors</strong>: Invalid settings, missing dependencies, etc.
+4. <strong>Internal Errors</strong>: Bugs, unexpected conditions, etc.</p>
+<p>### Error Response Pattern
+<a href="#id33"><span class="problematic" id="id34">``</span></a><a href="#id35"><span class="problematic" id="id36">`</span></a>python
+try:</p>
+<blockquote>
+<div><p># Operation
+pass</p>
+</div></blockquote>
+<dl class="simple">
+<dt>except SpecificError as e:</dt><dd><p># Provide helpful error message and solution
+click.echo(FormatUtils.error(f”Problem: {e}”))
+click.echo(FormatUtils.info(f”Solution: {suggested_fix}”))
+sys.exit(1)</p>
+</dd>
+</dl>
+<p><a href="#id37"><span class="problematic" id="id38">``</span></a><a href="#id39"><span class="problematic" id="id40">`</span></a></p>
+<p>### Graceful Degradation
+- Optional dependencies handled gracefully
+- Fallback implementations where possible
+- Clear messaging about missing features</p>
+<p>This architecture ensures PTools remains maintainable, extensible, and performant while providing a consistent user experience across all modules.</p>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../api-reference/index.html" class="btn btn-neutral float-left" title="&lt;no title&gt;" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../contributing.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Omar Ibrahim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

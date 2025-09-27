@@ -8,11 +8,12 @@ class LarkCommandCompleter(Completer):
     def get_completions(self, document, complete_event):
         text = document.text_before_cursor
         word = document.get_word_under_cursor()
+        Word = document.get_word_under_cursor(WORD=True)
 
-        if text.endswith("@") or word.startswith("@"):
+        if text.endswith("@") or Word.startswith("@"):
             for cmd in self.commands:
-                yield Completion(f"@{cmd.name}", start_position=-len(word))
-                
+                yield Completion(f"@{cmd.name}", start_position=-len(Word))
+
         if text.endswith("@/") or word.startswith("@/"):
             yield Completion("@/", start_position=-len(word))
             

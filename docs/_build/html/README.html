@@ -1,0 +1,348 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PTools Documentation &mdash; PTools 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=0c468a07" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#core-capabilities">Core Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#file-system-data-operations">File System &amp; Data Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#ai-language-models">AI &amp; Language Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#development-tools">Development Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#data-processing-workflows">Data Processing &amp; Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#configuration-security">Configuration &amp; Security</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="introduction.html#design-patterns">Design Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#decorator-based-configuration">Decorator-Based Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#modular-cli-structure">Modular CLI Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="introduction.html#stream-processing">Stream Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">PTools Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ptools-documentation">
+<h1>PTools Documentation<a class="headerlink" href="#ptools-documentation" title="Link to this heading"></a></h1>
+<p>This directory contains the complete Sphinx documentation for PTools.</p>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
+<section id="building-the-documentation">
+<h3>Building the Documentation<a class="headerlink" href="#building-the-documentation" title="Link to this heading"></a></h3>
+<ol class="arabic">
+<li><p><strong>Install dependencies</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</pre></div>
+</div>
+</li>
+<li><p><strong>Build HTML documentation</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>html
+<span class="c1"># or</span>
+./build.sh
+</pre></div>
+</div>
+</li>
+<li><p><strong>View the documentation</strong>:
+Open <code class="docutils literal notranslate"><span class="pre">_build/html/index.html</span></code> in your browser.</p></li>
+</ol>
+</section>
+<section id="development">
+<h3>Development<a class="headerlink" href="#development" title="Link to this heading"></a></h3>
+<p>For continuous building while editing:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>sphinx-autobuild
+sphinx-autobuild<span class="w"> </span>.<span class="w"> </span>_build/html
+</pre></div>
+</div>
+<p>This will start a local server and automatically rebuild when files change.</p>
+</section>
+</section>
+<section id="documentation-structure">
+<h2>Documentation Structure<a class="headerlink" href="#documentation-structure" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docs/
+├── index.rst                 # Main documentation entry point
+├── introduction.rst          # Project introduction
+├── installation.rst          # Installation guide
+├── quickstart.rst           # Quick start tutorial
+├── user-guide/              # Detailed user guides
+│   ├── index.rst
+│   ├── core-concepts.rst
+│   ├── ai-integration.rst
+│   ├── file-operations.rst
+│   ├── data-processing.rst
+│   ├── development-tools.rst
+│   ├── configuration.rst
+│   └── workflow-automation.rst
+├── tutorials/               # Step-by-step tutorials
+│   ├── index.rst
+│   └── getting-started.rst
+├── cli-reference/          # Complete CLI documentation
+│   ├── index.rst
+│   └── main.rst
+├── api-reference/          # Auto-generated API docs
+│   ├── index.rst
+│   ├── core-modules.rst
+│   └── lib-modules.rst
+├── architecture/           # Architecture documentation
+│   └── index.rst
+├── contributing.rst        # Contributing guidelines
+└── changelog.rst          # Version history
+</pre></div>
+</div>
+</section>
+<section id="writing-documentation">
+<h2>Writing Documentation<a class="headerlink" href="#writing-documentation" title="Link to this heading"></a></h2>
+<section id="restructuredtext-basics">
+<h3>reStructuredText Basics<a class="headerlink" href="#restructuredtext-basics" title="Link to this heading"></a></h3>
+<p>The documentation uses reStructuredText (RST) format. Here are some common patterns:</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="gh"># Main Title</span>
+<span class="gh">============</span>
+
+<span class="gh">## Section Title</span>
+<span class="gh">---------------</span>
+
+<span class="gh">### Subsection</span>
+<span class="gh">~~~~~~~~~~~~~~</span>
+
+<span class="gs">**Bold text**</span> and <span class="ge">*italic text*</span>
+
+<span class="nv">`inline code`</span> and<span class="se">::</span>
+
+<span class="s">    code blocks</span>
+<span class="s">    with multiple lines</span>
+
+<span class="p">..</span> <span class="ow">note</span><span class="p">::</span>
+   This is a note admonition.
+
+<span class="p">..</span> <span class="ow">warning</span><span class="p">::</span>
+   This is a warning admonition.
+</pre></div>
+</div>
+</section>
+<section id="code-examples">
+<h3>Code Examples<a class="headerlink" href="#code-examples" title="Link to this heading"></a></h3>
+<p>Always test code examples before including them:</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span>Example usage:
+
+<span class="p">..</span> <span class="ow">code-block</span><span class="p">::</span> <span class="k">bash</span>
+
+   ptools<span class="w"> </span>llm<span class="w"> </span><span class="s2">&quot;Hello, world!&quot;</span>
+   ptools<span class="w"> </span>fs<span class="w"> </span>info<span class="w"> </span>/path/to/file
+   ptools<span class="w"> </span>flow<span class="w"> </span>map<span class="w"> </span><span class="s2">&quot;x.upper()&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="cross-references">
+<h3>Cross-References<a class="headerlink" href="#cross-references" title="Link to this heading"></a></h3>
+<p>Link to other sections:</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span>See <span class="na">:doc:</span><span class="nv">`user-guide/ai-integration`</span> for details.
+Refer to <span class="na">:ref:</span><span class="nv">`configuration-section`</span> for setup.
+</pre></div>
+</div>
+</section>
+</section>
+<section id="api-documentation">
+<h2>API Documentation<a class="headerlink" href="#api-documentation" title="Link to this heading"></a></h2>
+<p>API documentation is automatically generated from docstrings using Sphinx autodoc. To update:</p>
+<ol class="arabic simple">
+<li><p>Ensure docstrings follow Google style</p></li>
+<li><p>Run <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">html</span></code> to regenerate</p></li>
+<li><p>API docs appear in <code class="docutils literal notranslate"><span class="pre">api-reference/</span></code></p></li>
+</ol>
+<p>Example docstring:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">example_function</span><span class="p">(</span><span class="n">param1</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">param2</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Brief description of the function.</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        param1: Description of the first parameter</span>
+<span class="sd">        param2: Description with default value</span>
+<span class="sd">        </span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Description of return value</span>
+<span class="sd">        </span>
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: When param1 is empty</span>
+<span class="sd">        </span>
+<span class="sd">    Example:</span>
+<span class="sd">        &gt;&gt;&gt; example_function(&quot;test&quot;, 20)</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="extensions-and-plugins">
+<h2>Extensions and Plugins<a class="headerlink" href="#extensions-and-plugins" title="Link to this heading"></a></h2>
+<p>The documentation uses these Sphinx extensions:</p>
+<ul class="simple">
+<li><p><strong>sphinx.ext.autodoc</strong>: Auto-generate API docs from docstrings</p></li>
+<li><p><strong>sphinx.ext.napoleon</strong>: Support for Google/NumPy style docstrings</p></li>
+<li><p><strong>sphinx.ext.viewcode</strong>: Add source code links</p></li>
+<li><p><strong>sphinx.ext.intersphinx</strong>: Cross-reference external docs</p></li>
+<li><p><strong>sphinx-click</strong>: Document Click commands</p></li>
+<li><p><strong>myst-parser</strong>: Support Markdown files</p></li>
+</ul>
+</section>
+<section id="themes-and-styling">
+<h2>Themes and Styling<a class="headerlink" href="#themes-and-styling" title="Link to this heading"></a></h2>
+<p>The documentation uses the <code class="docutils literal notranslate"><span class="pre">sphinx_rtd_theme</span></code> (Read the Docs theme) with custom CSS in <code class="docutils literal notranslate"><span class="pre">_static/custom.css</span></code>.</p>
+</section>
+<section id="building-for-production">
+<h2>Building for Production<a class="headerlink" href="#building-for-production" title="Link to this heading"></a></h2>
+<p>For production builds:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clean build</span>
+make<span class="w"> </span>clean<span class="w"> </span>html
+
+<span class="c1"># Check for broken links</span>
+make<span class="w"> </span>linkcheck
+
+<span class="c1"># Build all formats</span>
+make<span class="w"> </span>html<span class="w"> </span>epub<span class="w"> </span>latex
+</pre></div>
+</div>
+</section>
+<section id="contributing-to-documentation">
+<h2>Contributing to Documentation<a class="headerlink" href="#contributing-to-documentation" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Follow the existing structure and style</p></li>
+<li><p>Test all code examples</p></li>
+<li><p>Use appropriate RST formatting</p></li>
+<li><p>Add new pages to the appropriate <code class="docutils literal notranslate"><span class="pre">toctree</span></code></p></li>
+<li><p>Build locally before submitting</p></li>
+<li><p>Check for spelling and grammar</p></li>
+</ol>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<section id="common-issues">
+<h3>Common Issues<a class="headerlink" href="#common-issues" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p><strong>Import errors during build</strong>:</p>
+<ul class="simple">
+<li><p>Ensure PTools is installed: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">..</span></code></p></li>
+<li><p>Check Python path in <code class="docutils literal notranslate"><span class="pre">conf.py</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Missing references</strong>:</p>
+<ul class="simple">
+<li><p>Check file names and paths</p></li>
+<li><p>Ensure files are added to <code class="docutils literal notranslate"><span class="pre">toctree</span></code> directives</p></li>
+</ul>
+</li>
+<li><p><strong>Formatting issues</strong>:</p>
+<ul class="simple">
+<li><p>Validate RST syntax</p></li>
+<li><p>Check indentation (RST is sensitive to whitespace)</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="getting-help">
+<h3>Getting Help<a class="headerlink" href="#getting-help" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.sphinx-doc.org/">Sphinx Documentation</a></p></li>
+<li><p><a class="reference external" href="https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html">reStructuredText Primer</a></p></li>
+<li><p><a class="reference external" href="https://sphinx-rtd-theme.readthedocs.io/">Read the Docs Theme</a></p></li>
+</ul>
+</section>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Link to this heading"></a></h2>
+<p>The documentation is part of the PTools project and follows the same license terms.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Omar Ibrahim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

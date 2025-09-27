@@ -5,7 +5,7 @@ from ptools.lib.llm.command import Command, CommandArgument, CommandSchema
 
 class FileCommand:
     @staticmethod
-    def call(path: str, lines: List[int] | None = None, start: int | None = None, end: int | None = None):
+    def call(path: str, lines: List[int] | None = None, start: int | None = None, end: int | None = None, context=None):
         try:
             with open(path, 'r') as f:
                 content = f.readlines()

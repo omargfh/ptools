@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Introduction &mdash; PTools 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/custom.css?v=0c468a07" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=8d563738"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="installation.html" />
+    <link rel="prev" title="PTools Documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            PTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#core-capabilities">Core Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#file-system-data-operations">File System &amp; Data Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ai-language-models">AI &amp; Language Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#development-tools">Development Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-processing-workflows">Data Processing &amp; Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuration-security">Configuration &amp; Security</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#design-patterns">Design Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#decorator-based-configuration">Decorator-Based Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#modular-cli-structure">Modular CLI Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stream-processing">Stream Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Introduction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/introduction.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h1>
+<p><strong>PTools</strong> (Power Tools) is a comprehensive command-line toolkit designed to enhance productivity for developers, system administrators, and power users. Built with Python and leveraging the Click framework, PTools provides a unified interface for a wide variety of common and specialized tasks.</p>
+<section id="philosophy">
+<h2>Philosophy<a class="headerlink" href="#philosophy" title="Link to this heading"></a></h2>
+<p>PTools follows a modular, Unix-philosophy approach where each tool does one thing well, but tools can be composed together to create powerful workflows. The toolkit is designed around several core principles:</p>
+<ul class="simple">
+<li><p><strong>Modularity</strong>: Each functionality is a separate module that can be used independently</p></li>
+<li><p><strong>Composability</strong>: Tools can be chained together using pipes and standard Unix conventions</p></li>
+<li><p><strong>Extensibility</strong>: Easy to add new modules and extend existing functionality</p></li>
+<li><p><strong>User-Friendly</strong>: Consistent interface with helpful error messages and documentation</p></li>
+<li><p><strong>Modern</strong>: Integration with AI services, modern data formats, and cloud services</p></li>
+</ul>
+</section>
+<section id="core-capabilities">
+<h2>Core Capabilities<a class="headerlink" href="#core-capabilities" title="Link to this heading"></a></h2>
+<section id="file-system-data-operations">
+<h3>File System &amp; Data Operations<a class="headerlink" href="#file-system-data-operations" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Advanced file system navigation and manipulation (<code class="docutils literal notranslate"><span class="pre">fs</span></code> module)</p></li>
+<li><p>Intelligent rsync operations with watching capabilities (<code class="docutils literal notranslate"><span class="pre">rsync</span></code> module)</p></li>
+<li><p>JSON and YAML processing with format conversion (<code class="docutils literal notranslate"><span class="pre">json</span></code> module)</p></li>
+<li><p>Clipboard integration for seamless data transfer (<code class="docutils literal notranslate"><span class="pre">clip</span></code> module)</p></li>
+</ul>
+</section>
+<section id="ai-language-models">
+<h3>AI &amp; Language Models<a class="headerlink" href="#ai-language-models" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Interactive chat interfaces with OpenAI and Google AI models (<code class="docutils literal notranslate"><span class="pre">llm</span></code> module)</p></li>
+<li><p>Profile-based AI configurations for different use cases</p></li>
+<li><p>Chat history management and persistence</p></li>
+<li><p>API key management with secure storage</p></li>
+</ul>
+</section>
+<section id="development-tools">
+<h3>Development Tools<a class="headerlink" href="#development-tools" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Project management and workspace organization (<code class="docutils literal notranslate"><span class="pre">projects</span></code> module)</p></li>
+<li><p>Development environment utilities (<code class="docutils literal notranslate"><span class="pre">dev</span></code> module)</p></li>
+<li><p>Shell configuration and alias management (<code class="docutils literal notranslate"><span class="pre">shell</span></code> module)</p></li>
+<li><p>File watching and automated synchronization (<code class="docutils literal notranslate"><span class="pre">watch</span></code> module)</p></li>
+</ul>
+</section>
+<section id="data-processing-workflows">
+<h3>Data Processing &amp; Workflows<a class="headerlink" href="#data-processing-workflows" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Flow-based data processing with functional programming primitives (<code class="docutils literal notranslate"><span class="pre">flow</span></code> module)</p></li>
+<li><p>Stream processing capabilities for handling large datasets</p></li>
+<li><p>Expression evaluation with rich built-in functions</p></li>
+<li><p>Support for complex data transformations</p></li>
+</ul>
+</section>
+<section id="configuration-security">
+<h3>Configuration &amp; Security<a class="headerlink" href="#configuration-security" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Centralized configuration management</p></li>
+<li><p>Secure secrets storage using system keyring</p></li>
+<li><p>Environment variable management</p></li>
+<li><p>Cross-platform compatibility</p></li>
+</ul>
+</section>
+</section>
+<section id="architecture-overview">
+<h2>Architecture Overview<a class="headerlink" href="#architecture-overview" title="Link to this heading"></a></h2>
+<p>PTools is structured as a collection of modules, each providing specific functionality:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ptools/
+├── main.py          # Main CLI entry point
+├── llm.py          # AI/LLM integration
+├── fs.py           # File system operations
+├── flow.py         # Data processing workflows
+├── rsync.py        # Enhanced rsync operations
+├── json.py         # JSON/data format utilities
+├── projects.py     # Project management
+├── dev.py          # Development tools
+├── shell.py        # Shell utilities
+├── watch.py        # File watching
+├── secrets.py      # Secrets management
+├── clip.py         # Clipboard operations
+├── workspaces.py   # Workspace management
+└── lib/            # Shared libraries
+    ├── llm/        # LLM-specific implementations
+    ├── flow/       # Flow processing engine
+    └── node_workspaces/ # Node.js workspace handling
+</pre></div>
+</div>
+<p>Each module is self-contained and provides its own CLI commands, but they share common utilities and can interact with each other when needed.</p>
+</section>
+<section id="design-patterns">
+<h2>Design Patterns<a class="headerlink" href="#design-patterns" title="Link to this heading"></a></h2>
+<section id="decorator-based-configuration">
+<h3>Decorator-Based Configuration<a class="headerlink" href="#decorator-based-configuration" title="Link to this heading"></a></h3>
+<p>PTools uses a sophisticated decorator system for handling common CLI patterns like input validation, configuration loading, and error handling:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@click</span><span class="o">.</span><span class="n">command</span><span class="p">()</span>
+<span class="nd">@require</span><span class="o">.</span><span class="n">library</span><span class="p">(</span><span class="s1">&#39;openai&#39;</span><span class="p">,</span> <span class="n">prompt_install</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nd">@require</span><span class="o">.</span><span class="n">key</span><span class="p">([</span><span class="s1">&#39;OPENAI_API_KEY&#39;</span><span class="p">],</span> <span class="n">stores</span><span class="o">=</span><span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="n">key_store</span><span class="p">])</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">some_command</span><span class="p">():</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+</section>
+<section id="modular-cli-structure">
+<h3>Modular CLI Structure<a class="headerlink" href="#modular-cli-structure" title="Link to this heading"></a></h3>
+<p>Each module provides its own CLI group that gets composed into the main application:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># In main.py</span>
+<span class="n">cli</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">llm</span><span class="o">.</span><span class="n">cli</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;llm&quot;</span><span class="p">)</span>
+<span class="n">cli</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">flow</span><span class="o">.</span><span class="n">cli</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;flow&quot;</span><span class="p">)</span>
+<span class="c1"># etc.</span>
+</pre></div>
+</div>
+</section>
+<section id="stream-processing">
+<h3>Stream Processing<a class="headerlink" href="#stream-processing" title="Link to this heading"></a></h3>
+<p>The flow module implements a stream processing paradigm for handling data transformations:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Process data through a pipeline</span>
+ptools<span class="w"> </span>flow<span class="w"> </span>map<span class="w"> </span><span class="s2">&quot;x.upper()&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>ptools<span class="w"> </span>flow<span class="w"> </span>filter<span class="w"> </span><span class="s2">&quot;len(x) &gt; 5&quot;</span>
+</pre></div>
+</div>
+<p>This introduction provides the foundation for understanding how PTools works and how to use it effectively. The following sections will dive deeper into installation, configuration, and usage patterns.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="PTools Documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="&lt;no title&gt;" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Omar Ibrahim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

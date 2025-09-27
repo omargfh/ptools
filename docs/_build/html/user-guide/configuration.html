@@ -1,0 +1,449 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>} &mdash; PTools 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=0c468a07" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#core-capabilities">Core Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#file-system-data-operations">File System &amp; Data Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#ai-language-models">AI &amp; Language Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#development-tools">Development Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#data-processing-workflows">Data Processing &amp; Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#configuration-security">Configuration &amp; Security</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#design-patterns">Design Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#decorator-based-configuration">Decorator-Based Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#modular-cli-structure">Modular CLI Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#stream-processing">Stream Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">}</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user-guide/configuration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p># Configuration</p>
+<p>PTools uses a hierarchical configuration system to manage settings, profiles, and user preferences across all modules.</p>
+<p>## Configuration Hierarchy</p>
+<p>Settings are resolved in this order of priority (highest to lowest):</p>
+<ol class="arabic simple">
+<li><p><strong>Command-line options</strong>: <cite>–option value</cite></p></li>
+<li><p><strong>Environment variables</strong>: <cite>PTOOLS_OPTION=value</cite></p></li>
+<li><p><strong>Configuration files</strong>: JSON/YAML files in config directory</p></li>
+<li><p><strong>Default values</strong>: Built-in defaults</p></li>
+</ol>
+<p>## Configuration Directory</p>
+<p>PTools stores configuration in platform-appropriate locations:</p>
+<p>### Location by Platform</p>
+<ul class="simple">
+<li><p><strong>Linux/macOS</strong>: <cite>~/.config/ptools/</cite></p></li>
+<li><p><strong>Windows</strong>: <a href="#id1"><span class="problematic" id="id2">`</span></a>%APPDATA%ptools`</p></li>
+</ul>
+<p>### Directory Structure</p>
+<p><a href="#id3"><span class="problematic" id="id4">``</span></a>`
+~/.config/ptools/
+├── config.json              # Main configuration file
+├── keys/                     # Encrypted API keys (managed by keyring)
+├── profiles/                 # AI model profiles
+│   ├── default.json
+│   ├── coding-helper.json
+│   └── creative-writer.json
+├── chats/                    # Chat history files
+│   ├── project-planning.json
+│   └── debug-session.json
+├── projects/                 # Project definitions
+│   └── projects.json
+└── logs/                     # Application logs</p>
+<blockquote>
+<div><p>└── ptools.log</p>
+</div></blockquote>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>## Main Configuration File</p>
+<p>The main configuration file (<cite>config.json</cite>) stores global settings:</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>json
+{</p>
+<blockquote>
+<div><p>“version”: “1.0.0”,
+“logging”: {</p>
+<blockquote>
+<div><p>“level”: “INFO”,
+“file_enabled”: true,
+“console_enabled”: true</p>
+</div></blockquote>
+<p>},
+“defaults”: {</p>
+<blockquote>
+<div><p>“llm_model”: “gemini-2.0-flash”,
+“output_format”: “text”,
+“verbose”: false</p>
+</div></blockquote>
+<p>},
+“modules”: {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>“llm”: {</dt><dd><p>“default_profile”: “default”,
+“history_transformer”: “pass_through”,
+“auto_persist”: false</p>
+</dd>
+</dl>
+<p>},
+“flow”: {</p>
+<blockquote>
+<div><p>“debug_mode”: false,
+“output_flavor”: “text”</p>
+</div></blockquote>
+<p>},
+“fs”: {</p>
+<blockquote>
+<div><p>“default_max_depth”: 5,
+“show_hidden”: false</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<section id="id13">
+<h1>}<a class="headerlink" href="#id13" title="Link to this heading"></a></h1>
+<p>## Environment Variables</p>
+<p>PTools recognizes these environment variables:</p>
+<p>### Global Settings
+- <cite>PTOOLS_CONFIG_DIR</cite>: Override default configuration directory
+- <cite>PTOOLS_DEBUG</cite>: Enable debug mode (<cite>1</cite> or <cite>true</cite>)
+- <cite>PTOOLS_NO_COLOR</cite>: Disable colored output (<cite>1</cite> or <cite>true</cite>)
+- <cite>PTOOLS_LOG_LEVEL</cite>: Set logging level (<cite>DEBUG</cite>, <cite>INFO</cite>, <cite>WARNING</cite>, <cite>ERROR</cite>)</p>
+<p>### API Keys (Alternative to Keyring)
+- <cite>OPENAI_API_KEY</cite>: OpenAI API key
+- <cite>GOOGLE_API_KEY</cite>: Google AI API key
+- <cite>SERPERDEV_API_KEY</cite>: SerperDev API key</p>
+<p>### Module-Specific
+- <cite>PTOOLS_LLM_DEFAULT_MODEL</cite>: Default AI model to use
+- <cite>PTOOLS_FLOW_DEBUG</cite>: Enable flow debug mode
+- <cite>PTOOLS_FS_MAX_DEPTH</cite>: Default maximum depth for directory walking</p>
+<p>## AI Profiles</p>
+<p>AI profiles customize language model behavior for different use cases.</p>
+<p>### Profile Structure</p>
+<p>Profiles are JSON files with this structure:</p>
+<p><a href="#id14"><span class="problematic" id="id15">``</span></a><a href="#id16"><span class="problematic" id="id17">`</span></a>json
+{</p>
+<blockquote>
+<div><p>“temperature”: 0.7,
+“max_tokens”: 1024,
+“presence_penalty”: 0.0,
+“frequency_penalty”: 0.0,
+“system_prompt”: “You are a helpful assistant.”</p>
+</div></blockquote>
+</section>
+<section id="id18">
+<h1>}<a class="headerlink" href="#id18" title="Link to this heading"></a></h1>
+<p>### Profile Parameters</p>
+<ul class="simple">
+<li><p><strong>temperature</strong> (0.0-2.0): Controls randomness/creativity
+- 0.0: Very focused, deterministic
+- 0.7: Balanced (default)
+- 1.5+: Very creative, unpredictable</p></li>
+<li><p><strong>max_tokens</strong> (1-4096): Maximum response length
+- 512: Short responses
+- 1024: Medium responses (default)
+- 2048+: Long, detailed responses</p></li>
+<li><p><strong>presence_penalty</strong> (-2.0 to 2.0): Encourages new topics
+- Negative: More repetition
+- 0.0: Balanced (default)
+- Positive: More topic diversity</p></li>
+<li><p><strong>frequency_penalty</strong> (-2.0 to 2.0): Reduces repetition
+- Negative: More repetitive
+- 0.0: Balanced (default)
+- Positive: Less repetitive</p></li>
+<li><p><strong>system_prompt</strong> (string): Sets AI behavior and personality</p></li>
+</ul>
+<p>### Built-in Profiles</p>
+<p>PTools includes several built-in profiles:</p>
+<p>#### Default Profile
+<a href="#id19"><span class="problematic" id="id20">``</span></a><a href="#id21"><span class="problematic" id="id22">`</span></a>json
+{</p>
+<blockquote>
+<div><p>“temperature”: 0.7,
+“max_tokens”: 1024,
+“presence_penalty”: 0.0,
+“frequency_penalty”: 0.0,
+“system_prompt”: “You are a helpful assistant.”</p>
+</div></blockquote>
+</section>
+<section id="id23">
+<h1>}<a class="headerlink" href="#id23" title="Link to this heading"></a></h1>
+<p>#### Code Reviewer Profile
+<a href="#id24"><span class="problematic" id="id25">``</span></a><a href="#id26"><span class="problematic" id="id27">`</span></a>json
+{</p>
+<blockquote>
+<div><p>“temperature”: 0.3,
+“max_tokens”: 2000,
+“presence_penalty”: 0.0,
+“frequency_penalty”: 0.0,
+“system_prompt”: “You are an expert code reviewer. Focus on best practices, security, performance, and maintainability. Provide specific, actionable feedback.”</p>
+</div></blockquote>
+</section>
+<section id="id28">
+<h1>}<a class="headerlink" href="#id28" title="Link to this heading"></a></h1>
+<p>#### Creative Writer Profile
+<a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a>json
+{</p>
+<blockquote>
+<div><p>“temperature”: 1.2,
+“max_tokens”: 2000,
+“presence_penalty”: 0.8,
+“frequency_penalty”: 0.5,
+“system_prompt”: “You are a creative writer. Use vivid language, interesting metaphors, and engaging storytelling techniques.”</p>
+</div></blockquote>
+</section>
+<section id="id33">
+<h1>}<a class="headerlink" href="#id33" title="Link to this heading"></a></h1>
+<p>### Managing Profiles</p>
+<p><a href="#id34"><span class="problematic" id="id35">``</span></a><a href="#id36"><span class="problematic" id="id37">`</span></a>bash
+# Create new profile interactively
+ptools llm-opts create-profile</p>
+<p># Add profile from file
+ptools llm-opts add-profile my-profile profile.json</p>
+<p># List all profiles
+ptools llm-opts list-profiles</p>
+<p># Delete profile
+ptools llm-opts delete-profile old-profile
+<a href="#id38"><span class="problematic" id="id39">``</span></a><a href="#id40"><span class="problematic" id="id41">`</span></a></p>
+<p>## Project Configuration</p>
+<p>The projects system tracks your development projects:</p>
+<p>### Projects File Structure</p>
+<p><cite>~/.config/ptools/projects/projects.json</cite>:</p>
+<p><a href="#id42"><span class="problematic" id="id43">``</span></a><a href="#id44"><span class="problematic" id="id45">`</span></a>json
+{</p>
+<blockquote>
+<div><dl>
+<dt>“projects”: {</dt><dd><dl class="simple">
+<dt>“ptools”: {</dt><dd><p>“path”: “/home/user/code/ptools”,
+“description”: “Power tools CLI”,
+“tags”: [“python”, “cli”, “tools”],
+“created”: “2025-01-01T10:00:00Z”,
+“last_accessed”: “2025-01-01T15:30:00Z”</p>
+</dd>
+</dl>
+<p>},
+“my-website”: {</p>
+<blockquote>
+<div><p>“path”: “/home/user/code/website”,
+“description”: “Personal website”,
+“tags”: [“javascript”, “web”, “react”],
+“created”: “2025-01-01T11:00:00Z”,
+“last_accessed”: “2025-01-01T14:20:00Z”</p>
+</div></blockquote>
+<p>}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</section>
+<section id="id46">
+<h1>}<a class="headerlink" href="#id46" title="Link to this heading"></a></h1>
+<p>### Managing Projects</p>
+<p><a href="#id47"><span class="problematic" id="id48">``</span></a><a href="#id49"><span class="problematic" id="id50">`</span></a>bash
+# Add project
+ptools projects add my-project /path/to/project</p>
+<p># List projects
+ptools projects list</p>
+<p># Remove project
+ptools projects remove my-project</p>
+<p># Open project directory
+ptools projects open my-project
+<a href="#id51"><span class="problematic" id="id52">``</span></a><a href="#id53"><span class="problematic" id="id54">`</span></a></p>
+<p>## Security Configuration</p>
+<p>### API Key Storage</p>
+<p>API keys are stored securely using the system keyring:</p>
+<ul class="simple">
+<li><p><strong>macOS</strong>: Keychain Access</p></li>
+<li><p><strong>Linux</strong>: Secret Service (GNOME Keyring, KWallet)</p></li>
+<li><p><strong>Windows</strong>: Windows Credential Manager</p></li>
+</ul>
+<p>Keys are never stored in plain text configuration files.</p>
+<p>### Encryption</p>
+<p>Sensitive data uses encryption:
+- AES-256 encryption for local data
+- Platform-specific secure storage APIs
+- Automatic key rotation where supported</p>
+<p>## Advanced Configuration</p>
+<p>### Custom Configuration Files</p>
+<p>You can create module-specific configuration files:</p>
+<p><cite>~/.config/ptools/llm.json</cite>:
+<a href="#id55"><span class="problematic" id="id56">``</span></a><a href="#id57"><span class="problematic" id="id58">`</span></a>json
+{</p>
+<blockquote>
+<div><p>“default_model”: “gpt-4”,
+“profiles_directory”: “/custom/path/profiles”,
+“chat_history_retention_days”: 30</p>
+</div></blockquote>
+</section>
+<section id="id59">
+<h1>}<a class="headerlink" href="#id59" title="Link to this heading"></a></h1>
+<p>### Configuration Validation</p>
+<p>PTools validates all configuration files on startup:</p>
+<ul class="simple">
+<li><p>Schema validation using Pydantic models</p></li>
+<li><p>Type checking for all values</p></li>
+<li><p>Range validation for numeric values</p></li>
+<li><p>Path validation for file/directory references</p></li>
+</ul>
+<p>### Configuration Migration</p>
+<p>PTools automatically migrates configuration when upgrading:</p>
+<ul class="simple">
+<li><p>Backup old configuration before migration</p></li>
+<li><p>Add new default values for new settings</p></li>
+<li><p>Remove deprecated settings with warnings</p></li>
+<li><p>Preserve user customizations</p></li>
+</ul>
+<p>## Troubleshooting Configuration</p>
+<p>### Common Issues</p>
+<ol class="arabic">
+<li><p><strong>Configuration not found</strong>:
+<a href="#id60"><span class="problematic" id="id61">``</span></a><a href="#id62"><span class="problematic" id="id63">`</span></a>bash
+# Check configuration directory
+echo $HOME/.config/ptools</p>
+<p># Recreate default configuration
+ptools dev install
+<a href="#id64"><span class="problematic" id="id65">``</span></a><a href="#id66"><span class="problematic" id="id67">`</span></a></p>
+</li>
+<li><p><strong>Invalid configuration</strong>:
+<a href="#id68"><span class="problematic" id="id69">``</span></a><a href="#id70"><span class="problematic" id="id71">`</span></a>bash
+# Validate configuration
+ptools –debug –help  # Will show config validation errors</p>
+<p># Reset to defaults
+rm ~/.config/ptools/config.json
+ptools –help  # Will recreate defaults
+<a href="#id72"><span class="problematic" id="id73">``</span></a><a href="#id74"><span class="problematic" id="id75">`</span></a></p>
+</li>
+<li><p><strong>API key issues</strong>:
+<a href="#id76"><span class="problematic" id="id77">``</span></a><a href="#id78"><span class="problematic" id="id79">`</span></a>bash
+# Check stored keys
+ptools llm-opts list-api-keys</p>
+<p># Re-add keys
+ptools llm-opts set-api-key –service openai
+<a href="#id80"><span class="problematic" id="id81">``</span></a><a href="#id82"><span class="problematic" id="id83">`</span></a></p>
+</li>
+<li><p><strong>Permission problems</strong>:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">#</span> <span class="pre">Fix</span> <span class="pre">permissions</span>
+<span class="pre">chmod</span> <span class="pre">-R</span> <span class="pre">700</span> <span class="pre">~/.config/ptools</span>
+<span class="pre">`</span></code></p></li>
+</ol>
+<p>### Debug Configuration</p>
+<p>Enable debug mode to see configuration loading:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">export</span> <span class="pre">PTOOLS_DEBUG=1</span>
+<span class="pre">ptools</span> <span class="pre">--help</span>
+<span class="pre">`</span></code></p>
+<p>This will show:
+- Configuration file paths being checked
+- Values being loaded from each source
+- Validation errors and warnings
+- Final resolved configuration</p>
+<p>### Reset Configuration</p>
+<p>To completely reset configuration:</p>
+<p><a href="#id84"><span class="problematic" id="id85">``</span></a><a href="#id86"><span class="problematic" id="id87">`</span></a>bash
+# Backup current configuration
+cp -r ~/.config/ptools ~/.config/ptools.backup</p>
+<p># Remove configuration directory
+rm -rf ~/.config/ptools</p>
+<p># Restart ptools to recreate defaults
+ptools –help
+<a href="#id88"><span class="problematic" id="id89">``</span></a><a href="#id90"><span class="problematic" id="id91">`</span></a></p>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Omar Ibrahim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

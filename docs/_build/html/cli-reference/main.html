@@ -1,0 +1,197 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>&lt;no title&gt; &mdash; PTools 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=0c468a07" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#core-capabilities">Core Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#file-system-data-operations">File System &amp; Data Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#ai-language-models">AI &amp; Language Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#development-tools">Development Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#data-processing-workflows">Data Processing &amp; Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#configuration-security">Configuration &amp; Security</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#design-patterns">Design Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#decorator-based-configuration">Decorator-Based Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#modular-cli-structure">Modular CLI Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#stream-processing">Stream Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">&lt;no title&gt;</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/cli-reference/main.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p># Main Command</p>
+<p><code class="docutils literal notranslate"><span class="pre">`{click}</span> <span class="pre">ptools.main:cli</span>
+<span class="pre">:prog:</span> <span class="pre">ptools</span>
+<span class="pre">:nested:</span> <span class="pre">full</span>
+<span class="pre">`</span></code></p>
+<p>## Usage</p>
+<p>The main <cite>ptools</cite> command serves as the entry point for all PTools functionality.</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">ptools</span> <span class="pre">[OPTIONS]</span> <span class="pre">COMMAND</span> <span class="pre">[ARGS]...</span>
+<span class="pre">`</span></code></p>
+<p>## Global Options</p>
+<ul class="simple">
+<li><p><cite>–version</cite>: Show the version and exit</p></li>
+<li><p><cite>–help</cite>: Show help message and exit</p></li>
+</ul>
+<p>## Available Commands</p>
+<p>The main command provides access to all PTools modules:</p>
+<p>### Core Modules
+- <cite>llm</cite> - AI/LLM integration and chat interface
+- <cite>llm-opts</cite> - AI configuration and profile management
+- <cite>fs</cite> - File system operations and utilities
+- <cite>flow</cite> - Data processing and transformation pipelines
+- <cite>json</cite> - JSON parsing, formatting, and conversion</p>
+<p>### System Operations
+- <cite>rsync</cite> - Enhanced rsync operations with watching
+- <cite>watch</cite> - File system monitoring and automated actions
+- <cite>clip</cite> - Clipboard integration for data transfer</p>
+<p>### Development Tools
+- <cite>dev</cite> - Development environment utilities
+- <cite>projects</cite> - Project management and organization
+- <cite>shell</cite> - Shell configuration and aliases
+- <cite>ws</cite> - Workspace management (workspaces)</p>
+<p>### Configuration
+- <cite>secrets</cite> - Secure secrets and credential management</p>
+<p>## Examples</p>
+<p>### Getting Help
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>bash
+# Show all available commands
+ptools –help</p>
+<p># Get help for specific module
+ptools llm –help</p>
+<p># Get help for specific command
+ptools llm chat –help
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>### Version Information
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">#</span> <span class="pre">Show</span> <span class="pre">version</span>
+<span class="pre">ptools</span> <span class="pre">--version</span>
+<span class="pre">`</span></code></p>
+<p>### Module Access Patterns
+<a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>bash
+# Direct module access
+ptools llm “Hello, AI!”
+ptools fs info /path/to/file
+ptools flow map “x.upper()”</p>
+<p># Chain commands using pipes
+ptools fs walkdir | ptools flow filter “’.py’ in x”
+echo “data” | ptools flow map “x.upper()” | ptools clip copy
+<a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>## Environment Variables</p>
+<p>The main command respects these environment variables:</p>
+<ul class="simple">
+<li><p><cite>PTOOLS_DEBUG</cite>: Enable debug mode for all operations</p></li>
+<li><p><cite>PTOOLS_CONFIG_DIR</cite>: Override the default configuration directory</p></li>
+<li><p><cite>PTOOLS_NO_COLOR</cite>: Disable colored output in all modules</p></li>
+</ul>
+<p>## Configuration</p>
+<p>The main command initializes the global PTools configuration system, which:</p>
+<ul class="simple">
+<li><p>Creates configuration directories on first run</p></li>
+<li><p>Loads default settings and profiles</p></li>
+<li><p>Initializes secure credential storage</p></li>
+<li><p>Sets up logging and error handling</p></li>
+</ul>
+<p>Configuration files are stored in:
+- <strong>Linux/macOS</strong>: <cite>~/.config/ptools/</cite>
+- <strong>Windows</strong>: <a href="#id17"><span class="problematic" id="id18">`</span></a>%APPDATA%ptools`</p>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Omar Ibrahim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

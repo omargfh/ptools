@@ -1,0 +1,412 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>} &mdash; PTools 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=0c468a07" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=8d563738"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            PTools
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../introduction.html">Introduction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#philosophy">Philosophy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#core-capabilities">Core Capabilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#file-system-data-operations">File System &amp; Data Operations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#ai-language-models">AI &amp; Language Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#development-tools">Development Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#data-processing-workflows">Data Processing &amp; Workflows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#configuration-security">Configuration &amp; Security</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#architecture-overview">Architecture Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../introduction.html#design-patterns">Design Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#decorator-based-configuration">Decorator-Based Configuration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#modular-cli-structure">Modular CLI Structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../introduction.html#stream-processing">Stream Processing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">PTools</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">}</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/user-guide/ai-integration.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <p># AI Integration</p>
+<p>PTools provides comprehensive AI integration through the <cite>llm</cite> module, supporting multiple AI providers and offering flexible configuration options for different use cases.</p>
+<p>## Supported AI Providers</p>
+<p>### OpenAI
+- GPT-3.5 Turbo, GPT-4, and newer models
+- Full chat API support
+- Streaming responses
+- Custom system prompts</p>
+<p>### Google AI
+- Gemini models (Gemini 2.0 Flash, etc.)
+- Google AI Studio integration
+- Advanced safety settings
+- Multimodal capabilities (text, future support for images)</p>
+<p>## Getting Started with AI</p>
+<p>### Setting Up API Keys</p>
+<p>First, configure your API keys for the services you want to use:</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>bash
+# OpenAI API key
+ptools llm-opts set-api-key –service openai
+# Enter your API key when prompted (hidden input)</p>
+<p># Google AI API key
+ptools llm-opts set-api-key –service google</p>
+<p># Verify your keys are stored
+ptools llm-opts list-api-keys
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>API keys are securely stored using your system’s keyring (Keychain on macOS, Credential Manager on Windows, etc.).</p>
+<p>### Basic Chat Commands</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>bash
+# Simple one-off question
+ptools llm “What is the capital of France?”</p>
+<p># Interactive chat session
+ptools llm –interactive</p>
+<p># Use specific model
+ptools llm “Explain Python decorators” –model gpt-4</p>
+<p># Non-interactive with specific model
+ptools llm “Write a Python function to calculate fibonacci numbers” –model gemini-2.0-flash
+<a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>### Interactive Chat Interface</p>
+<p>The interactive mode provides a full chat experience:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">ptools</span> <span class="pre">llm</span> <span class="pre">--interactive</span>
+<span class="pre">`</span></code></p>
+<p>In interactive mode:
+- Type <cite>/help</cite> for available commands
+- Use <cite>/exit</cite>, <cite>/quit</cite>, or <cite>/q</cite> to exit
+- Chat history is automatically maintained
+- Syntax highlighting for code responses</p>
+<p>## Profiles and Configuration</p>
+<p>Profiles allow you to customize AI behavior for different use cases.</p>
+<p>### Creating Profiles</p>
+<p>Create profiles interactively:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">ptools</span> <span class="pre">llm-opts</span> <span class="pre">create-profile</span>
+<span class="pre">#</span> <span class="pre">Follow</span> <span class="pre">the</span> <span class="pre">prompts</span> <span class="pre">to</span> <span class="pre">set:</span>
+<span class="pre">#</span> <span class="pre">-</span> <span class="pre">Profile</span> <span class="pre">name</span>
+<span class="pre">#</span> <span class="pre">-</span> <span class="pre">Temperature</span> <span class="pre">(creativity</span> <span class="pre">level)</span>
+<span class="pre">#</span> <span class="pre">-</span> <span class="pre">Max</span> <span class="pre">tokens</span> <span class="pre">(response</span> <span class="pre">length)</span>
+<span class="pre">#</span> <span class="pre">-</span> <span class="pre">Presence</span> <span class="pre">penalty</span> <span class="pre">(topic</span> <span class="pre">diversity)</span>
+<span class="pre">#</span> <span class="pre">-</span> <span class="pre">Frequency</span> <span class="pre">penalty</span> <span class="pre">(repetition</span> <span class="pre">avoidance)</span>
+<span class="pre">#</span> <span class="pre">-</span> <span class="pre">System</span> <span class="pre">prompt</span> <span class="pre">(AI</span> <span class="pre">behavior</span> <span class="pre">instructions)</span>
+<span class="pre">`</span></code></p>
+<p>Create profiles from files:</p>
+<p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>bash
+# Create a profile configuration file
+cat &gt; code_reviewer.json &lt;&lt; EOF
+{</p>
+<blockquote>
+<div><p>“temperature”: 0.3,
+“max_tokens”: 2000,
+“presence_penalty”: 0.0,
+“frequency_penalty”: 0.0,
+“system_prompt”: “You are an expert code reviewer. Provide detailed, constructive feedback on code quality, best practices, and potential improvements.”</p>
+</div></blockquote>
+<p>}
+EOF</p>
+<p># Add the profile
+ptools llm-opts add-profile code-reviewer code_reviewer.json
+<a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<p>### Using Profiles</p>
+<p><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>bash
+# Use a specific profile
+ptools llm “Review this function” –profile code-reviewer</p>
+<p># Interactive session with profile
+ptools llm –interactive –profile code-reviewer
+<a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a></p>
+<p>### Managing Profiles</p>
+<p><a href="#id33"><span class="problematic" id="id34">``</span></a><a href="#id35"><span class="problematic" id="id36">`</span></a>bash
+# List all profiles
+ptools llm-opts list-profiles</p>
+<p># Delete a profile
+ptools llm-opts delete-profile old-profile
+<a href="#id37"><span class="problematic" id="id38">``</span></a><a href="#id39"><span class="problematic" id="id40">`</span></a></p>
+<p>## Chat History Management</p>
+<p>### Persistent Chat Sessions</p>
+<p>Save chat sessions for later reference:</p>
+<p><a href="#id41"><span class="problematic" id="id42">``</span></a><a href="#id43"><span class="problematic" id="id44">`</span></a>bash
+# Create a named chat session
+ptools llm –interactive –history project-planning –persist</p>
+<p># Continue a previous chat session
+ptools llm –interactive –history project-planning
+<a href="#id45"><span class="problematic" id="id46">``</span></a><a href="#id47"><span class="problematic" id="id48">`</span></a></p>
+<p>### Managing Chat History</p>
+<p><a href="#id49"><span class="problematic" id="id50">``</span></a><a href="#id51"><span class="problematic" id="id52">`</span></a>bash
+# List all saved chats
+ptools llm-opts list-chats</p>
+<p># Clean up old chats
+ptools llm-opts prune-chats
+<a href="#id53"><span class="problematic" id="id54">``</span></a><a href="#id55"><span class="problematic" id="id56">`</span></a></p>
+<p>### Chat File Format</p>
+<p>Chat files are stored as JSON and can be manually inspected or processed:</p>
+<p><a href="#id57"><span class="problematic" id="id58">``</span></a><a href="#id59"><span class="problematic" id="id60">`</span></a>json
+{</p>
+<blockquote>
+<div><dl>
+<dt>“messages”: [</dt><dd><dl class="simple">
+<dt>{</dt><dd><p>“role”: “user”,
+“content”: “Hello!”,
+“timestamp”: “2025-01-01T10:00:00Z”</p>
+</dd>
+</dl>
+<p>},
+{</p>
+<blockquote>
+<div><p>“role”: “assistant”,
+“content”: “Hello! How can I help you today?”,
+“timestamp”: “2025-01-01T10:00:01Z”</p>
+</div></blockquote>
+<p>}</p>
+</dd>
+</dl>
+<p>],
+“metadata”: {</p>
+<blockquote>
+<div><p>“model”: “gpt-4”,
+“profile”: “default”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<section id="id61">
+<h1>}<a class="headerlink" href="#id61" title="Link to this heading"></a></h1>
+<p>## Advanced Features</p>
+<p>### History Transformers</p>
+<p>History transformers modify chat history before sending to the AI:</p>
+<p><a href="#id62"><span class="problematic" id="id63">``</span></a><a href="#id64"><span class="problematic" id="id65">`</span></a>bash
+# Use pass-through transformer (default)
+ptools llm –history-transformer pass_through</p>
+<p># Future: Summary transformer to compress long chats
+# ptools llm –history-transformer summarize
+<a href="#id66"><span class="problematic" id="id67">``</span></a><a href="#id68"><span class="problematic" id="id69">`</span></a></p>
+<p>### Custom System Prompts</p>
+<p>System prompts define the AI’s behavior and personality:</p>
+<p><a href="#id70"><span class="problematic" id="id71">``</span></a><a href="#id72"><span class="problematic" id="id73">`</span></a>bash
+# Example system prompts for different use cases</p>
+<p># Code reviewer
+“You are an expert code reviewer. Focus on best practices, security, and maintainability.”</p>
+<p># Technical writer
+“You are a technical writer. Explain complex topics clearly and provide practical examples.”</p>
+<p># Unix expert
+“You are a Unix system administrator. Provide command-line solutions and explain system concepts.”
+<a href="#id74"><span class="problematic" id="id75">``</span></a><a href="#id76"><span class="problematic" id="id77">`</span></a></p>
+<p>### Model Selection</p>
+<p>Choose the best model for your task:</p>
+<p><a href="#id78"><span class="problematic" id="id79">``</span></a><a href="#id80"><span class="problematic" id="id81">`</span></a>bash
+# Fast and cost-effective (default)
+ptools llm “Quick question” –model gemini-2.0-flash</p>
+<p># More capable for complex tasks
+ptools llm “Complex analysis needed” –model gpt-4</p>
+<p># List available models
+ptools llm –help  # See model choices in help text
+<a href="#id82"><span class="problematic" id="id83">``</span></a><a href="#id84"><span class="problematic" id="id85">`</span></a></p>
+<p>## Integration with Other Modules</p>
+<p>### AI + Data Processing</p>
+<p>Use AI responses in data processing pipelines:</p>
+<p><a href="#id86"><span class="problematic" id="id87">``</span></a><a href="#id88"><span class="problematic" id="id89">`</span></a>bash
+# Process AI responses
+ptools llm “List 5 programming languages” | </p>
+<blockquote>
+<div><p>ptools flow map “x.lower()” | ptools flow filter “‘python’ in x”</p>
+</div></blockquote>
+<p><a href="#id90"><span class="problematic" id="id91">``</span></a><a href="#id92"><span class="problematic" id="id93">`</span></a></p>
+<p>### AI + File Operations</p>
+<p>Get AI help with file analysis:</p>
+<p><a href="#id94"><span class="problematic" id="id95">``</span></a><a href="#id96"><span class="problematic" id="id97">`</span></a>bash
+# Analyze file content
+ptools fs info suspicious_file.py | </p>
+<blockquote>
+<div><p>ptools llm “Analyze this file information for security issues”</p>
+</div></blockquote>
+<p># Process multiple files
+ptools fs walkdir –regex “.py$” | </p>
+<blockquote>
+<div><p>head -5 | xargs -I {} ptools llm “Suggest improvements for: {}”</p>
+</div></blockquote>
+<p><a href="#id98"><span class="problematic" id="id99">``</span></a><a href="#id100"><span class="problematic" id="id101">`</span></a></p>
+<p>### AI + Development Tools</p>
+<p>Integrate AI into development workflows:</p>
+<p><a href="#id102"><span class="problematic" id="id103">``</span></a><a href="#id104"><span class="problematic" id="id105">`</span></a>bash
+# Get AI help with project structure
+ptools projects list | </p>
+<blockquote>
+<div><p>ptools llm “Suggest improvements for this project organization”</p>
+</div></blockquote>
+<p># AI-assisted debugging
+ptools llm –interactive –profile debugger –history debug-session
+<a href="#id106"><span class="problematic" id="id107">``</span></a><a href="#id108"><span class="problematic" id="id109">`</span></a></p>
+<p>## Best Practices</p>
+<p>### Profile Organization</p>
+<ol class="arabic simple">
+<li><p><strong>Create task-specific profiles</strong>:
+- <cite>code-reviewer</cite>: Low temperature, focused on code quality
+- <cite>creative-writer</cite>: High temperature, encourages creativity
+- <cite>debugger</cite>: Medium temperature, systematic problem-solving</p></li>
+<li><p><strong>Use descriptive names</strong>: Profile names should clearly indicate their purpose</p></li>
+<li><p><strong>Document your profiles</strong>: Keep notes about when to use each profile</p></li>
+</ol>
+<p>### Efficient API Usage</p>
+<ol class="arabic simple">
+<li><p><strong>Choose appropriate models</strong>:
+- Use Gemini 2.0 Flash for most tasks (fast, cost-effective)
+- Use GPT-4 for complex reasoning tasks
+- Consider model capabilities vs. cost</p></li>
+<li><p><strong>Manage context length</strong>:
+- Use history transformers for long conversations
+- Start new sessions for unrelated topics
+- Be mindful of token limits</p></li>
+<li><p><strong>Optimize system prompts</strong>:
+- Be specific about desired output format
+- Include relevant context and constraints
+- Test and iterate on prompts</p></li>
+</ol>
+<p>### Security Considerations</p>
+<ol class="arabic simple">
+<li><p><strong>Protect API keys</strong>:
+- Never commit API keys to version control
+- Use secure storage (system keyring)
+- Rotate keys regularly</p></li>
+<li><p><strong>Be mindful of data privacy</strong>:
+- Don’t share sensitive information in prompts
+- Understand your AI provider’s data policies
+- Use local storage for sensitive chat histories</p></li>
+<li><p><strong>Monitor usage</strong>:
+- Track API costs
+- Set up usage alerts with your provider
+- Review chat histories periodically</p></li>
+</ol>
+<p>## Troubleshooting</p>
+<p>### Common Issues</p>
+<ol class="arabic simple">
+<li><p><strong>API Key Not Found</strong>:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">#</span> <span class="pre">Re-run</span> <span class="pre">the</span> <span class="pre">setup</span> <span class="pre">command</span>
+<span class="pre">ptools</span> <span class="pre">llm-opts</span> <span class="pre">set-api-key</span> <span class="pre">--service</span> <span class="pre">openai</span>
+<span class="pre">`</span></code></p></li>
+<li><p><strong>Rate Limiting</strong>:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">#</span> <span class="pre">Wait</span> <span class="pre">and</span> <span class="pre">retry,</span> <span class="pre">or</span> <span class="pre">upgrade</span> <span class="pre">your</span> <span class="pre">API</span> <span class="pre">plan</span>
+<span class="pre">#</span> <span class="pre">Check</span> <span class="pre">your</span> <span class="pre">provider's</span> <span class="pre">rate</span> <span class="pre">limits</span>
+<span class="pre">`</span></code></p></li>
+<li><p><strong>Model Not Available</strong>:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">#</span> <span class="pre">Check</span> <span class="pre">available</span> <span class="pre">models</span>
+<span class="pre">ptools</span> <span class="pre">llm</span> <span class="pre">--help</span>
+<span class="pre">#</span> <span class="pre">Use</span> <span class="pre">a</span> <span class="pre">different</span> <span class="pre">model</span>
+<span class="pre">ptools</span> <span class="pre">llm</span> <span class="pre">&quot;question&quot;</span> <span class="pre">--model</span> <span class="pre">gemini-2.0-flash</span>
+<span class="pre">`</span></code></p></li>
+<li><p><strong>Chat History Issues</strong>:
+<code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">#</span> <span class="pre">List</span> <span class="pre">chats</span> <span class="pre">to</span> <span class="pre">verify</span> <span class="pre">names</span>
+<span class="pre">ptools</span> <span class="pre">llm-opts</span> <span class="pre">list-chats</span>
+<span class="pre">#</span> <span class="pre">Clean</span> <span class="pre">up</span> <span class="pre">corrupted</span> <span class="pre">chats</span>
+<span class="pre">ptools</span> <span class="pre">llm-opts</span> <span class="pre">prune-chats</span>
+<span class="pre">`</span></code></p></li>
+</ol>
+<p>### Debug Mode</p>
+<p>Enable debug output for troubleshooting:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">export</span> <span class="pre">PTOOLS_DEBUG=1</span>
+<span class="pre">ptools</span> <span class="pre">llm</span> <span class="pre">&quot;test</span> <span class="pre">question&quot;</span> <span class="pre">--model</span> <span class="pre">gpt-4</span>
+<span class="pre">`</span></code></p>
+<p>This will show:
+- API request details
+- Response metadata
+- Token usage information
+- Error details</p>
+<p>### Getting Help</p>
+<p>For AI-related issues:
+1. Check API key configuration
+2. Verify internet connectivity
+3. Check your API provider’s status page
+4. Review token usage and limits
+5. Try a different model or profile</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Omar Ibrahim.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
