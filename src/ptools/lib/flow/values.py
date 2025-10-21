@@ -10,14 +10,14 @@ class StreamValue:
     def __init__(self, text: str):
         tree = parser.parse(text)
         self.value = StreamTransformer().transform(tree)
-        
+
     @staticmethod
     def Null():
         return StreamValue("null")
 
     def __repr__(self):
         return repr(self.value)
-    
+
 # Output
 class OutputFlavorKind(Enum):
     plain = 'plain'
@@ -25,6 +25,11 @@ class OutputFlavorKind(Enum):
     python = 'python'
     unflavored = 'unflavored'
     none = 'none'
+
+class InputFlavorKind(Enum):
+    python_like = 'python-like'
+    json = 'json'
+    python = 'python'
 
 class OutputFlavor(ABC):
     @abstractmethod
@@ -39,7 +44,7 @@ class OutputPlainFlavor(OutputFlavor):
             return '\n'.join(f"{k}: {v}" for k, v in value.items())
         else:
             return str(value)
-        
+
 class OutputJSONFlavor(OutputFlavor):
     def format(self, value):
         import json
@@ -71,7 +76,6 @@ class OutputValue:
             self.flavor = OutputUnflavoredFlavor()
         else:
             raise ValueError(f"Unknown flavor: {flavor}")
-            
+
     def format(self, value):
         return self.flavor.format(value)
-   

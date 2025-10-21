@@ -13,7 +13,6 @@ import ptools.lib.llm.decorators as llm_decorators
 from ptools.lib.llm.client import ChatClient
 from ptools.lib.llm.history import HistoryTransformerFactory
 from ptools.lib.llm.entities import LLMProfile
-from ptools.lib.llm.repl import start_chat
 from ptools.lib.llm.commands import commands
 
 @click.command()
@@ -47,7 +46,7 @@ def cli(
     persist: bool,
 ):
     """Interact with a chat interface."""
-    from prompt_toolkit import prompt
+    from ptools.lib.llm.repl import start_chat
 
     chat_file = None
     if history:
@@ -62,7 +61,7 @@ def cli(
         profile = profiles_store.get_profile_by_name(profile)
     if profile is None:
         profile = LLMProfile()
-        
+
     session = ChatSession(
         provider=client,
         history_transformer= \
@@ -76,7 +75,7 @@ def cli(
         'profile': lambda: session.profile,
         'commands': commands
     }
-    
+
     if message:
         message = parse_prompt(' '.join(message), context=context)
         response = session.send_message(message)
@@ -142,7 +141,7 @@ def add_profile(name: str, file: str, copy: bool):
         file = os.path.abspath(file)
     profiles_store.set(name, file)
     click.echo(FormatUtils.success(f'Added profile "{name}" with file "{file}" to config.'))
-    
+
 @opts.command(name='create-profile')
 def create_profile():
     """Create a new LLM profile interactively."""
@@ -157,7 +156,7 @@ def create_profile():
     presence_penalty = click.prompt('Enter presence penalty', type=float, default=0.0)
     frequency_penalty = click.prompt('Enter frequency penalty', type=float, default=0.0)
     system_prompt = click.prompt('Enter system prompt', type=str, default="You are a helpful assistant.", )
-    
+
     profile = LLMProfile(
         temperature=temperature,
         max_tokens=max_tokens,
@@ -165,7 +164,7 @@ def create_profile():
         frequency_penalty=frequency_penalty,
         system_prompt=system_prompt
     )
-    
+
     profiles_store.add(name, profile)
     click.echo(FormatUtils.success(f'Created profile "{name}".'))
 

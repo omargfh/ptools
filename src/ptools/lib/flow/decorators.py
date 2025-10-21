@@ -1,7 +1,7 @@
 from functools import wraps
 import click
 from ptools.utils.decorator_compistor import DecoratorCompositor
-from .values import OutputFlavorKind
+from .values import OutputFlavorKind, InputFlavorKind
 
 output_flavor = DecoratorCompositor.from_list([
     click.option('--flavor', '-fv', type=click.Choice(OutputFlavorKind), default=OutputFlavorKind.plain, help='Output format flavor.'),
@@ -33,4 +33,9 @@ flow_expression = DecoratorCompositor.from_list([
     click.argument('expression', type=str, required=True, nargs=-1),
     click.option('--exec', '-e', is_flag=True, default=False, help='Execute fstring as a shell command.'),
     parse_flow_expression
+])
+
+flow_pipe_input = DecoratorCompositor.from_list([
+    click.option('--multiline', '-m', is_flag=True, default=False, help='Read all lines as a single input.'),
+    click.option('--input-flavor', '-ifv', type=click.Choice(InputFlavorKind), default=InputFlavorKind.python_like, help='Input format flavor.'),
 ])

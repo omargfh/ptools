@@ -4,7 +4,7 @@ import ptools.utils.require as require
 
 @click.command()
 @resolve_input()
-@require.library("pyperclip")
+@require.library("pyperclip", prompt_install=True)
 def cli(source_type, content):
     """Copy input data to clipboard."""
     import pyperclip

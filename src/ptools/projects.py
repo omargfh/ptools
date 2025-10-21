@@ -1,7 +1,7 @@
 import subprocess
 import click
 import json
-import os 
+import os
 
 from ptools.utils.print import FormatUtils
 
@@ -25,7 +25,7 @@ class Projects():
         """Initialize projects from the JSON file."""
         if self.projects is not None:
             return self.projects
-    
+
         try:
             with open(PROJECT_SRC, 'r') as f:
                 self.projects = json.load(f)
@@ -57,7 +57,7 @@ class Projects():
         if name in self.projects and not force:
             click.echo(FormatUtils.error(f"Project '{name}' already exists. Use --force to overwrite."))
             return
-        
+
         self.projects[name] = os.path.abspath(path)
         self.save_projects()
         click.echo(FormatUtils.success(f"Project '{name}' added at {path}."))
@@ -68,12 +68,12 @@ class Projects():
         if name not in self.projects:
             click.echo(FormatUtils.error(f"Project '{name}' does not exist."))
             return
-        
+
         del self.projects[name]
         self.save_projects()
         click.echo(FormatUtils.success(f"Project '{name}' deleted."))
         return self.projects
-    
+
     def save_projects(self):
         """Save projects to the JSON file."""
         try:
@@ -89,11 +89,11 @@ class Projects():
         if name not in self.projects:
             click.echo(FormatUtils.error(f"Project '{name}' does not exist."))
             return
-        
+
         path = self.projects[name]
         os.chdir(path)
         return path
-    
+
     def get_projects(self):
         """Get all projects."""
         return self.projects
@@ -109,7 +109,7 @@ class Projects():
 def cli():
     """Project management CLI for ptools."""
     pass
-    
+
 @cli.command()
 @click.argument('name')
 @click.option('--quiet', is_flag=True, help="Suppress output messages.")
@@ -155,6 +155,10 @@ def delete_project(name):
 def install(shellconfigfile):
     """Install the shell configuration from SHELLCONFIG."""
     fn = """pcd() {
+    if [ "$#" -ne 1 ]; then
+        ptools projects ${*:1} # pass all arguments except the first to ptools projects
+        return $?
+    fi
     cd "$(ptools projects chdir "$1" --quiet)"
 }"""
 

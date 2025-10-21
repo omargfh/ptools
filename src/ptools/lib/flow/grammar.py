@@ -12,15 +12,15 @@ grammar = r"""
           | boolean
           | null
           | BAREWORD   -> str_
-    
-    BAREWORD: /[A-Za-z_][A-Za-z0-9_]*/
-          
+
+    BAREWORD: /.+/
+
     list  : "[" [value ("," value)*] "]"
     tuple : "(" [value ("," value)*] ")"
     set   : "{" [value ("," value)*] "}"
     dict  : "{" pair ("," pair)* "}"
     pair  : value ":" value
-    
+
     quoted: ESCAPED_STRING
           | /'[^']*'/
           | /`[^`]*`/
@@ -62,16 +62,16 @@ class AttributeDict(dict):
             return self[name]
         except KeyError:
             raise AttributeError(f"No such attribute: {name}")
-        
+
     def __setattr__(self, name, value):
-        self[name] = value 
-        
+        self[name] = value
+
     def __delattr__(self, name):
         try:
             del self[name]
         except KeyError:
             raise AttributeError(f"No such attribute: {name}")
-    
+
 
 class StreamTransformer(Transformer):
     @v_args(inline=True)
