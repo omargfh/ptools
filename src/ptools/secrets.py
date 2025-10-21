@@ -1,6 +1,6 @@
 import click
 import re
-import os 
+import os
 
 from ptools.utils.print import FormatUtils
 from ptools.utils.config import ConfigFile
@@ -27,11 +27,11 @@ class SecretsConfig():
     def delete_secret(self, key):
         """Delete a secret from the configuration."""
         return self.config.delete(key)
-    
+
     def __iter__(self):
         """Iterate over all secrets in the configuration."""
         return iter(self.config.data.items())
-    
+
 def filter(dict, query, regex=False):
     """Filter a dictionary based on a query."""
     if regex:
@@ -39,7 +39,7 @@ def filter(dict, query, regex=False):
         return {k: v for k, v in dict.items() if pattern.search(k)}
     else:
         return {k: v for k, v in dict.items() if query in k}
-    
+
 @click.group()
 def cli():
     """Manage secrets configuration."""
@@ -88,8 +88,13 @@ def get_secret(key, quiet, config_name):
 @click.option('--regex', '-g', is_flag=True, help="Use regex for filtering")
 @click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
 @click.argument('command', nargs=-1)
-def with_secrets(query, regex, command, config_name):
+@click.option('--get-str', '-s', is_flag=True, help="Get assignment string instead of executing command")
+def with_secrets(query, regex, command, config_name, get_str):
     """Run a command with secrets."""
+    if get_str:
+        get_assignment_string.callback(query, regex, command, config_name)
+        return
+
     secrets_config = SecretsConfig(config_name=config_name)
     if query:
         secrets = filter(dict(secrets_config), query, regex)
@@ -109,7 +114,7 @@ def with_secrets(query, regex, command, config_name):
         os.system(' '.join(command))
     else:
         click.echo(FormatUtils.info("No command provided to run with secrets."))
-    
+
 @click.command()
 @click.option('--query', '-q', help="Query to filter secrets")
 @click.option('--regex', '-g', is_flag=True, help="Use regex for filtering")
@@ -122,7 +127,7 @@ def list_secrets(query, show_values, regex, config_name):
     if not secrets:
         click.echo(FormatUtils.warning("No secrets found."))
         return
-    
+
     if not show_values:
         secrets = {k: '*' * len(v) for k, v in secrets.items()}
 
@@ -162,10 +167,36 @@ def copy_secret(key, config_name):
     else:
         click.echo(FormatUtils.warning(f"Secret '{key}' not found."))
 
+@click.command()
+@click.option('--query', '-q', help="Query to filter secrets")
+@click.option('--regex', '-g', is_flag=True, help="Use regex for filtering")
+@click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
+@click.argument('command', nargs=-1)
+def get_assignment_string(query, regex, command, config_name):
+    """Get assignment string for secrets.
+    ENV1='value1' ENV2='value2' command args...
+    """
+    secrets_config = SecretsConfig(config_name=config_name)
+    if query:
+        secrets = filter(dict(secrets_config), query, regex)
+    else:
+        secrets = dict(secrets_config)
+
+    if not secrets:
+        click.echo(FormatUtils.warning("No secrets found."))
+        return
+
+    sq = "'"; repl = "\\'"
+    assignment_parts = [f"{k}='{v.replace(sq, repl)}'" for k, v in secrets.items()]
+    assignment_string = ' '.join(assignment_parts)
+    if command:
+        assignment_string += ' ' + ' '.join(command)
+    click.echo(assignment_string)
 
 cli.add_command(set_secret, name="set")
 cli.add_command(get_secret, name="get")
 cli.add_command(list_secrets, name="list")
 cli.add_command(with_secrets, name="exec")
 cli.add_command(copy_secret, name="copy")
+cli.add_command(get_assignment_string, name="get-assignment-string")
 cli.add_command(delete_all_secrets, name="dangerous-delete-all-secrets")
