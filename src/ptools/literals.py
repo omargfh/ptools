@@ -16,8 +16,8 @@ from prompt_toolkit.shortcuts import clear
 config = ConfigFile('literals', quiet=True)
 
 class RadioListWithCallback(RadioList):
-    def __init__(self, values, on_selection_change=None):
-        super().__init__(values)
+    def __init__(self, values, on_selection_change=None, *args, **kwargs):
+        super().__init__(values, *args, **kwargs)
         self.on_selection_change = on_selection_change
 
     def _handle_enter(self):
@@ -26,9 +26,15 @@ class RadioListWithCallback(RadioList):
             self.on_selection_change(self.current_value)
 
 class LiteralsApp():
-    def __init__(self, items, selected_text="Selected literal: {}"):
+    def __init__(
+        self,
+        items,
+        selected_text="Selected literal: {}",
+        select_handler=None,
+        selected=None
+    ):
         self.items = items
-        self.radio_list = RadioListWithCallback(items, on_selection_change=self.on_select)
+        self.radio_list = RadioListWithCallback(items, on_selection_change=self.on_select, default=selected)
         self.layout = Layout(
             Box(
                 self.radio_list,
@@ -41,13 +47,15 @@ class LiteralsApp():
         self.app = Application(layout=self.layout, key_bindings=self.kb)
         self.selected = []
         self.selected_text = selected_text
+        self.select_handler = select_handler
 
     def on_select(self, value):
         self.selected = value
+        if self.select_handler:
+            self.select_handler(value)
         self.exit()
 
     def on_cancel(self, event):
-        event.app.exit()
         self.exit()
 
     def run(self):
@@ -58,7 +66,7 @@ class LiteralsApp():
         self.app.layout = Layout(
             Window(
                 content=FormattedTextControl(
-                    text=self.selected_text.format(self.selected)
+                    text=self.selected_text.format(self.selected) if self.selected else "No selection made."
                 )
             )
         )
@@ -70,13 +78,14 @@ class LiteralsApp():
 @require.library("pyperclip", prompt_install=True)
 @click.argument('collection', required=False)
 @click.option('--choose-collection', '-c', is_flag=True, default=False, help='Choose collection interactively.')
-def cli(collection, choose_collection):
+@click.option('--stay-alive', '-s', is_flag=True, default=False, help='Keep the application running after selection to select more literals.')
+def cli(collection, choose_collection, stay_alive):
     """Interactively select literals from the configured library."""
     import pyperclip
 
     all_collections = config.data
 
-    if choose_collection and not collection:
+    if choose_collection and not collection and not stay_alive:
         collections = list({
             # e.g. "my_collection (5) -> my_collection"
             (k, f"{k} ({len(v.values())})")
@@ -89,8 +98,8 @@ def cli(collection, choose_collection):
         else:
             click.echo(FormatUtils.warning("No collection selected."))
             return
-    elif choose_collection and collection:
-        click.echo(FormatUtils.error("Cannot use --choose-collection with a specified collection."))
+    elif choose_collection and collection or choose_collection and stay_alive:
+        click.echo(FormatUtils.error("Cannot use --choose-collection with a specified collection or --stay-alive/-s."))
         return
 
     items = [
@@ -104,9 +113,21 @@ def cli(collection, choose_collection):
         click.echo(FormatUtils.warning("No literals found in the specified collection."))
         return
 
-    app = LiteralsApp(items, selected_text="[Success] Literal copied to clipboard: {}")
-    selected = app.run()
+    def select_handler(value):
+        pyperclip.copy(value)
 
-    if selected:
-        literal_value = selected
-        pyperclip.copy(literal_value)
+    args = [items]
+    kwargs = {
+        "selected_text": "[Success] Literal copied to clipboard: {}",
+        "select_handler": select_handler
+    }
+
+    selected = None
+    if stay_alive:
+        while True:
+            app = LiteralsApp(*args, **kwargs, selected=selected)
+            selected = app.run()
+            if not selected:
+                break
+    else:
+        LiteralsApp(*args, **kwargs).run()
