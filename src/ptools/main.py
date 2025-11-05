@@ -1,6 +1,5 @@
 import click
-from . import llm, rsync, dev, watch, projects, shell, secrets, json, clip, flow, fs
-from ptools.models.default_config import load_default_config
+from . import llm, rsync, dev, watch, projects, shell, secrets, json, clip, flow, fs, literals
 
 @click.group()
 @click.version_option()
@@ -24,3 +23,5 @@ cli.add_command(fs.cli, name="fs")
 
 cli.add_command(llm.cli, name="llm")
 cli.add_command(llm.opts, name="llm-opts")
+
+cli.add_command(literals.cli, name="lget")
