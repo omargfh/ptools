@@ -6,9 +6,9 @@ import pathlib
 from ptools.utils.print import FormatUtils
 from ptools.utils.config import ConfigFile
 from ptools.utils.decorator_compistor import DecoratorCompositor
+from ptools.utils.cases import CaseConverter, cases
 
 from pydantic import BaseModel, model_validator
-from itertools import groupby
 from jinja2 import Template, Environment, meta
 
 config = ConfigFile('touch', quiet=True, format="yaml")
@@ -24,6 +24,7 @@ class FileNameOptions(BaseModel):
     extension: str = ".txt"
     allow_empty_extension: bool = False
     allow_arbitrary_extension: bool = True
+    casing: str = None
 
     @model_validator(mode='before')
     def validate(cls, values):
@@ -83,6 +84,10 @@ def set_extension(filepath: pathlib.Path, opts: FileNameOptions):
 
     return filepath.with_name(filename)
 
+globals = {
+  'convert_case': CaseConverter.convert
+}
+
 for item in values:
   obj = TouchItem(**item)
   fopts = obj.file_name_options
@@ -99,8 +104,9 @@ for item in values:
 
   @cli.command(name=obj.command, help=obj.description)
   @click.argument('output', type=click.Path(exists=False, file_okay=True, dir_okay=fopts.dir_okay), required=True)
+  @click.option('-c', '--casing', type=click.Choice(cases), default=fopts.casing, help="Convert the filename to the specified casing.")
   @arguments.decorate()
-  def touch_command(output, **kwargs):
+  def touch_command(output, casing, **kwargs):
       args = {k: v for k, v in kwargs.items() if v is not None}
       output = pathlib.Path(output)
 
@@ -116,17 +122,26 @@ for item in values:
         output = output / filename
 
       # Set extension rules
-      final_output = set_extension(output, fopts)
-      final_output.parent.mkdir(parents=True, exist_ok=True)
-      args['file_stem'] = final_output.stem
-      args['file_suffix'] = final_output.suffix
-      args['file_path'] = str(final_output)
-      args['file_name'] = final_output.name
+      output = set_extension(output, fopts)
+      finalCasing = casing if casing is not None else fopts.casing
+      if finalCasing is not None:
+          output = output.with_name(
+              CaseConverter.convert(output.stem, finalCasing) + output.suffix
+          )
+
+      if output.exists():
+          click.confirm(f"The file '{output}' already exists. Do you want to overwrite it?", abort=True)
+
+      output.parent.mkdir(parents=True, exist_ok=True)
+      args['file_stem'] = output.stem
+      args['file_suffix'] = output.suffix
+      args['file_path'] = str(output)
+      args['file_name'] = output.name
 
       try:
-          rendered_content = obj.template.render(**args)
-          with open(final_output, 'w') as f:
+          rendered_content = obj.template.render(**args, **globals)
+          with open(output, 'w') as f:
               f.write(rendered_content)
-          FormatUtils.success(f"File '{final_output}' has been created/updated successfully.")
+          FormatUtils.success(f"File '{output}' has been created/updated successfully.")
       except Exception as e:
-          FormatUtils.error(f"An error occurred while creating/updating the file '{final_output}': {e}")
+          FormatUtils.error(f"An error occurred while creating/updating the file '{output}': {e}")

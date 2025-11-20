@@ -4,6 +4,10 @@ class Case:
     parts: list[str]
     case_type: str
 
+    def __init__(self, parts: list[str], case_type: str):
+        self.parts = parts
+        self.case_type = case_type
+
     @staticmethod
     def from_string(s: str) -> 'Case':
 
@@ -131,6 +135,8 @@ class CaseTest:
       except ValueError as e:
         passed = True
       assert passed, f"Malformed string '{s}' was incorrectly parsed."
+
+cases = ['camel', 'snake', 'kebab', 'pascal']
 
 if __name__ == "__main__":
     CaseTest.test()
