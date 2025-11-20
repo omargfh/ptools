@@ -1,19 +1,21 @@
 import os
 from pathlib import Path
-import json
 import click
 
 from ptools.utils.print import FormatUtils
 from ptools.utils.encrypt import Encryption, EncryptionError
 
+from .serial import  SerializerDeserializerFactory
+
 class ConfigFile():
-    reserved = ['name', 'path', 'file_path', 'data', 'quiet', 'encryption', 'ref']
-    def __init__(self, name, path="~/.ptools", quiet=False, encrypt=False):
+    reserved = ['name', 'path', 'file_path', 'data', 'quiet', 'encryption', 'ref', 'format', 'serial']
+    def __init__(self, name, path="~/.ptools", quiet=False, encrypt=False, format="json"):
+        self.serial = SerializerDeserializerFactory.get(format)
         self.name = name
         self.path = os.path.expanduser(path)
-        self.file_path = os.path.join(self.path, f"{self.name}.json")
+        self.file_path = os.path.join(self.path, f"{self.name}.{self.serial.ext}")
         os.makedirs(Path(self.file_path).parent, exist_ok=True)
-        self.data = {}
+        self.data = dict()
         self.quiet = quiet
 
         if encrypt:
@@ -35,16 +37,16 @@ class ConfigFile():
                 self._echo(FormatUtils.info(f"Created new config file at {self.file_path}"))
 
         self._echo(FormatUtils.success(f"Loaded config file {self.file_path}"))
-        
+
     def _echo(self, *args, **kwargs):
         if not self.quiet:
             click.echo(*args, **kwargs)
 
     def _reads(self, f):
         try:
-            content = json.load(f)
-        except json.JSONDecodeError as e:
-            raise ValueError(f"Invalid JSON format in config file {self.file_path}: {e}")
+            content = self.serial.load(f)
+        except self.serial.DecodeError as e:
+            raise ValueError(f"Invalid {self.serial.name} format in config file {self.file_path}: {e}")
         except FileNotFoundError:
             raise RuntimeError(f"Config file {self.file_path} not found.")
         except PermissionError:
@@ -69,10 +71,10 @@ class ConfigFile():
                 raise EncryptionError("Encryption is enabled but no encryption service is configured.")
             else:
                 try:
-                    # { encrypted: True, data: EncryptedString(jsonString) }
-                    # Call decrypt on the data field to get the original JSON
-                    # string then parse it as JSON
-                    content = json.loads(self.encryption.decrypt(content.get('data')))
+                    # { encrypted: True, data: EncryptedString(serialString) }
+                    # Call decrypt on the data field to get the original serialized
+                    # string then parse it as the original data structure.
+                    content = self.serial.loads(self.encryption.decrypt(content.get('data')))
                 except Exception as e:
                     raise EncryptionError(f"Failed to decrypt config file {self.file_path}: {e}")
         else:                         # Content is not encrypted
@@ -88,7 +90,7 @@ class ConfigFile():
         if self.encryption:
             content = {
                 'encrypted': True,
-                'data': self.encryption.encrypt(json.dumps(data, indent=4))
+                'data': self.encryption.encrypt(self.serial.dumps(data))
             }
         else:
             content = {
@@ -102,7 +104,7 @@ class ConfigFile():
             self._echo(FormatUtils.info(f"Writing config file {self.file_path}..."))
 
         try:
-            json.dump(content, f, indent=4)
+            self.serial.dump(content, f)
         except Exception as e:
             raise RuntimeError(f"Failed to write config file {self.file_path}: {e}")
 
@@ -156,7 +158,7 @@ class ConfigFile():
         else:
             self._echo(FormatUtils.warning(f"Key '{key}' does not exist in config file {self.file_path}"))
         return exists
-    
+
     def replace(self, new_data):
         if not isinstance(new_data, dict):
             raise TypeError("New data must be a dictionary.")
@@ -165,7 +167,7 @@ class ConfigFile():
             self._writes(f, self.data)
         self._echo(FormatUtils.success(f"Replaced all data in config file {self.file_path}"))
         return self.data
-    
+
     def __repr__(self):
         return f"<ConfigFile(name={self.name}, path={self.path})>"
 
@@ -216,12 +218,12 @@ class ConfigFile():
             raise TypeError("ConfigFile can be called with either one string argument (key) or two arguments (key, value).")
 
         return self
-    
+
     def close(self):
         if self.ref and not self.ref.closed:
             self.ref.close()
             self._echo(FormatUtils.info(f"Closed config file {self.file_path}"))
-    
+
 class KeyValueStore(ConfigFile):
     # This started as a simple key-value store for config purposes
     # but has evolved into a more general key-value store.
@@ -252,9 +254,9 @@ class DummyKeyValueStore(ConfigFile):
 
     def exists(self, key):
         return False
-    
+
     def replace(self, new_data):
         return new_data
-    
+
     def close(self):
         pass
