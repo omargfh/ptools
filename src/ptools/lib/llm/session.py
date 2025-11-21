@@ -22,7 +22,7 @@ class ChatSession():
 
         messages = self.chat_file.messages
         history  = self.history_transformer.transform(messages)
-        
+
         formatting = """
         When responding, ensure the output is suitable for readability in a terminal environment.
         Do not use markdown or any other markup.
@@ -50,10 +50,10 @@ class ChatSession():
            top_p=self.profile.top_p,
            presence_penalty=self.profile.presence_penalty,
         )
-        
+
         for chunk in response:
             yield chunk
-            
+
         response = ''.join(response)
 
         self.chat_file.add_message(role="assistant", content=response)

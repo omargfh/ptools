@@ -1,3 +1,4 @@
+# version: 1.0.2
 import click
 import os
 
@@ -56,11 +57,12 @@ def cli(
     else:
         chat_file = chats_store.no_persist_chat()
 
-    profile = None
+    _profile = None
     if profile:
-        profile = profiles_store.get_profile_by_name(profile)
+        _profile = profiles_store.get_profile_by_name(profile)
     if profile is None:
-        profile = LLMProfile()
+        _profile = LLMProfile()
+    profile = _profile
 
     session = ChatSession(
         provider=client,
