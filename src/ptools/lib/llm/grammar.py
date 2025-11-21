@@ -23,7 +23,7 @@ VALUE: /[^@,\s]+/ | ESCAPED_STRING
 COMMAND: /@[a-zA-Z_][a-zA-Z0-9_]*/
 COMMAND_DELIMITER: "@/"
 
-WORD: /[^\s@][^\s]*/
+WORD: /[^\s]+/
 
 %import common.ESCAPED_STRING
 %import common.WS
