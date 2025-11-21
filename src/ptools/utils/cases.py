@@ -1,3 +1,4 @@
+# cases: 0.0.2
 import re
 
 class Case:
@@ -35,7 +36,9 @@ class CamelCase(Case):
         return CamelCase(parts=parts, case_type='camel')
 
     def __str__(self):
-        return ''.join(part.capitalize() for part in self.parts)
+        if not len(self.parts):
+          return ''
+        return ''.join([self.parts[0].lower(), *[part.capitalize() for part in self.parts[1:]]])
 
 class SnakeCase(Case):
     @staticmethod
