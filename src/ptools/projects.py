@@ -1,3 +1,4 @@
+# projects 1.0.1
 import subprocess
 import click
 import json
@@ -87,9 +88,7 @@ class Projects():
     def switch(self, name):
         """Switch to a project by name."""
         if name not in self.projects:
-            click.echo(FormatUtils.error(f"Project '{name}' does not exist."))
-            return
-
+            return None
         path = self.projects[name]
         os.chdir(path)
         return path
@@ -116,14 +115,12 @@ def cli():
 def chdir(name, quiet):
     """Change directory to the project with NAME."""
     projects = Projects.get_instance()
-    path = projects.switch(name)
-    if path:
-        if not quiet:
-            click.echo(FormatUtils.success(f"Changed directory to {path}"))
-        else:
-            click.echo(path)
-    else:
-        click.echo(FormatUtils.error(f"Failed to change directory to project '{name}'."))
+    parts = name.split(os.path.sep)
+    path = projects.switch(parts[0]) or parts[0]
+
+    full_path = os.path.join(path, *parts[1:]) if len(parts) > 1 else path
+
+    click.echo(full_path)
 
 @cli.command()
 def list_projects():
