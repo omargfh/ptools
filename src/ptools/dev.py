@@ -15,11 +15,24 @@ def cli():
 def root():
     """Print the root directory of the project."""
     click.echo(get_project_root())
-    
+
 @cli.command()
 def code():
     """Make changes to this tool in VSCode."""
     cmd = f"code {get_project_root()}"
+    os.system(cmd)
+
+@cli.command()
+def vim():
+    """Make changes to this tool in Vim."""
+    cmd = f"vim {get_project_root()}"
+    os.system(cmd)
+
+@cli.command()
+@click.argument('command', type=str, default='open')
+def editor(command):
+    """Open the project in the specified editor."""
+    cmd = f"{command} {get_project_root()}"
     os.system(cmd)
 
 @cli.command()
@@ -47,3 +60,6 @@ cli.add_command(code, name="code")
 cli.add_command(install, name="install")
 cli.add_command(update, name="update")
 cli.add_command(push, name="push")
+cli.add_command(vim, name="vim")
+cli.add_command(editor, name="editor")
+cli.add_command(root, name="root")
