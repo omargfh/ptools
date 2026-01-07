@@ -10,11 +10,11 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
 endif
 let s:shortmess_save = &shortmess
 set shortmess+=aoO
-badd +0 pyproject.toml
+badd +0 ~/.gitconfig
 argglobal
 %argdel
-$argadd pyproject.toml
-edit pyproject.toml
+$argadd ~/.gitconfig
+edit ~/.gitconfig
 argglobal
 setlocal fdm=manual
 setlocal fde=0
@@ -26,12 +26,12 @@ setlocal fdn=20
 setlocal fen
 silent! normal! zE
 let &fdl = &fdl
-let s:l = 17 - ((9 * winheight(0) + 9) / 19)
+let s:l = 4 - ((3 * winheight(0) + 9) / 19)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 17
-normal! 027|
+keepjumps 4
+normal! 0
 tabnext 1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0
   silent exe 'bwipe ' . s:wipebuf
