@@ -11,6 +11,10 @@ dependencies = [
     "pydantic>=2.10",
     "lark>=1.1",
     "humanize>=4.8.0",
+    "jinja2>=3.0.0",
+    "requests>=2.32.0",
+    "pyyaml>=6.0.0",
+    "prompt-toolkit>=3.0.0"
 ]
 
 [project.scripts]
