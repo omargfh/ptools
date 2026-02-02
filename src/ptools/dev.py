@@ -22,6 +22,7 @@ def code():
     cmd = f"code {get_project_root()}"
     os.system(cmd)
 
+
 @cli.command()
 def vim():
     """Make changes to this tool in Vim."""

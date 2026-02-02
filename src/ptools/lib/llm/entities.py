@@ -6,11 +6,14 @@ import pydantic
 from ptools.utils.config import KeyValueStore, DummyKeyValueStore
 from ptools.utils.xml_repr import xmlclass
 
+from ptools.lib.llm.constants import model_choices
+
+
 class LLMHistoryType(Enum):
     full = 'full'
     last = 'last'
     none = 'none'
-    
+
     def __repr__(self):
         return self.value
 
@@ -19,6 +22,7 @@ class LLMProfile(pydantic.BaseModel):
     temperature: float = 0.7
     max_tokens: int = 2048
     presence_penalty: float = 0.0
+    model: str | None = None
 
     system_prompt: str | None = "You are a helpful assistant."
 
@@ -28,7 +32,13 @@ class LLMProfile(pydantic.BaseModel):
         with open(file_path, 'r') as f:
             data = json.load(f)
         return cls(**data)
-    
+
+    @pydantic.model_validator(mode='after')
+    def validate_model(self):
+        if self.model and self.model not in model_choices:
+            raise ValueError(f"Model '{self.model}' is not supported. Choose from: {', '.join(model_choices)}")
+        return self
+
 @xmlclass
 class LLMMessage(pydantic.BaseModel):
     role: str
@@ -55,13 +65,13 @@ class LLMChatFile(pydantic.BaseModel):
             DummyKeyValueStore: lambda v: "DummyKeyValueStore",
         }
     }
-    
+
     @pydantic.model_validator(mode='after')
     def validate_model(self):
         if self.file is None:
             raise ValueError("file must be provided and be a KeyValueStore instance.")
         return self
-    
+
     @staticmethod
     def get_relative_path_by_name(name: str) -> str:
         return os.path.join('llm', 'chat_files', name)
@@ -92,9 +102,9 @@ class LLMChatFile(pydantic.BaseModel):
                 metadata={},
                 file=DummyKeyValueStore()
             )
-            
+
         relative_path = LLMChatFile.get_relative_path_by_name(name)
-        
+
         cf = KeyValueStore(name=relative_path, quiet=True, encrypt=True)
 
         cf.set('name', name)

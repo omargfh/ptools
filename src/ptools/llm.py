@@ -1,4 +1,4 @@
-# version: 1.0.3
+# version: 1.0.4
 import click
 import os
 
@@ -6,13 +6,13 @@ import ptools.utils.require as require
 from ptools.utils.enums import LogicalOperators
 from ptools.utils.print import FormatUtils
 
-from ptools.lib.llm.constants import model_choices, openai_models, google_models
+from ptools.lib.llm.constants import model_choices
 from ptools.lib.llm.session import ChatSession
 from ptools.lib.llm.prompt import parse_prompt
-from ptools.lib.llm.stores import key_store, chats_store, profiles_store
+from ptools.lib.llm.stores import key_store, ChatsStore
 import ptools.lib.llm.decorators as llm_decorators
 from ptools.lib.llm.client import ChatClient
-from ptools.lib.llm.history import HistoryTransformerFactory
+from ptools.lib.llm.history import HistoryTransformer, HistoryTransformerFactory
 from ptools.lib.llm.entities import LLMProfile
 from ptools.lib.llm.commands import commands
 
@@ -25,7 +25,7 @@ from ptools.lib.llm.commands import commands
     'GOOGLE_API_KEY': ['GOOGLE_API_KEY']
 }, stores=[os.environ, key_store], logical_operator=LogicalOperators.OR)
 @click.argument('message', required=False, nargs=-1)
-@click.option('--model', '-m', default='gemini-2.0-flash', type=click.Choice(model_choices), help='Language model to use.')
+@click.option('--model', '-m', type=click.Choice(model_choices), help='Language model to use.')
 @click.option(
     '--history-transformer', '-t',
     default='pass_through',
@@ -36,39 +36,23 @@ from ptools.lib.llm.commands import commands
 @click.option('--profile', '-p',  help='Name of the profile to use.', default='default')
 @click.option('--interactive/--no-interactive', '-i/-I', default=False, help='Use chat interface.')
 @click.option('--persist/--no-persist', '-s/-S', default=False, help='Persist chat file to disk when creating a new chat session without --chat-file.')
+@click.option('--debug/--no-debug', '-d/-D', default=False, help='Enable debug mode to print diagnostic information.')
 @llm_decorators.before_call.decorate()
 def cli(
     message: str | None,
     client: ChatClient,
-    history: str | None,
-    profile: str | None,
-    history_transformer: str,
+    chat: ChatsStore,
+    profile: LLMProfile,
+    history_transformer: HistoryTransformer,
     interactive: bool,
-    persist: bool,
 ):
     """Interact with a chat interface."""
     from ptools.lib.llm.repl import start_chat
 
-    chat_file = None
-    if history:
-        chat_file = chats_store.get_chat_by_name(history)
-    elif persist:
-        chat_file = chats_store.new_chat()
-    else:
-        chat_file = chats_store.no_persist_chat()
-
-    _profile = None
-    if profile:
-        _profile = profiles_store.get_profile_by_name(profile)
-    if profile is None:
-        _profile = LLMProfile()
-    profile = _profile
-
     session = ChatSession(
         provider=client,
-        history_transformer= \
-            HistoryTransformerFactory.get_transformer(history_transformer),
-        chat_file=chat_file,
+        history_transformer=history_transformer,
+        chat_file=chat,
         profile=profile
     )
 

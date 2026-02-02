@@ -10,11 +10,11 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
 endif
 let s:shortmess_save = &shortmess
 set shortmess+=aoO
-badd +0 ~/.gitconfig
+badd +0 ~/.zshrc
 argglobal
 %argdel
-$argadd ~/.gitconfig
-edit ~/.gitconfig
+$argadd ~/.zshrc
+edit ~/.zshrc
 argglobal
 setlocal fdm=manual
 setlocal fde=0
@@ -26,11 +26,11 @@ setlocal fdn=20
 setlocal fen
 silent! normal! zE
 let &fdl = &fdl
-let s:l = 4 - ((3 * winheight(0) + 9) / 19)
+let s:l = 6 - ((5 * winheight(0) + 9) / 19)
 if s:l < 1 | let s:l = 1 | endif
 keepjumps exe s:l
 normal! zt
-keepjumps 4
+keepjumps 6
 normal! 0
 tabnext 1
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0

@@ -20,7 +20,7 @@ class FormatUtils:
     def warning(*args):
         msg = " ".join(args)
         return f"\033[93m Warning  \033[0m{msg}"
-    
+
     @staticmethod
     def highlight(text: str, color: Optional[str] = 'yellow') -> str:
         color_code = {
@@ -31,8 +31,8 @@ class FormatUtils:
             'reset': '\033[0m'
         }.get(color, '\033[93m')
         return f"{color_code}{text}\033[0m"
-    
-    @staticmethod   
+
+    @staticmethod
     def background(text: str, color: Optional[str] = 'yellow') -> str:
         color_code = {
             'yellow': '\033[43m',
@@ -42,12 +42,12 @@ class FormatUtils:
             'reset': '\033[0m'
         }.get(color, '\033[43m')
         return f"{color_code}{text}\033[0m"
-    
+
     @staticmethod
     def bold(text: str) -> str:
         return f"\033[1m{text}\033[0m"
-    
-    
+
+
 
 class PrintUtils:
     def __init__(self):
@@ -82,7 +82,7 @@ class FormattedText:
     @staticmethod
     def percent(i: int, total: int):
         return f"[{(i/total)*100:.2f}%]"
-    
+
 def fdebug(title, **kwargs):
     msg = "\n   ".join([
         FormatUtils.background("[DEBUG]", "yellow") + FormatUtils.bold(f" {title}"),
