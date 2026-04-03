@@ -1,11 +1,9 @@
 import os
-from typing import Any, Optional
+from typing import Optional
 from dataclasses import dataclass
 from pydantic import BaseModel
 import humanize
 from typing import List
-
-from ptools.utils.files import KnownExtensions
 
 PTOOLS_DEFAULT_BRACKET_CHAR = os.environ.get('BRACKET_CHAR', '[]')
 PTOOLS_DEFAULT_FILL_CHAR = os.environ.get('FILL_CHAR', '█')
@@ -139,6 +137,23 @@ class PrintUtils:
         msg = " ".join(args)
         print(FormatUtils.warning(msg), **kwargs)
 
+    @staticmethod
+    def spinner(
+        message: str,
+    ):
+        from threading import Thread, Event
+        import time
+        stop_event = Event()
+        def spin():
+            i = 0
+            while not stop_event.is_set():
+                print(f"\r{FormattedText.spinner(i, 4)} {message}", end="")
+                time.sleep(0.1)
+                i += 1
+            print("\r", end="")  # Clear line when done
+        thread = Thread(target=spin)
+        thread.start()
+        return stop_event
 
 class ProgressBarOptions(BaseModel):
     length: int = 20
@@ -183,6 +198,82 @@ class FormattedText:
         total_str = f" {i}/{total}" if not opts.show_percentage else f" {(i/total)*100:.2f}%"
         return f"{bracket_char[0]}{bar}{bracket_char[1]} {total_str}"
 
+    @staticmethod
+    def spinner(state: int, total_states: int) -> str:
+        spinner_chars = ['|', '/', '-', '\\']
+        char = spinner_chars[state % total_states]
+        return f"{char}"
+
+
+class KnownExtensions:
+    IMAGE   = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', '.avif', '.webp', '.tiff', '.ico', '.heic'}
+    VIDEO   = {'.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm', '.mpeg'}
+    AUDIO   = {'.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a', '.opus', '.alac', '.wma', '.aiff'}
+    BOOK    = {'.pdf', '.epub', '.mobi', '.azw3', '.fb2', '.djvu', '.cbz', '.cbr'}
+
+    CONFIG  = {'.json', '.yaml', '.yml', '.ini', '.cfg', '.toml', '.env', '.xml', '.csv', '.tsv'}
+    BINARY  = {'.bin', '.exe', '.dll', '.so',
+               '.dylib', '.zip',
+               '.tar', '.gz', '.7z', '.rar', '.bz2',
+               '.xz', '.msi', '.deb', '.rpm', '.apk', '.jar',
+               '.pyc', '.pyo', '.class', '.o', '.obj', '.elf',
+               '.AppImage'}
+    DISC    = {'.iso', '.img', '.dmg', '.vmdk', '.qcow2', '.box', '.vhd', '.vhdx'}
+    KEY     = {'.pem', '.key', '.csr', '.crt', '.cer', '.pfx', '.p12'}
+    SYMLINK = {'.lnk', '.symlink', '.shortcut'}
+
+    ICONS  = {
+        "FILE": '📄',
+        "IMAGE": '🖼️',
+        "VIDEO": '🎬',
+        "AUDIO": '🎵',
+        "BOOK": '📚',
+        "CONFIG": '⚙️',
+        "BINARY": '📦',
+        "DISC": '💿',
+        "KEY": '🔑',
+        "SYMLINK": '🔗',
+        "FOLDER_CLOSED": '📁',
+        "FOLDER_OPEN": '📂',
+        "UNKNOWN": '❓',
+        "DEFAULT": '📄',
+    }
+
+    @staticmethod
+    def get_icon(extension: str | None, is_dir=False, is_symlink=False, has_children=False) -> str:
+        if is_symlink:
+            return KnownExtensions.ICONS["SYMLINK"]
+        elif is_dir and has_children:
+            return KnownExtensions.ICONS["FOLDER_OPEN"]
+        elif is_dir:
+            return KnownExtensions.ICONS["FOLDER_CLOSED"]
+
+        if not extension:
+            return KnownExtensions.ICONS["UNKNOWN"]
+
+        ext = extension.lower()
+        if not ext.startswith('.'):
+            ext = '.' + ext
+
+        if ext in KnownExtensions.IMAGE:
+            return KnownExtensions.ICONS["IMAGE"]
+        elif ext in KnownExtensions.VIDEO:
+            return KnownExtensions.ICONS["VIDEO"]
+        elif ext in KnownExtensions.AUDIO:
+            return KnownExtensions.ICONS["AUDIO"]
+        elif ext in KnownExtensions.BOOK:
+            return KnownExtensions.ICONS["BOOK"]
+        elif ext in KnownExtensions.CONFIG:
+            return KnownExtensions.ICONS["CONFIG"]
+        elif ext in KnownExtensions.BINARY:
+            return KnownExtensions.ICONS["BINARY"]
+        elif ext in KnownExtensions.DISC:
+            return KnownExtensions.ICONS["DISC"]
+        elif ext in KnownExtensions.KEY:
+            return KnownExtensions.ICONS["KEY"]
+        else:
+            return KnownExtensions.ICONS["DEFAULT"]
+
 class Pipes:
         BRANCH = '├──'
         VERTICAL = '│'
@@ -202,6 +293,7 @@ class TreeText:
     class FileTreeNode(TreeNode):
         _name = ""
         size = 0
+        size_color = 'green'
 
         def __init__(
             self,
@@ -236,7 +328,7 @@ class TreeText:
 
             res = f"{icon} {self._name}"
             if self.size > 1024:
-                res += f" ({ASCIIEscapes.style(humanize.naturalsize(self.size), color='green')})"
+                res += f" ({ASCIIEscapes.style(humanize.naturalsize(self.size), color=self.size_color)})"
             return res
 
     class PipeBuilder:

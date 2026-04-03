@@ -8,8 +8,8 @@ from ptools.lib.flow.decorators import output_flavor
 
 from ptools.utils.re import test
 
-from ptools.utils.files import KnownExtensions, get_size
-from ptools.utils.print import TreeText
+from ptools.utils.files import get_size
+from ptools.utils.print import TreeText, KnownExtensions
 from ptools.utils.read import FromHumanized
 
 
@@ -123,7 +123,7 @@ def findfiles(
     regex,
     flavor
 ):
-    return walkdir.callback(
+    return walkdir.callback( # type: ignore
         path=path,
         max_depth=max_depth,
         no_files=False,
@@ -142,26 +142,55 @@ def findfiles(
 @click.argument('sort', required=False, default='size', nargs=1, type=click.Choice(['size', 'name'], case_sensitive=False))
 @click.argument('sort-order', required=False, default='asc', nargs=1, type=click.Choice(['asc', 'desc'], case_sensitive=False))
 @click.option('--max-depth', type=int, default=3, help="Maximum depth to display in the tree")
-@click.option('--size-threshold', type=str, default=None, help="Only show files larger than this size (e.g. 10MB)")
+@click.option('--size-threshold', '--size-t', type=str, default=None, help="Only show files larger than this size (e.g. 10MB)")
+@click.option('--size-flag-threshold', '--size-ft', type=str, default=None, help="Highlight in red files larger than this size (e.g. 100MB)")
 @click.option('--ignore-hidden', is_flag=True, default=True, help="Ignore hidden files and directories")
 @click.option('--show-files/--no-files', '-f/-F', is_flag=True, default=True, help="Show files in the tree")
+@click.option('--interactive', '-i', is_flag=True, default=False, help="Enable interactive mode with clickable file paths")
 def tree(
     path,
     sort,
     sort_order,
     max_depth,
     size_threshold,
+    size_flag_threshold,
     ignore_hidden,
     show_files,
+    interactive,
 ):
     """Print a tree structure of directory content with size information."""
     # Example: ptools fs tree . --max-depth 2 --size-threshold 10MB
     import os
 
+
     bytes_threshold = \
         FromHumanized.from_humanized_size(size_threshold) \
             if size_threshold \
             else None
+
+    bytes_flag_threshold = \
+        FromHumanized.from_humanized_size(size_flag_threshold) \
+            if size_flag_threshold \
+            else None
+
+    if interactive:
+        from ptools.lib.fs.file_tree_app import launch_interactive_tree
+        import humanize as humanize_mod
+
+        launch_interactive_tree(
+            path=os.path.abspath(path),
+            max_depth=max_depth,
+            size_threshold=bytes_threshold,
+            size_flag_threshold=bytes_flag_threshold,
+            sort_by=sort,
+            sort_order=sort_order,
+            ignore_hidden=ignore_hidden,
+            show_files=show_files,
+            get_size_fn=get_size,
+            humanize_fn=humanize_mod.naturalsize,
+            known_extensions_cls=KnownExtensions,
+        )
+        return
 
     def _build_tree(current_path, depth):
         if depth < 0:
@@ -179,6 +208,9 @@ def tree(
             size=size
         )
 
+        if bytes_flag_threshold is not None and size >= bytes_flag_threshold:
+            node.size_color = 'red'
+
         try:
             with os.scandir(current_path) as it:
                 for entry in it:
@@ -192,7 +224,9 @@ def tree(
                     elif entry.is_file() and show_files and depth > 0:
                         size = entry.stat().st_size
                         if bytes_threshold is None or size >= bytes_threshold:
-                            file_node = TreeText.FileTreeNode(f"{entry.name}", is_directory=False, is_symlink=entry.is_symlink())
+                            file_node = TreeText.FileTreeNode(f"{entry.name}", is_directory=False, is_symlink=entry.is_symlink(), size=size)
+                            if bytes_flag_threshold is not None and size >= bytes_flag_threshold:
+                                file_node.size_color = 'red'
                             node.add_child(file_node)
 
         except PermissionError:
