@@ -5,11 +5,11 @@ class SeralizerDeserializer:
     DecodeError = Exception
 
     @staticmethod
-    def dumps(self, data, **opts):
+    def dumps(data, **opts):
         raise NotImplementedError
 
     @staticmethod
-    def loads(self, data, **opts):
+    def loads(data, **opts):
         raise NotImplementedError
 
     @staticmethod

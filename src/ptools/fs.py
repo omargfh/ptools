@@ -1,11 +1,17 @@
-import click 
+import click
 import humanize
 from collections import defaultdict
+from functools import lru_cache
 
 from ptools.lib.flow.values import OutputValue
 from ptools.lib.flow.decorators import output_flavor
 
 from ptools.utils.re import test
+
+from ptools.utils.files import KnownExtensions, get_size
+from ptools.utils.print import TreeText
+from ptools.utils.read import FromHumanized
+
 
 @click.group()
 def cli():
@@ -28,7 +34,7 @@ def info(path):
     click.echo(f"Is directory: {os.path.isdir(path)}")
     click.echo(f"Is file: {os.path.isfile(path)}")
     click.echo(f"Permissions: {oct(stats.st_mode)}")
-    
+
 # walkdir
 @click.command()
 @click.argument('query', required=False, default=None, nargs=1)
@@ -41,19 +47,19 @@ def info(path):
 @click.option('--ignore-hidden', is_flag=True, default=True, help="Ignore hidden files and directories")
 @output_flavor.decorate()
 def walkdir(
-    path,
-    max_depth,
-    no_files,
-    no_dirs,
-    symlinks,
-    ignore_hidden,
-    query,
-    regex,
+    path: str,
+    max_depth: int,
+    no_files: bool,
+    no_dirs: bool,
+    symlinks: bool,
+    ignore_hidden: bool,
+    query: str,
+    regex: bool,
     flavor,
 ):
     """Recursively list files and directories."""
     import os
-    
+
     """
     Result: {
         kind: 'dir' | 'file',
@@ -61,7 +67,7 @@ def walkdir(
     }
     """
     result = []
-    
+
     test_file = test(query, regex) if query else lambda x: True
 
     def _walk(current_path, depth):
@@ -70,14 +76,14 @@ def walkdir(
         try:
             with os.scandir(current_path) as it:
                 for entry in it:
-                    
+
                     if ignore_hidden and entry.name.startswith('.'):
                         continue
-                    
+
                     if entry.is_symlink():
                         if not symlinks:
                             continue
-                        
+
                     if entry.is_dir():
                         if not no_dirs:
                             result.append({ 'kind': 'dir', 'name': entry.name, 'path': entry.path })
@@ -99,7 +105,7 @@ def walkdir(
     _walk(path, max_depth)
 
     click.echo(OutputValue(flavor=flavor).format(result))
-    
+
 @cli.command()
 @click.argument('query', required=False, default=None, nargs=1)
 @click.option('--path', '-i', type=click.Path(exists=True), default=".")
@@ -121,13 +127,92 @@ def findfiles(
         path=path,
         max_depth=max_depth,
         no_files=False,
-        no_dirs=True,   
+        no_dirs=True,
         symlinks=symlinks,
         ignore_hidden=ignore_hidden,
         query=query,
         regex=regex,
         flavor=flavor,
     )
+
+# Print a tree structure of directory content with size
+# Optionally take a size threshold to only show dirs/files larger than that size
+@cli.command()
+@click.argument('path', type=click.Path(exists=True), default=".")
+@click.argument('sort', required=False, default='size', nargs=1, type=click.Choice(['size', 'name'], case_sensitive=False))
+@click.argument('sort-order', required=False, default='asc', nargs=1, type=click.Choice(['asc', 'desc'], case_sensitive=False))
+@click.option('--max-depth', type=int, default=3, help="Maximum depth to display in the tree")
+@click.option('--size-threshold', type=str, default=None, help="Only show files larger than this size (e.g. 10MB)")
+@click.option('--ignore-hidden', is_flag=True, default=True, help="Ignore hidden files and directories")
+@click.option('--show-files/--no-files', '-f/-F', is_flag=True, default=True, help="Show files in the tree")
+def tree(
+    path,
+    sort,
+    sort_order,
+    max_depth,
+    size_threshold,
+    ignore_hidden,
+    show_files,
+):
+    """Print a tree structure of directory content with size information."""
+    # Example: ptools fs tree . --max-depth 2 --size-threshold 10MB
+    import os
+
+    bytes_threshold = \
+        FromHumanized.from_humanized_size(size_threshold) \
+            if size_threshold \
+            else None
+
+    def _build_tree(current_path, depth):
+        if depth < 0:
+            return None
+
+        name = os.path.basename(current_path) or current_path
+        size = get_size(current_path, ignore_hidden=ignore_hidden)
+        if bytes_threshold is not None and size < bytes_threshold:
+            return None
+
+        node = TreeText.FileTreeNode(
+            name,
+            is_directory=os.path.isdir(current_path),
+            is_symlink=os.path.islink(current_path),
+            size=size
+        )
+
+        try:
+            with os.scandir(current_path) as it:
+                for entry in it:
+                    if ignore_hidden and entry.name.startswith('.'):
+                        continue
+
+                    if entry.is_dir():
+                        child_node = _build_tree(entry.path, depth - 1)
+                        if child_node:
+                            node.add_child(child_node)
+                    elif entry.is_file() and show_files and depth > 0:
+                        size = entry.stat().st_size
+                        if bytes_threshold is None or size >= bytes_threshold:
+                            file_node = TreeText.FileTreeNode(f"{entry.name}", is_directory=False, is_symlink=entry.is_symlink())
+                            node.add_child(file_node)
+
+        except PermissionError:
+            pass
+
+        if sort == 'size':
+            node.children.sort(key=lambda x: x.size, reverse=(sort_order == 'desc'))
+        elif sort == 'name':
+            node.children.sort(key=lambda x: x.name.lower(), reverse=(sort_order == 'desc'))
+
+        return node
+
+    print(f"Building tree for {path} with max depth {max_depth} and size threshold {size_threshold}...")
+
+    path = os.path.abspath(path)
+    tree_root = _build_tree(path, max_depth)
+    if tree_root:
+        click.echo(TreeText.render_tree(tree_root))
+    else:
+        click.echo("No files or directories found.")
 
 cli.add_command(info, name='info')
 cli.add_command(walkdir, name='walkdir')

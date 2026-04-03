@@ -23,3 +23,6 @@ ptools  = "ptools.main:cli"
 [build-system]
 requires = ["flit_core<4"]
 build-backend = "flit_core.buildapi"
+
+[tool.pyright]
+typeCheckingMode = "basic"
