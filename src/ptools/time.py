@@ -16,7 +16,6 @@ def cli():
 
 
 @cli.command()
-@click.argument('command', type=str, default='ptools --help')
 @click.option('--repeat', '-r', default=1, help='Number of times to repeat the command')
 @click.option(
     '--stats', '-s',
@@ -25,7 +24,8 @@ def cli():
     default=['mean'],
     help='Statistics to compute',
 )
-def it(command, repeat, stats):
+@click.argument('command', type=str, default='ptools --help', nargs=-1, metavar='COMMAND')
+def it(repeat, stats, command):
     """Time the execution of a command and compute statistics."""
     import json
     import subprocess
@@ -34,6 +34,7 @@ def it(command, repeat, stats):
     from ptools.utils.print import ProgressBar, ProgressBarOptions
 
     my_start = time()
+    command = ' '.join(command) if command else 'ptools --help'
 
     STAT_FNS = {
         'mean':   np.mean,
