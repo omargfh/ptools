@@ -155,6 +155,7 @@ class PrintUtils:
         thread.start()
         return stop_event
 
+
 class ProgressBarOptions(BaseModel):
     length: int = 20
     fill_char: str = PTOOLS_DEFAULT_FILL_CHAR
@@ -174,6 +175,40 @@ class ProgressBarOptions(BaseModel):
             raise ValueError("bracket_char must be 2 characters")
 
         return values
+
+class ProgressBar():
+    def __init__(self, total: int, prefix: str = "", suffix: str = "", options: ProgressBarOptions = ProgressBarOptions()):
+        from threading import Thread, Event
+        import time
+
+        self.total = total
+        self.current = 0
+
+        stop_event = Event()
+
+        def progress():
+            line=""
+            while not stop_event.is_set():
+                line=f"{prefix} {FormattedText.progress_bar(self.current, self.total, options)} {suffix}"
+                print(f"\r{line}", end="")
+                if self.current >= self.total:
+                    break
+                time.sleep(0.1)
+            print("\r" + " " * len(line) + "\r", end="")  # Clear line when done
+
+        self.thread = Thread(target=progress)
+        self.thread.start()
+        self.stop_event = stop_event
+
+    def update(self, val: int = 1):
+        self.current = min(val, self.total)
+
+    def complete(self):
+        self.current = self.total
+        self.stop_event.set()
+
+    def join(self):
+        self.thread.join()
 
 class FormattedText:
     @staticmethod

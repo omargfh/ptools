@@ -1,5 +1,5 @@
 import click
-from . import llm, rsync, dev, watch, projects, shell, secrets, json, clip, flow, fs, literals, kill, touch
+from . import llm, rsync, dev, watch, projects, shell, secrets, json, clip, flow, fs, literals, kill, touch, time
 
 @click.group()
 @click.version_option()
@@ -27,3 +27,5 @@ cli.add_command(llm.opts, name="llm-opts")
 cli.add_command(kill.cli, name="kill")
 cli.add_command(literals.cli, name="lget")
 cli.add_command(touch.cli, name="touch")
+
+cli.add_command(time.cli, name="time")

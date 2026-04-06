@@ -22,7 +22,6 @@ def code():
     cmd = f"code {get_project_root()}"
     os.system(cmd)
 
-
 @cli.command()
 def vim():
     """Make changes to this tool in Vim."""
@@ -39,7 +38,8 @@ def editor(command):
 @cli.command()
 def install():
     """(re)install the tool."""
-    cmd = f"{os.sys.executable} -m pip install -e {get_project_root()}"
+    import sys
+    cmd = f"{sys.executable} -m pip install -e {get_project_root()}"
     os.system(cmd)
 
 @cli.command()
