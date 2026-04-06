@@ -1,17 +1,7 @@
 import click
 import humanize
-from collections import defaultdict
-from functools import lru_cache
 
-from ptools.lib.flow.values import OutputValue
 from ptools.lib.flow.decorators import output_flavor
-
-from ptools.utils.re import test
-
-from ptools.utils.files import get_size
-from ptools.utils.print import TreeText, KnownExtensions
-from ptools.utils.read import FromHumanized
-
 
 @click.group()
 def cli():
@@ -59,6 +49,9 @@ def walkdir(
 ):
     """Recursively list files and directories."""
     import os
+    from ptools.lib.flow.values import OutputValue
+    from ptools.utils.re import test
+
 
     """
     Result: {
@@ -161,7 +154,9 @@ def tree(
     """Print a tree structure of directory content with size information."""
     # Example: ptools fs tree . --max-depth 2 --size-threshold 10MB
     import os
-
+    from ptools.utils.files import get_size
+    from ptools.utils.print import TreeText, KnownExtensions
+    from ptools.utils.read import FromHumanized
 
     bytes_threshold = \
         FromHumanized.from_humanized_size(size_threshold) \
@@ -261,7 +256,7 @@ def tree(
                         if child_node:
                             node.add_child(child_node)
                     elif entry.is_file() and show_files and depth > 0:
-                        size = entry.stat().st_size
+                        size = get_size(entry.path)
                         if bytes_threshold is None or size >= bytes_threshold:
                             file_node = TreeText.FileTreeNode(f"{entry.name}", is_directory=False, is_symlink=entry.is_symlink(), size=size)
                             if bytes_flag_threshold is not None and size >= bytes_flag_threshold:

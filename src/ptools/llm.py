@@ -3,27 +3,63 @@ import click
 import os
 
 import ptools.utils.require as require
-from ptools.utils.enums import LogicalOperators
 from ptools.utils.print import FormatUtils
 
 from ptools.lib.llm.constants import model_choices
-from ptools.lib.llm.session import ChatSession
-from ptools.lib.llm.prompt import parse_prompt
-from ptools.lib.llm.stores import key_store, ChatsStore
-import ptools.lib.llm.decorators as llm_decorators
-from ptools.lib.llm.client import ChatClient
-from ptools.lib.llm.history import HistoryTransformer, HistoryTransformerFactory
-from ptools.lib.llm.entities import LLMProfile
-from ptools.lib.llm.commands import commands
+from ptools.lib.llm.history import HistoryTransformerFactory
+
+
+def _get_key_store():
+    from ptools.lib.llm.stores import key_store
+    return key_store
+
+
+def _initialize_default_profiles(profiles_store):
+    from ptools.lib.llm.profiles import profiles
+    for name, profile in profiles.items():
+        if profiles_store.get(name) is None:
+            profiles_store.add(name, profile)
+
+
+def _resolve_profile(profiles_store, profile_name: str | None):
+    from ptools.lib.llm.entities import LLMProfile
+    profile = profiles_store.get_profile_by_name(profile_name) if profile_name else None
+    if profile is None:
+        return LLMProfile(), [
+            FormatUtils.warning(f"Profile '{profile_name}' not found. Using default profile.")
+        ]
+
+    return profile, [FormatUtils.info(f"Using profile: {profile_name}")]
+
+
+def _resolve_chat(chats_store, history: str | None, persist: bool):
+    diagnostics = []
+    if history:
+        diagnostics.append(FormatUtils.info(f"Using existing chat history: {history}"))
+        return chats_store.get_chat_by_name(history), diagnostics
+    if persist:
+        chat_file = chats_store.new_chat()
+        diagnostics.append(FormatUtils.info(f"Created new persistent chat history: {chat_file}"))
+        return chat_file, diagnostics
+
+    diagnostics.append(FormatUtils.info("Using non-persistent chat history."))
+    return chats_store.no_persist_chat(), diagnostics
+
+
+def _resolve_client(model: str):
+    from ptools.lib.llm.client import GoogleChatClient, OpenAIChatClient
+    from ptools.lib.llm.constants import google_models, openai_models
+
+    if model in openai_models:
+        return OpenAIChatClient(model=model)
+    if model in google_models:
+        return GoogleChatClient(model=model)
+    raise click.ClickException(f"Model '{model}' is not supported.")
 
 @click.command()
 @require.library('openai', prompt_install=True)
 @require.library('prompt_toolkit', prompt_install=True)
 @require.library('pygments', prompt_install=True)
-@require.key({
-    'OPENAI_API_KEY': ['OPENAI_API_KEY'],
-    'GOOGLE_API_KEY': ['GOOGLE_API_KEY']
-}, stores=[os.environ, key_store], logical_operator=LogicalOperators.OR)
 @click.argument('message', required=False, nargs=-1)
 @click.option('--model', '-m', type=click.Choice(model_choices), help='Language model to use.')
 @click.option(
@@ -37,23 +73,67 @@ from ptools.lib.llm.commands import commands
 @click.option('--interactive/--no-interactive', '-i/-I', default=False, help='Use chat interface.')
 @click.option('--persist/--no-persist', '-s/-S', default=False, help='Persist chat file to disk when creating a new chat session without --chat-file.')
 @click.option('--debug/--no-debug', '-d/-D', default=False, help='Enable debug mode to print diagnostic information.')
-@llm_decorators.before_call.decorate()
 def cli(
     message: str | None,
-    client: ChatClient,
-    chat: ChatsStore,
-    profile: LLMProfile,
-    history_transformer: HistoryTransformer,
+    model: str | None,
+    history_transformer: str,
+    history: str | None,
+    profile: str | None,
     interactive: bool,
+    persist: bool,
+    debug: bool,
 ):
     """Interact with a chat interface."""
+    from ptools.lib.llm.constants import google_models, openai_models
+    from ptools.lib.llm.prompt import parse_prompt
+    from ptools.lib.llm.session import ChatSession
+    from ptools.lib.llm.stores import chats_store, profiles_store
+    from ptools.lib.llm.commands import commands
     from ptools.lib.llm.repl import start_chat
+
+    key_store = _get_key_store()
+    _initialize_default_profiles(profiles_store)
+
+    diagnostics = []
+    profile_obj, profile_diagnostics = _resolve_profile(profiles_store, profile)
+    diagnostics.extend(profile_diagnostics)
+
+    if model is None:
+        model = profile_obj.model if profile_obj.model is not None else 'gemini-2.0-flash'
+    diagnostics.append(FormatUtils.info(f"Using model: {model}"))
+    diagnostics.append(FormatUtils.info(f"Model was retrieved from profile: {profile_obj.model is not None and profile_obj.model == model}"))
+
+    openai_api_key = os.environ.get('OPENAI_API_KEY') or key_store.get('OPENAI_API_KEY')
+    google_api_key = os.environ.get('GOOGLE_API_KEY') or key_store.get('GOOGLE_API_KEY')
+
+    if model in openai_models:
+        if not openai_api_key:
+            raise click.ClickException("OPENAI_API_KEY is required for OpenAI models.")
+        os.environ['OPENAI_API_KEY'] = openai_api_key
+        diagnostics.append(FormatUtils.info(f"OpenAI API Key set for model {model}."))
+    elif model in google_models:
+        if not google_api_key:
+            raise click.ClickException("GOOGLE_API_KEY is required for Google models.")
+        os.environ['GOOGLE_API_KEY'] = google_api_key
+        diagnostics.append(FormatUtils.info(f"Google API Key set for model {model}."))
+
+    chat, chat_diagnostics = _resolve_chat(chats_store, history, persist)
+    diagnostics.extend(chat_diagnostics)
+
+    history_transformer_obj = HistoryTransformerFactory.get_transformer(history_transformer)
+    diagnostics.append(FormatUtils.info(f"Using history transformer: {history_transformer}"))
+
+    client = _resolve_client(model)
+
+    if debug:
+        for diagnostic in diagnostics:
+            print(diagnostic)
 
     session = ChatSession(
         provider=client,
-        history_transformer=history_transformer,
+        history_transformer=history_transformer_obj,
         chat_file=chat,
-        profile=profile
+        profile=profile_obj
     )
 
     context = {
@@ -89,7 +169,7 @@ def opts():
 @click.argument('key', required=False)
 def set_api_key(service: str, key: str | None):
     """Set the API key for a specific service."""
-    from ptools.lib.llm.stores import key_store
+    key_store = _get_key_store()
     if not key:
         key = click.prompt(f'Enter API key for {service}', hide_input=True)
 
@@ -131,6 +211,7 @@ def add_profile(name: str, file: str, copy: bool):
 @opts.command(name='create-profile')
 def create_profile():
     """Create a new LLM profile interactively."""
+    from ptools.lib.llm.entities import LLMProfile
     from ptools.lib.llm.stores import profiles_store
     name = click.prompt('Enter profile name')
     if profiles_store.get(name):
