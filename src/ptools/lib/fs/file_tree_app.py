@@ -12,19 +12,45 @@ Keybindings:
     escape        - clear filter / unfocus filter
     r             - refresh (rescan from disk)
     q             - quit
+    [custom]      - user-defined commands (if any)
 """
 
 from __future__ import annotations
 
 import os
 from threading import Timer
+from typing import Callable
+from dataclasses import dataclass
 
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.screen import Screen
 from textual.widgets import Footer, Header, Input, Tree as TextualTree
 from textual.widgets.tree import TreeNode
 from textual.reactive import reactive
+
+class NodeMeta(dict):
+    """Metadata stored for each tree node."""
+    name: str
+    path: str
+    is_dir: bool
+    is_symlink: bool
+    size: int | None
+    depth: int
+    children: list[NodeMeta]
+
+
+class Command:
+    """Represents a user-defined command that can be executed on a tree node."""
+    app: FileTreeApp
+    key: str
+    name: str
+    description: str
+
+    def exec_fn(self, node_data: NodeMeta):
+        """Override this method to define what the command does."""
+        raise NotImplementedError("Command exec_fn must be implemented by subclass")
 
 
 class FileTreeApp(App):
@@ -74,6 +100,7 @@ class FileTreeApp(App):
         get_size_fn=None,
         humanize_fn=None,
         known_extensions_cls=None,
+        commands: list[Command] = [],
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -101,6 +128,12 @@ class FileTreeApp(App):
         # Debounce timer for rebuilds
         self._rebuild_timer: Timer | None = None
         self._rebuild_debounce_secs = 0.15
+
+        # Additional bindings
+        self.commands = commands
+        for cmd in self.commands:
+            cmd.app = self
+            self._bindings._add_binding(Binding(cmd.key, cmd.name, cmd.description))
 
         # Guards
         self._mount_complete = False
@@ -413,7 +446,12 @@ class FileTreeApp(App):
             self.filter_text = event.value
 
     def on_key(self, event) -> None:
-        if event.key == "escape":
+        # Dismiss Error
+        if self.screen and isinstance(self.screen, MessageScreen):
+            self.pop_screen()
+
+        # Dismiss filter
+        elif event.key == "escape":
             filter_bar = self.query_one("#filter-bar", Input)
             if filter_bar.has_class("visible"):
                 filter_bar.remove_class("visible")
@@ -421,11 +459,67 @@ class FileTreeApp(App):
                 self.filter_text = ""
                 self.query_one("#tree-view", TextualTree).focus()
 
+        # Handle custom commands
+        else:
+            selected_node = self.query_one("#tree-view", TextualTree).cursor_node
+            this_command  = next((cmd for cmd in self.commands if cmd.key == event.key), None)
 
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
+            if selected_node and this_command:
+                node_data = self._node_meta.get(id(selected_node))
+                if node_data:
+                    try:
+                        result = this_command.exec_fn(node_data) # type: ignore
+                        if result is True:
+                            self.action_refresh()
+                    except Exception as e:
+                        self.bell()
+                        self.push_screen(MessageScreen(f"Error executing command: {e}"))
 
+
+class MessageScreen(Screen):
+    """Simple screen to show a message and wait for a key press."""
+
+    def __init__(self, message: str, **kwargs):
+        super().__init__(**kwargs)
+        self.message = message
+
+    def compose(self) -> ComposeResult:
+        yield Header(name="Message")
+        yield Input(value=self.message, id="message-input", disabled=True)
+        yield Input("Press any key to continue...", id="prompt-input", disabled=True)
+        yield Footer()
+
+    def on_mount(self) -> None:
+        self.query_one("#message-input", Input).focus()
+
+class ConfirmScreen(Screen):
+    """Screen to ask user to confirm an action."""
+
+    def __init__(self, message: str, on_confirm: Callable[[], None], **kwargs):
+        super().__init__(**kwargs)
+        self.message = message
+        self.on_confirm = on_confirm
+
+    def compose(self) -> ComposeResult:
+        yield Header(name="Confirm")
+        yield Input(value=self.message, id="confirm-input", disabled=True)
+        yield Input("Press 'y' to confirm, any other key to cancel.", id="prompt-input", disabled=True)
+        yield Footer()
+
+    def on_mount(self) -> None:
+        self.query_one("#confirm-input", Input).focus()
+
+    def on_key(self, event) -> None:
+        try:
+            app: FileTreeApp = self.app # type: ignore
+            if event.key.lower() == "y":
+                self.on_confirm()
+            app.pop_screen()
+            app.action_refresh()
+        except Exception as e:
+            app.pop_screen()
+            app.bell()
+            app.push_screen(MessageScreen(f"Error executing command: {e}"))
 
 def launch_interactive_tree(
     path: str,
@@ -439,6 +533,7 @@ def launch_interactive_tree(
     get_size_fn=None,
     humanize_fn=None,
     known_extensions_cls=None,
+    commands=[],
 ):
     """Entry point to launch the interactive tree from your click command."""
     app = FileTreeApp(
@@ -453,5 +548,6 @@ def launch_interactive_tree(
         get_size_fn=get_size_fn,
         humanize_fn=humanize_fn,
         known_extensions_cls=known_extensions_cls,
+        commands=commands,
     )
     app.run()

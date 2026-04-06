@@ -174,8 +174,45 @@ def tree(
             else None
 
     if interactive:
-        from ptools.lib.fs.file_tree_app import launch_interactive_tree
+        from ptools.lib.fs.file_tree_app import launch_interactive_tree, Command, NodeMeta, ConfirmScreen
         import humanize as humanize_mod
+
+        class OpenCommand(Command):
+            key = 'ctrl+o'
+            name = 'open'
+            description = 'Open'
+
+            def exec_fn(self, node_data: NodeMeta):
+                import subprocess
+                path = node_data.get('path')
+                if path:
+                    if os.name == 'nt':  # Windows
+                        os.startfile(path)
+                    elif os.name == 'posix':
+                        subprocess.run(['open', path])
+                    else:
+                        raise NotImplementedError("Unsupported OS for opening files")
+                else:
+                    raise ValueError("No path associated with this node")
+
+        class DeleteCommand(Command):
+            key = 'backspace'
+            name = 'delete'
+            description = 'Delete'
+
+            def exec_fn(self, node_data: NodeMeta):
+                import os
+                path = node_data.get('path')
+                if not path:
+                    raise ValueError("No path associated with this node")
+                fn   = os.removedirs if os.path.isdir(path) else os.remove
+                exec = lambda: fn(path)
+                self.app.push_screen(
+                    ConfirmScreen(
+                        message=f"Are you sure you want to delete '{path}'?",
+                        on_confirm=exec
+                    )
+                )
 
         launch_interactive_tree(
             path=os.path.abspath(path),
@@ -189,7 +226,9 @@ def tree(
             get_size_fn=get_size,
             humanize_fn=humanize_mod.naturalsize,
             known_extensions_cls=KnownExtensions,
+            commands=[OpenCommand(), DeleteCommand()],
         )
+
         return
 
     def _build_tree(current_path, depth):
