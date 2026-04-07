@@ -6,10 +6,10 @@ from functools import wraps
 
 class XMLRepr:
     INDENT_STRING = "  "
-    def __init__(self, myself, children: List = list(), **attrs: dict[str, Union[str, Callable[[], str]]]):
+    def __init__(self, myself, children: List | None = None, **attrs: dict[str, Union[str, Callable[[], str]]]):
         self.myself = myself
         self.attrs = attrs
-        self.children = children
+        self.children = children if children is not None else []
 
     def __post_init__(self):
         for child in self.children:
