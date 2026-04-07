@@ -1,7 +1,23 @@
+# Python bytecode, cache, and virtual environment files to ignore
 __pycache__
-*.pyc
 __pypackages__
 venv/
 __pycache__/
-*.pyc
 __pypackages__/
+*.pyc
+
+# Local applications
+.vscode/
+.claude/
+.idea/
+
+# MacOS/Windows system files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Environment variables
+.env
