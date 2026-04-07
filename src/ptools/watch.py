@@ -36,7 +36,7 @@ def cli(ctx, path, events, delay):
             self.timer = threading.Timer(delay, self.run_command)
             self.timer.start()
 
-            click.echo(FormatUtils.info(f"Change detected: {event.src_path} — debouncing..."))
+            click.echo(FormatUtils.info(f"Change detected: {event.src_path} - debouncing..."))
 
         def run_command(self):
             click.echo(FormatUtils.info(f"Running command: {' '.join(command)}..."))

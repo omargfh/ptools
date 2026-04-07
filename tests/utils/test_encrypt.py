@@ -1,4 +1,4 @@
-"""Tests for ptools.utils.encrypt — AES-GCM encryption against an in-memory keyring."""
+"""Tests for ptools.utils.encrypt - AES-GCM encryption against an in-memory keyring."""
 import keyring
 from keyring.backend import KeyringBackend
 
@@ -26,7 +26,7 @@ def _install_backend(monkeypatch):
     backend = InMemoryKeyring()
     monkeypatch.setattr(keyring, "get_keyring", lambda: backend)
     # The module-level helpers keyring.get_password / set_password route through
-    # the active backend, but some versions cache — patch them explicitly.
+    # the active backend, but some versions cache - patch them explicitly.
     monkeypatch.setattr(keyring, "get_password", backend.get_password)
     monkeypatch.setattr(keyring, "set_password", backend.set_password)
     return backend

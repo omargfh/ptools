@@ -1,7 +1,7 @@
 """Developer options for power tools.
 
 The :command:`ptools dev` subcommands wrap the chores you'd otherwise
-run by hand from the repo root — (re)installing the tool, opening it in
+run by hand from the repo root - (re)installing the tool, opening it in
 an editor, building the Sphinx docs, regenerating the full requirements
 file, and running the test suite.
 """
@@ -22,7 +22,7 @@ def get_project_root():
 def _run(cmd: list[str], *, cwd: str | None = None) -> int:
     """Run ``cmd``, streaming output, and return its exit code.
 
-    Accepts a list (preferred — no shell quoting footguns) and echoes
+    Accepts a list (preferred - no shell quoting footguns) and echoes
     the command before running it so the user can see exactly what is
     being executed.
     """

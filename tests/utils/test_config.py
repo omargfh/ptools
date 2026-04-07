@@ -15,7 +15,7 @@ FORMATS = pytest.mark.parametrize("fmt", ["json", "yaml"])
 
 @pytest.fixture
 def make_cfg():
-    """Factory fixture — call with overrides, get a config instance."""
+    """Factory fixture - call with overrides, get a config instance."""
     def _make(cfg_cls=ConfigFile, name="unit_test", tmp_path=None, fmt="json", **kw):
         kw.setdefault("quiet", True)
         return cfg_cls(name=name, path=str(tmp_path), format=fmt, **kw)

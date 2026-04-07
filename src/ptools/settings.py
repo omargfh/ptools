@@ -3,13 +3,13 @@
 Central place for configuration shared across :mod:`ptools` submodules.
 Each setting is resolved in priority order:
 
-1. Environment variable (highest — useful for one-off overrides)
+1. Environment variable (highest - useful for one-off overrides)
 2. Persistent global config file at ``~/.ptools/settings.json``
 3. Hard-coded default (lowest)
 
 Read settings by importing the module-level constants (``PIP_EXECUTABLE``,
 etc.) or by calling :func:`get` directly. Persist a setting across shells
-with :func:`set_` — that writes to the config file so it survives without
+with :func:`set_` - that writes to the config file so it survives without
 needing an env var::
 
     from ptools import settings
@@ -24,7 +24,7 @@ override without losing the persisted default::
 import os
 import sys
 
-from ptools.utils.config import  LazyConfigFile, config_to_CLI
+from ptools.utils.config import LazyConfigFile, config_to_CLI
 from pydantic import BaseModel
 
 class SettingsModel(BaseModel):

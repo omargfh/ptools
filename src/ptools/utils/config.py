@@ -1,7 +1,12 @@
+"""Persistent, optionally-encrypted key/value config files for ptools.
+
+Provides :class:`ConfigFile` and the lazy variant :class:`LazyConfigFile`
+for storing user configuration on disk, plus :func:`config_to_CLI` to
+expose CRUD operations as a Click command group.
+"""
 import os
 from pathlib import Path
 import click
-from textual import content
 
 from typing import Generic, TypeVar, overload
 from pydantic import BaseModel
@@ -11,6 +16,8 @@ from ptools.utils.encrypt import Encryption, EncryptionError
 from ptools.utils.re import filter_dict_by_key
 
 from .serial import  SerializerDeserializerFactory
+
+__version__ = "0.1.0"
 
 RESERVED_CONFIG_KEYS = [
     'name', 'path', 'file_path',
@@ -26,6 +33,35 @@ class ConfigFile(Generic[T]):
     Config files are stored in a user-specified directory (defaulting to ``~/.ptools``) with a specified name and format
     (defaulting to JSON). Each config file can optionally be encrypted using a keychain service. It can also provide a
     validation model using Pydantic to ensure the config data adheres to a specific schema or default values.
+
+    :param name: Name of the config file (without extension).
+    :param path: Directory to store the config file. Defaults to ``~/.ptools
+    :param quiet: If True, suppresses informational messages. Defaults to False.
+    :param encrypt: If True, enables encryption for the config file. Defaults to False.
+    :param format: Serialization format for the config file. Defaults to "json". Supported formats
+                        are determined by the SerializerDeserializerFactory.
+    :param model: Optional Pydantic model class for validating config data. If provided, all data will be validated
+                        against this model on load and before saving. This ensures the config adheres to a specific
+                        schema and can provide default values.
+
+    :example:
+    ```python
+    from ptools.utils.config import ConfigFile
+    from pydantic import BaseModel, Field
+
+    class MyConfigModel(BaseModel):
+        api_key: str
+        timeout: int = Field(default=30, description="Timeout in seconds")
+
+    config = ConfigFile[MyConfigModel](name="my_config", encrypt=True, model=MyConfigModel)
+    config.set("api_key", "my_secret_key")
+    print(config.get("api_key"))
+
+    timeout = config.typed.timeout  # Access with validation and defaults
+    print(timeout)  # Will print 30 if not set, or the value if set
+    ```
+
+    See also :class:`~ptools.utils.config.LazyConfigFile` for a lazily-initialized version of this class.
     """
     def __init__(
         self,
@@ -145,9 +181,11 @@ class ConfigFile(Generic[T]):
 
 
     def get(self, key, default=None):
+        """Return the stored value for ``key`` or ``default`` if missing."""
         return self.data.get(key, default)
 
     def set(self, key, value):
+        """Persist ``value`` under ``key`` and write the file to disk."""
         self.data[key] = value
         with open(self.file_path, 'w') as f:
             self._writes(f, self.data)
@@ -155,6 +193,7 @@ class ConfigFile(Generic[T]):
         return self.data[key]
 
     def delete(self, key):
+        """Remove ``key`` from the config and rewrite the file. No-op if absent."""
         if key in self.data:
             del self.data[key]
             with open(self.file_path, 'w') as f:
@@ -166,11 +205,16 @@ class ConfigFile(Generic[T]):
 
     @property
     def typed(self) -> T:
+        """Return the config data validated as a Pydantic model instance.
+
+        :raises ValueError: if no ``model`` was provided at construction.
+        """
         if self.model is None:
             raise ValueError("No model defined for this ConfigFile instance.")
         return self.model.model_validate(self.data)
 
     def list(self):
+        """Echo every stored key/value pair and return the underlying dict."""
         if not self.data:
             self._echo(FormatUtils.warning(f"No data found in config file {self.file_path}"))
             return {}
@@ -180,6 +224,7 @@ class ConfigFile(Generic[T]):
         return self.data
 
     def clear(self):
+        """Wipe all stored data and rewrite the file."""
         self.data = {}
         with open(self.file_path, 'w') as f:
             self._writes(f, self.data)
@@ -187,6 +232,7 @@ class ConfigFile(Generic[T]):
         return self.data
 
     def upsert(self, key, value):
+        """Insert or update ``key`` with ``value``, logging which case occurred."""
         if key in self.data:
             self._echo(FormatUtils.info(f"Updating existing key '{key}' in config file {self.file_path}"))
         else:
@@ -194,6 +240,7 @@ class ConfigFile(Generic[T]):
         return self.set(key, value)
 
     def exists(self, key):
+        """Return whether ``key`` is stored in the config, with a status echo."""
         exists = key in self.data
         if exists:
             self._echo(FormatUtils.success(f"Key '{key}' exists in config file {self.file_path}"))
@@ -202,6 +249,7 @@ class ConfigFile(Generic[T]):
         return exists
 
     def replace(self, new_data):
+        """Replace every entry with ``new_data`` and persist the result."""
         if not isinstance(new_data, dict):
             raise TypeError("New data must be a dictionary.")
         self.data = new_data
@@ -264,11 +312,15 @@ class ConfigFile(Generic[T]):
         return self
 
     def close(self):
+        """Close the underlying file handle if one is held open."""
         if self.ref and not self.ref.closed:
             self.ref.close()
             self._echo(FormatUtils.info(f"Closed config file {self.file_path}"))
 
 class LazyConfigFile(ConfigFile[T]):
+    """A lazily-initialized version of ConfigFile. The actual initialization is deferred until the first time an attribute is accessed.
+    This can be useful for improving startup performance or avoiding unnecessary initialization when the config file may not be needed.
+    """
     @overload
     def __init__(
         self,
@@ -317,23 +369,54 @@ class LazyConfigFile(ConfigFile[T]):
 
 def config_to_CLI(
     config: ConfigFile | LazyConfigFile,
+    cli: click.Group | None = None,
     name: str | None = None,
 ):
-    """Generate a Click CLI for managing a ConfigFile instance."""
+    """Create a CRUD command-line interface for a given ConfigFile or LazyConfigFile instance.
+    The CLI will have commands to list, get, set, and delete key-value pairs in the config file.
+    The CLI is built using Click and can be easily integrated into a larger command-line application.
+
+    :param config: An instance of ConfigFile or LazyConfigFile to manage with the CLI.
+    :param cli: An optional Click Group to which the config commands will be added. If
+                    not provided, a new Click Group will be created.
+    :param name: An optional name for the CLI group. If not provided, it will be derived from the config class name.
+
+    :example:
+    ```python
+    from ptools.utils.config import ConfigFile, config_to_CLI
+    import click
+    config = ConfigFile(name="my_config")
+    cli = config_to_CLI(config)
+    if __name__ == "__main__":
+        cli()
+    ```
+     This will create a CLI with commands like:
+     - `python my_script.py config list`
+     - `python my_script.py config get <key>`
+     - `python my_script.py config set <key> <value>`
+     - `python my_script.py config delete <key>`
+    """
+
     name = config.__class__.__name__\
         .removesuffix("File") \
         .removesuffix("Config") \
         .lower() if name is None else name
 
-    @click.group(name=name, help=f"CLI for managing {config.__class__.__name__} instance at {config.file_path}.")
-    def cli():
+    @click.group(
+        name=name,
+        help=f"CLI for managing {config.__class__.__name__} instance at {config.file_path}."
+    )
+    def group():
         pass
+
+    cli = cli or group
+
 
     def dump_one(key, value):
         if value is None:
-            click.echo(f"{ASCIIEscapes.color(str(key), 'green')} : {ASCIIEscapes.color('None', 'red')}")
+            click.echo(f"{ASCIIEscapes.color(str(key), 'green')}: {ASCIIEscapes.color('None', 'red')}")
         else:
-            click.echo(f"{ASCIIEscapes.color(str(key), 'green')} : {value}")
+            click.echo(f"{ASCIIEscapes.color(str(key), 'green')}: {value}")
 
     @cli.command(name="list", help="List all key-value pairs in the config file.")
     @click.option('--query', '-q', help="Query to filter secrets")
@@ -385,12 +468,20 @@ def config_to_CLI(
 
 
 class KeyValueStore(ConfigFile):
-    # This started as a simple key-value store for config purposes
-    # but has evolved into a more general key-value store.
-    # We offer an alias for semantic clarity.
+    """Semantic alias for :class:`ConfigFile` when used as a generic key/value store.
+
+    This started as a config-only utility but has grown into a general
+    key/value store; this alias exists purely for clearer call sites.
+    """
     pass
 
 class DummyKeyValueStore(ConfigFile):
+    """No-op :class:`ConfigFile` stand-in for tests and dry-run code paths.
+
+    Every method is a pass-through that ignores writes and returns
+    empty/default values, so callers can swap it in without changing
+    their interface.
+    """
     def __init__(self, *args, **kwargs):
         pass
 

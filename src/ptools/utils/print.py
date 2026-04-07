@@ -1,3 +1,4 @@
+"""Terminal formatting helpers: ANSI colors, log prefixes, progress bars, trees."""
 import os
 from typing import Optional
 from dataclasses import dataclass
@@ -5,12 +6,16 @@ from pydantic import BaseModel
 import humanize
 from typing import List
 
+__version__ = "0.1.0"
+
 PTOOLS_DEFAULT_BRACKET_CHAR = os.environ.get('BRACKET_CHAR', '[]')
 PTOOLS_DEFAULT_FILL_CHAR = os.environ.get('FILL_CHAR', '█')
 PTOOLS_DEFAULT_EMPTY_CHAR = os.environ.get('EMPTY_CHAR', '-')
 
 @dataclass
 class ASCIIEscapes:
+    """ANSI escape-code constants and helpers for coloring terminal output."""
+
     BLACK: str = "\033[30m"
     RED: str = "\033[91m"
     GREEN: str = "\033[92m"
@@ -35,26 +40,31 @@ class ASCIIEscapes:
 
     @staticmethod
     def wrap(text: str, code: str) -> str:
+        """Wrap each line of ``text`` in the given ANSI ``code`` and a reset."""
         lines = text.splitlines()
         wrapped_lines = [f"{code}{line}{ASCIIEscapes.RESET}" for line in lines]
         return "\n".join(wrapped_lines)
 
     @staticmethod
     def color(text: str, color: str = 'yellow') -> str:
+        """Return ``text`` colored with the named ANSI foreground color."""
         color_code = getattr(ASCIIEscapes, color.upper(), ASCIIEscapes.YELLOW)
         return ASCIIEscapes.wrap(text, color_code)
 
     @staticmethod
     def background(text: str, color: str = 'yellow') -> str:
+        """Return ``text`` painted with the named ANSI background color."""
         color_code = getattr(ASCIIEscapes, f"BG_{color.upper()}", ASCIIEscapes.BG_YELLOW)
         return ASCIIEscapes.wrap(text, color_code)
 
     @staticmethod
     def bold(text: str) -> str:
+        """Return ``text`` wrapped in the ANSI bold escape."""
         return ASCIIEscapes.wrap(text, ASCIIEscapes.BOLD)
 
     @staticmethod
     def italic(text: str) -> str:
+        """Return ``text`` wrapped in the ANSI italic escape."""
         return ASCIIEscapes.wrap(text, ASCIIEscapes.ITALIC)
 
     @staticmethod
@@ -65,6 +75,7 @@ class ASCIIEscapes:
         bold: bool = False,
         italic: bool = False
     ) -> str:
+        """Combine multiple ANSI styles (color, background, bold, italic) on ``text``."""
         code = ""
         if color:
             code += getattr(ASCIIEscapes, color.upper(), ASCIIEscapes.YELLOW)
@@ -77,63 +88,79 @@ class ASCIIEscapes:
         return ASCIIEscapes.wrap(text, code)
 
 class FormatUtils:
+    """Format pre-styled status strings (error/info/success/warning, etc.)."""
+
     @staticmethod
     def error(*args):
+        """Return an ``ERROR``-prefixed red status line built from ``args``."""
         msg = " ".join(args)
         return f"{ASCIIEscapes.color(' ERROR ', 'red')}{msg}"
 
     @staticmethod
     def info(*args):
+        """Return an ``INFO``-prefixed cyan status line built from ``args``."""
         msg = " ".join(args)
         return f"{ASCIIEscapes.color(' INFO ', 'cyan')}{msg}"
 
     @staticmethod
     def success(*args):
+        """Return a ``SUCCESS``-prefixed green status line built from ``args``."""
         msg = " ".join(args)
         return f"{ASCIIEscapes.color(' SUCCESS ', 'green')}{msg}"
 
     @staticmethod
     def warning(*args):
+        """Return a ``WARNING``-prefixed yellow status line built from ``args``."""
         msg = " ".join(args)
         return f"{ASCIIEscapes.color(' WARNING ', 'yellow')}{msg}"
 
     @staticmethod
     def highlight(text: str, color: str = 'yellow') -> str:
+        """Color ``text`` for inline emphasis (alias of :meth:`ASCIIEscapes.color`)."""
         return ASCIIEscapes.color(text, color)
 
     @staticmethod
     def background(text: str, color: str = 'yellow') -> str:
+        """Paint ``text`` with the given background color."""
         return ASCIIEscapes.background(text, color)
 
     @staticmethod
     def bold(text: str) -> str:
+        """Bold ``text`` (alias of :meth:`ASCIIEscapes.bold`)."""
         return ASCIIEscapes.bold(text)
 
     @staticmethod
     def italic(text: str) -> str:
+        """Italicize ``text`` (alias of :meth:`ASCIIEscapes.italic`)."""
         return ASCIIEscapes.italic(text)
 
 class PrintUtils:
+    """Thin wrapper that prints :class:`FormatUtils` strings to stdout."""
+
     def __init__(self):
         pass
 
     @staticmethod
     def error(*args, **kwargs):
+        """Print a formatted error line."""
         msg = " ".join(args)
         print(FormatUtils.error(msg), **kwargs)
 
     @staticmethod
     def info(*args, **kwargs):
+        """Print a formatted info line."""
         msg = " ".join(args)
         print(FormatUtils.info(msg), **kwargs)
 
     @staticmethod
     def success(*args, **kwargs):
+        """Print a formatted success line."""
         msg = " ".join(args)
         print(FormatUtils.success(msg), **kwargs)
 
     @staticmethod
     def warning(*args, **kwargs):
+        """Print a formatted warning line."""
         msg = " ".join(args)
         print(FormatUtils.warning(msg), **kwargs)
 
@@ -141,6 +168,7 @@ class PrintUtils:
     def spinner(
         message: str,
     ):
+        """Start a background spinner next to ``message`` and return its stop event."""
         from threading import Thread, Event
         import time
         stop_event = Event()
@@ -157,6 +185,8 @@ class PrintUtils:
 
 
 class ProgressBarOptions(BaseModel):
+    """Tunable rendering options for :class:`ProgressBar` and :func:`FormattedText.progress_bar`."""
+
     length: int = 20
     fill_char: str = PTOOLS_DEFAULT_FILL_CHAR
     empty_char: str = PTOOLS_DEFAULT_EMPTY_CHAR
@@ -165,6 +195,7 @@ class ProgressBarOptions(BaseModel):
 
     @classmethod
     def model_validate(cls, values):
+        """Validate that fill/empty are single chars and brackets are exactly two chars."""
         fill_char = values.get('fill_char')
         empty_char = values.get('empty_char')
         if len(fill_char) != 1 or len(empty_char) != 1:
@@ -177,6 +208,12 @@ class ProgressBarOptions(BaseModel):
         return values
 
 class ProgressBar():
+    """Threaded terminal progress bar driven by :meth:`update`/:meth:`complete`.
+
+    The bar redraws itself on its own thread until either ``current``
+    reaches ``total`` or :meth:`complete` signals the stop event.
+    """
+
     def __init__(self, total: int, prefix: str = "", suffix: str = "", options: ProgressBarOptions = ProgressBarOptions()):
         from threading import Thread, Event
         import time
@@ -201,22 +238,29 @@ class ProgressBar():
         self.stop_event = stop_event
 
     def update(self, val: int = 1):
+        """Set the current progress value (clamped to ``total``)."""
         self.current = min(val, self.total)
 
     def complete(self):
+        """Mark the bar as full and stop the rendering thread."""
         self.current = self.total
         self.stop_event.set()
 
     def join(self):
+        """Wait for the rendering thread to exit."""
         self.thread.join()
 
 class FormattedText:
+    """Pure-string formatters for progress indicators and spinners."""
+
     @staticmethod
     def progress(i: int, total: int):
+        """Return ``[i/total]``."""
         return f"[{i}/{total}]"
 
     @staticmethod
     def percent(i: int, total: int):
+        """Return ``i`` as a percentage of ``total`` formatted as ``[xx.xx%]``."""
         return f"[{(i/total)*100:.2f}%]"
 
     @staticmethod
@@ -225,6 +269,7 @@ class FormattedText:
         total: int,
         opts: ProgressBarOptions = ProgressBarOptions()
     ) -> str:
+        """Render a single-line bracketed progress bar string."""
         length, fill_char, empty_char, bracket_char = \
             opts.length, opts.fill_char, opts.empty_char, opts.bracket_char
 
@@ -235,12 +280,15 @@ class FormattedText:
 
     @staticmethod
     def spinner(state: int, total_states: int) -> str:
+        """Return the spinner character for ``state`` modulo ``total_states``."""
         spinner_chars = ['|', '/', '-', '\\']
         char = spinner_chars[state % total_states]
         return f"{char}"
 
 
 class KnownExtensions:
+    """Sets of well-known file extensions and the emoji icons used to render them."""
+
     IMAGE   = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', '.avif', '.webp', '.tiff', '.ico', '.heic'}
     VIDEO   = {'.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm', '.mpeg'}
     AUDIO   = {'.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a', '.opus', '.alac', '.wma', '.aiff'}
@@ -276,6 +324,7 @@ class KnownExtensions:
 
     @staticmethod
     def get_icon(extension: str | None, is_dir=False, is_symlink=False, has_children=False) -> str:
+        """Pick an emoji icon for a filesystem entry based on its kind and extension."""
         if is_symlink:
             return KnownExtensions.ICONS["SYMLINK"]
         elif is_dir and has_children:
@@ -310,22 +359,31 @@ class KnownExtensions:
             return KnownExtensions.ICONS["DEFAULT"]
 
 class Pipes:
+        """Box-drawing characters used to render text-mode trees."""
+
         BRANCH = '├──'
         VERTICAL = '│'
         END = '└──'
         SPACE = '    '
 
 class TreeText:
+    """Helpers for building and rendering text trees with box-drawing characters."""
+
     class TreeNode:
+        """Generic tree node holding a display ``name`` and ordered children."""
+
         def __init__(self, name: str, children: Optional[list['TreeText.TreeNode']] = None):
             self.name = name
             self.children = children or []
 
         def add_child(self, child: 'TreeText.TreeNode'):
+            """Append ``child`` to this node."""
             self.children.append(child)
 
 
     class FileTreeNode(TreeNode):
+        """Tree node specialised for files and directories with size + icon rendering."""
+
         _name = ""
         size = 0
         size_color = 'green'
@@ -349,10 +407,12 @@ class TreeText:
             self,
             child: 'TreeText.FileTreeNode',
         ):
+            """Append ``child`` to this directory node."""
             self.children.append(child)
 
         @property
         def name(self):
+            """Return the rendered display name (icon + filename + optional size)."""
             extension = os.path.splitext(self._name)[1] if not self.is_directory else None
             icon = KnownExtensions.get_icon(
                 extension,
@@ -367,6 +427,8 @@ class TreeText:
             return res
 
     class PipeBuilder:
+        """Recursive renderer that converts a tree of nodes into prefixed lines."""
+
         @staticmethod
         def tree_to_pipes(
             node: 'TreeText.TreeNode',
@@ -375,6 +437,7 @@ class TreeText:
             is_last: bool = True,
             pipes = Pipes
         ) -> list[str]:
+            """Walk ``node`` and return its lines drawn with ``pipes`` connectors."""
             lines = []
             if not is_first:
                 connector = pipes.END if is_last else pipes.BRANCH
@@ -390,10 +453,12 @@ class TreeText:
 
     @staticmethod
     def render_tree(root: 'TreeText.TreeNode', pipes = Pipes) -> str:
+        """Render an entire tree rooted at ``root`` as a single newline-joined string."""
         lines = TreeText.PipeBuilder.tree_to_pipes(root, prefix='', is_first=True, is_last=False, pipes=pipes)
         return "\n".join(lines)
 
 def fdebug(title, **kwargs):
+    """Format a labelled ``[DEBUG]`` block listing ``kwargs`` as ``key=value`` pairs."""
     msg = "\n   ".join([
         FormatUtils.background("[DEBUG]", "yellow") + FormatUtils.bold(f" {title}"),
         *[f"- {FormatUtils.highlight(str(k), 'yellow')}={FormatUtils.highlight(repr(v), 'green')}" for k, v in kwargs.items()]

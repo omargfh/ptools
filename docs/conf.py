@@ -56,7 +56,7 @@ autodoc_typehints = "description"
 autodoc_member_order = "bysource"
 
 # Some optional third-party deps pulled in by ptools subcommands aren't
-# needed to render the docs — mock them so autodoc doesn't fail importing
+# needed to render the docs, mock them so autodoc doesn't fail importing
 # modules that reference them at import time.
 autodoc_mock_imports = [
     "openai",
@@ -70,7 +70,6 @@ autodoc_mock_imports = [
     "lark",
     "watchdog",
     "humanize",
-    "pydantic",
     "numpy",
     "requests",
     "yaml",

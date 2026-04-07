@@ -1,4 +1,16 @@
+"""Pluggable serializer/deserializer adapters used by the config module."""
+
+__version__ = "0.1.0"
+
+
 class SeralizerDeserializer:
+    """Abstract serializer base class.
+
+    Concrete subclasses populate :attr:`name`, :attr:`ext`, :attr:`exts`
+    and :attr:`DecodeError`, then implement the four (de)serialization
+    methods. The factory below picks one based on a format string.
+    """
+
     name = ''
     ext = ''
     exts = ()
@@ -6,21 +18,26 @@ class SeralizerDeserializer:
 
     @staticmethod
     def dumps(data, **opts):
+        """Serialize ``data`` to a string."""
         raise NotImplementedError
 
     @staticmethod
     def loads(data, **opts):
+        """Deserialize ``data`` from a string."""
         raise NotImplementedError
 
     @staticmethod
     def dump(data, file, **opts):
+        """Serialize ``data`` directly into the open ``file`` handle."""
         raise NotImplementedError
 
     @staticmethod
     def load(file, **opts):
+        """Deserialize the contents of the open ``file`` handle."""
         raise NotImplementedError
 
 class JSONSerializerDeserializer(SeralizerDeserializer):
+    """JSON adapter (4-space indented) backed by the stdlib :mod:`json` module."""
     import json
 
     name = 'JSON'
@@ -45,6 +62,7 @@ class JSONSerializerDeserializer(SeralizerDeserializer):
         return JSONSerializerDeserializer.json.load(file, **opts)
 
 class YAMLSerializerDeserializer(SeralizerDeserializer):
+    """YAML adapter using PyYAML's safe loader and a unicode-friendly dumper."""
     import yaml
 
     name = 'YAML'
@@ -82,8 +100,14 @@ class YAMLSerializerDeserializer(SeralizerDeserializer):
         return myself.yaml.safe_load(file)
 
 class SerializerDeserializerFactory:
+    """Resolve a serializer adapter class from a short format name."""
+
     @staticmethod
     def get(format):
+        """Return the adapter class for ``format`` (``"json"``, ``"yaml"``, ``"yml"``).
+
+        :raises ValueError: if ``format`` is not supported.
+        """
         format = format.lower()
         if format == 'json':
             return JSONSerializerDeserializer

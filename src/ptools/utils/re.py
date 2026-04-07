@@ -1,4 +1,8 @@
+"""Small regex / substring helpers for filtering strings and dicts."""
 import re
+
+__version__ = "0.1.0"
+
 
 def test(
     query: str | None = None,

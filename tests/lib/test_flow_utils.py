@@ -1,4 +1,4 @@
-"""Tests for ptools.lib.flow.utils — yield_scope and global scope builder."""
+"""Tests for ptools.lib.flow.utils - yield_scope and global scope builder."""
 from ptools.lib.flow.utils import create_global_scope, yield_scope
 from ptools.lib.flow.values import StreamValue
 

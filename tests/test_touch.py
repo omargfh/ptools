@@ -37,7 +37,7 @@ class TestSetExtension:
             extension=".txt", allow_arbitrary_extension=False
         )
         # NOTE: current implementation strips len(new_ext) chars from the end
-        # rather than the actual existing suffix — asserting the observed
+        # rather than the actual existing suffix - asserting the observed
         # behavior so this test will fail (and flag the bug) if the underlying
         # logic ever changes.
         out = touch_module.set_extension(pathlib.Path("note.md"), opts)

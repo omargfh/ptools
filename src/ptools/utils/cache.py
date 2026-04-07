@@ -1,14 +1,38 @@
+"""Cache utilities for ptools."""
 from functools import wraps
 from enum import Enum
 
 from ptools.utils.lazy import Lazy
 from ptools.utils.print import PrintUtils
 
+__version__ = "0.1.0"
+
+
 class Short(Enum):
+    """Short keys used to compactly persist cache entries on disk."""
+
     Timestamp = "t"
     Result = "r"
 
 def disk_cache(cache_dir=None, max_cache_age=3600,  hex_length=32):
+    """A decorator to cache function results on disk with a specified maximum age.
+    Stores cache as a JSON file in the specified cache directory.
+    Cache keys are generated based on function name and arguments.
+    This decorator flushes to disk on program exit and provides a manual flush method.
+
+    This is useful for caching results across runs of the command line tool.
+
+    :param cache_dir: Directory to store cache files. Defaults to ~/.ptools/.cache.
+    :param max_cache_age: Maximum age of cache entries in seconds. Defaults to 3600 (1 hour).
+    :param hex_length: Length of the hexadecimal cache key. Defaults to 32.
+
+    :example:
+    @disk_cache(max_cache_age=600)  # Cache results for 10 minutes
+    def expensive_computation(x):
+        # Simulate an expensive computation
+        time.sleep(5)
+        return x * x
+    """
     import os, json, hashlib, time, atexit
     from pathlib import Path
 

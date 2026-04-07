@@ -1,3 +1,4 @@
+"""File-system and input-resolution helpers for ptools commands."""
 import os
 import click
 import sys
@@ -8,7 +9,18 @@ from typing import Optional
 
 from ptools.utils.cache import disk_cache
 
+__version__ = "0.1.0"
+
+
 def resolve_input(allow_stdin=True):
+    """Click decorator that resolves an input from positional, ``--file``, ``--url`` or stdin.
+
+    Wrapped commands receive ``source_type`` and ``content`` keyword
+    arguments describing where the input came from and its raw text.
+
+    :param allow_stdin: If ``True``, fall back to reading stdin when no
+        other source is provided.
+    """
     def decorator(func):
         """
         Decorator that adds --file and INPUT arg, and injects `source_type` and `content`
@@ -62,6 +74,13 @@ def resolve_input(allow_stdin=True):
 
 @disk_cache(max_cache_age=3600)
 def get_size(path, ignore_hidden=False):
+    """Return the total byte size of ``path`` (file or directory tree).
+
+    Results are cached on disk for one hour via :func:`disk_cache`.
+
+    :param path: File or directory to measure.
+    :param ignore_hidden: Skip dot-files when traversing directories.
+    """
     total_size = 0
     if os.path.isfile(path):
         return os.path.getsize(path)

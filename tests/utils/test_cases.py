@@ -1,4 +1,4 @@
-"""Tests for ptools.utils.cases — case-style parsing and conversion."""
+"""Tests for ptools.utils.cases - case-style parsing and conversion."""
 import pytest
 
 from ptools.utils.cases import (

@@ -19,6 +19,8 @@ from typing import List, Dict, Callable, Tuple, Union
 from ptools.utils.enums import LogicalOperators
 from ptools.utils.protocols import ImplementsGet
 
+__version__ = "0.1.0"
+
 
 @dataclass(frozen=True)
 class LibraryRequirement:
@@ -71,7 +73,7 @@ def announced_requirements() -> list[Requirement]:
     """Return a snapshot of every requirement announced so far.
 
     Callers should import the modules they care about (or walk the
-    whole :mod:`ptools` package) before reading the registry — a
+    whole :mod:`ptools` package) before reading the registry - a
     requirement only appears here once the module that uses the
     corresponding decorator has been imported.
     """

@@ -1,4 +1,4 @@
-"""Tests for ptools.time — formatting helper and CLI sanity."""
+"""Tests for ptools.time - formatting helper and CLI sanity."""
 from click.testing import CliRunner
 
 from ptools.time import STAT_CHOICES, cli, fmt_time

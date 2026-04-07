@@ -1,7 +1,7 @@
 """LLM chat interface.
 
-Implements the :command:`ptools llm` CLI — a lightweight wrapper around
-OpenAI and Google chat models — and :command:`ptools llm-opts`, a group
+Implements the :command:`ptools llm` CLI - a lightweight wrapper around
+OpenAI and Google chat models - and :command:`ptools llm-opts`, a group
 of administrative subcommands for managing API keys, profiles, and
 persisted chat histories.
 

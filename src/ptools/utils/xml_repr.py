@@ -1,10 +1,22 @@
+"""Lightweight XML rendering helpers used to ``__repr__`` ptools data classes."""
 from __future__ import annotations
 from dataclasses import field
 from typing import List, Union, Callable
 from xml.sax.saxutils import escape
 from functools import wraps
 
+__version__ = "0.1.0"
+
+
 class XMLRepr:
+    """Render an object as an indented XML element with attributes and children.
+
+    :param myself: The wrapped instance; its class name becomes the tag.
+    :param children: A list of child objects (each must implement
+        ``__xml__``), a single such object, or a string body.
+    :param attrs: Element attributes. Values may be plain strings or
+        zero-arg callables that produce strings on demand.
+    """
     INDENT_STRING = "  "
     def __init__(self, myself, children: List | None = None, **attrs: dict[str, Union[str, Callable[[], str]]]):
         self.myself = myself
@@ -17,6 +29,7 @@ class XMLRepr:
                 raise TypeError(f"Child {child} must implement __xml__()")
 
     def __xml__(self, indent=0):
+        """Render the wrapped object as an XML string indented by ``indent`` levels."""
         tagName = self.myself.__class__.__name__
         indentStr = self.INDENT_STRING * indent
         attrsStr = self._build_attrs()
@@ -45,6 +58,12 @@ class XMLRepr:
         return parts[0] + ''.join(word.capitalize() for word in parts[1:])
 
 def xmlclass(cls):
+    """Class decorator that wires ``__repr__``/``__str__``/``__xml__`` to :class:`XMLRepr`.
+
+    The decorated class must define ``__xml__attrs__(self)`` returning a
+    dict of attributes (optionally including a ``children`` key) used to
+    build an :class:`XMLRepr` for instances.
+    """
     def __xml__(self, **inner_kwargs):
         attrs = cls.__xml__attrs__(self)
         children = attrs.pop('children', [])

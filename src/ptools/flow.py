@@ -5,10 +5,10 @@ evaluates Python expressions against each value using the
 :class:`~ptools.lib.flow.runner.FlowRunner`, and emits the results in the
 requested output flavor (JSON, YAML, raw Python, etc.).
 
-The module defines the top-level CLI subcommands — :command:`map`,
+The module defines the top-level CLI subcommands - :command:`map`,
 :command:`filter`, :command:`reduce`, :command:`group`, :command:`unique`,
 :command:`foreach`, :command:`while`, :command:`exec`, :command:`range`,
-:command:`json`, and :command:`dict` — all of which share a common
+:command:`json`, and :command:`dict` - all of which share a common
 expression-evaluation pipeline and output formatting layer.
 """
 
@@ -36,7 +36,7 @@ def read():
     """Development command to read from stdin and print the StreamValue representation."""
     for flow_value in stream():
         click.echo(f"{flow_value} (type: {type(flow_value.value).__name__})")
-        
+
 @click.command()
 @click.option('--multiline', '-m', is_flag=True, default=False, help='Read all lines as a single JSON array.')
 @output_flavor.decorate()
@@ -49,7 +49,7 @@ def json(flavor, multiline):
     else:
         results = [json.loads(line) for line in sys.stdin if line.strip()]
     click.echo(f"{OutputValue(flavor=flavor).format(results)}")
-    
+
 @click.command()
 @click.option('--multiline', '-m', is_flag=True, default=False, help='Read all lines as a single JSON array.')
 @output_flavor.decorate()
@@ -73,7 +73,7 @@ def map(expression, flavor, debug):
     for result, _ in Runner.run(expression, debug=debug):
         results.append(result)
     click.echo(output.format(results))
-            
+
 @click.command()
 @click.argument('start', type=int)
 @click.argument('end', type=int)
@@ -84,7 +84,7 @@ def frange(start, end, step, flavor):
     output = OutputValue(flavor=flavor)
     result = list(range(start, end, step))
     click.echo(output.format(result))
-        
+
 @click.command()
 @flow_expression.decorate()
 @debug_scope.decorate()
@@ -107,13 +107,13 @@ def reduce(expression, accumulator, flavor, debug):
     """Reduce streamed input lines based on a Python expression."""
     accumulator = StreamValue(accumulator).value if accumulator is not None else None
     output = OutputValue(flavor=flavor)
-    
+
     for result, _ in \
         Runner.run(expression, debug=debug, vars={'acc': accumulator}):
         accumulator = result
-    
+
     click.echo(f"{output.format(accumulator)}")
-    
+
 @click.command()
 @flow_expression.decorate()
 @output_flavor.decorate()
@@ -124,7 +124,7 @@ def exec(expression, flavor):
         click.echo(f"{OutputValue(flavor=flavor).format(result)}")
     except Exception as e:
         click.echo(f"Error: {e}")
-        
+
 @click.command()
 @flow_expression.decorate()
 @debug_scope.decorate()
@@ -134,13 +134,13 @@ def unique(expression, flavor, debug):
     seen = set()
     output = OutputValue(flavor=flavor)
     results = []
-    
+
     for result, fv in Runner.run(expression, debug=debug):
         key = result
         if key not in seen:
             seen.add(key)
             results.append(fv.value)
-    
+
     click.echo(output.format(results))
 
 @click.command()
@@ -151,13 +151,13 @@ def group(expression, flavor, debug):
     """Group items from the stream based on a Python expression."""
     from collections import defaultdict
     groups = defaultdict(list)
-    
+
     for result, fv in Runner.run(expression, debug=debug):
         key = result
         groups[key].append(fv.value)
-            
+
     click.echo(OutputValue(flavor=flavor).format(dict(groups)))
-    
+
 @click.command()
 @flow_expression.decorate()
 @debug_scope.decorate()
@@ -171,7 +171,7 @@ def foreach(expression, flavor, debug):
             and not (isinstance(result, list) and len(result) == 0) \
             and not (isinstance(result, str) and result.strip() == ''):
             click.echo(f"{output.format(result)}")
-            
+
 @click.command()
 @flow_expression.decorate()
 @click.option('--initial', '-i', default=None, help='Initial value for the x variable.')
@@ -183,7 +183,7 @@ def foreach(expression, flavor, debug):
 def while_loop(expression, initial, condition, update_on_none, flavor, debug, output_last):
     """While loop executing a Python expression as long as the condition is true."""
     output = OutputValue(flavor=flavor)
-    
+
     for result, _, is_last in \
         Runner.run_while(expression,
                          initial=initial,
@@ -192,7 +192,7 @@ def while_loop(expression, initial, condition, update_on_none, flavor, debug, ou
                          debug=debug):
         if not output_last or is_last:
             click.echo(f"{output.format(result)}")
-    
+
 
 cli.add_command(read, name='read')
 cli.add_command(map, name='map')

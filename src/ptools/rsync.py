@@ -3,9 +3,9 @@
 Provides a small :command:`ptools rsync` CLI that wraps the system
 ``rsync`` binary with two convenience modes:
 
-* :command:`ptools rsync do` — forward arbitrary arguments directly to
+* :command:`ptools rsync do` - forward arbitrary arguments directly to
   ``rsync`` and echo the full command before running it.
-* :command:`ptools rsync watch` — watch a directory for changes using
+* :command:`ptools rsync watch` - watch a directory for changes using
   :mod:`watchdog` and re-run ``rsync`` after a debounce interval.
 """
 
@@ -63,7 +63,7 @@ def watch(ctx, path, delay):
 
             self.timer = threading.Timer(delay, self.run_rsync)
             self.timer.start()
-            click.echo(f"Change detected: {event.src_path} — debouncing...")
+            click.echo(f"Change detected: {event.src_path} - debouncing...")
 
         def run_rsync(self):
             click.echo("Running rsync...")

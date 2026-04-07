@@ -78,7 +78,7 @@ def test_cache_persists_across_decorations(tmp_path):
     call_count = [0]
 
     @disk_cache(cache_dir=tmp_path, max_cache_age=3600)
-    def fn(x):  # noqa: F811 — intentional rebind to simulate fresh decoration
+    def fn(x):  # noqa: F811 - intentional rebind to simulate fresh decoration
         call_count[0] += 1
         return x * 10
 

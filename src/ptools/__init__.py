@@ -1,4 +1,4 @@
-"""ptools — Omar Ibrahim's personal power tools.
+"""ptools - Omar Ibrahim's personal power tools.
 
 ``ptools`` is a collection of command-line utilities and small Python
 libraries used to speed up day-to-day developer workflows. The package

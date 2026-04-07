@@ -1,13 +1,13 @@
 """Shell compiler primitives.
 
 Provides :class:`ShellVar`, :class:`ShellAlias`, :class:`ShellFunc`, and
-:class:`ShellScript` — Python representations of shell constructs that can
+:class:`ShellScript` - Python representations of shell constructs that can
 be compiled (dumped) into one of the supported :class:`Dialect` targets:
 ``sh``, ``bash``, ``zsh``, or ``powershell``.
 
 Functions are special: because sh-family and PowerShell syntax diverge
 significantly, a :class:`ShellFunc` is constructed from *two* string bodies
-— one for POSIX-ish shells and one for PowerShell — which are emitted
+- one for POSIX-ish shells and one for PowerShell - which are emitted
 verbatim inside the appropriate function wrapper for the target dialect.
 """
 
@@ -108,7 +108,7 @@ class ShellFunc:
     ``posix_body`` is emitted inside a ``name() {{ ... }}`` wrapper for
     sh/bash/zsh. ``powershell_body`` is emitted inside a
     ``function name {{ ... }}`` wrapper for PowerShell. Bodies are inserted
-    verbatim — the caller is responsible for their correctness.
+    verbatim - the caller is responsible for their correctness.
     """
 
     name: str

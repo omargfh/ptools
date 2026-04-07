@@ -1,4 +1,4 @@
-"""Tests for ptools.lib.flow.grammar — Lark parser + StreamTransformer."""
+"""Tests for ptools.lib.flow.grammar - Lark parser + StreamTransformer."""
 import pytest
 
 from ptools.lib.flow.grammar import AttributeDict, StreamTransformer, parser

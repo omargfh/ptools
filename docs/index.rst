@@ -1,7 +1,7 @@
 ptools
 ======
 
-**ptools** is Omar Ibrahim's personal collection of power tools — a
+**ptools** is Omar Ibrahim's personal collection of power tools, a
 single :command:`ptools` command-line interface that lazily dispatches
 to a set of focused subcommands (rsync wrappers, shell-config helpers,
 an FP-flavored flow engine, an LLM chat client, timing utilities, and

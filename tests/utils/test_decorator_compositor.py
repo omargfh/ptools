@@ -15,7 +15,7 @@ def _wrap(name: str):
 
 def test_apply_order_is_outer_to_inner():
     # Decorators are applied in reverse of list order, so the first entry in the
-    # list is the outermost wrapper — just like stacking @a then @b in source.
+    # list is the outermost wrapper - just like stacking @a then @b in source.
     comp = DecoratorCompositor.from_list([_wrap("a"), _wrap("b"), _wrap("c")])
 
     @comp.decorate()

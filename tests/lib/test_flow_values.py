@@ -1,4 +1,4 @@
-"""Tests for ptools.lib.flow.values — StreamValue + OutputValue flavors."""
+"""Tests for ptools.lib.flow.values - StreamValue + OutputValue flavors."""
 import json
 
 import pytest

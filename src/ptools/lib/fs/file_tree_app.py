@@ -109,7 +109,7 @@ class FileTreeApp(App):
         self.size_threshold = size_threshold
         self.size_flag_threshold = size_flag_threshold
 
-        # Store init values — applied in on_mount
+        # Store init values - applied in on_mount
         self._init_sort_by = sort_by
         self._init_sort_order = sort_order
         self._init_ignore_hidden = ignore_hidden
@@ -120,7 +120,7 @@ class FileTreeApp(App):
         self._humanize = humanize_fn
         self._icons = known_extensions_cls
 
-        # In-memory tree data — populated by _scan_tree, re-rendered on setting changes
+        # In-memory tree data - populated by _scan_tree, re-rendered on setting changes
         self._tree_data: dict | None = None
         # Maps textual node id -> tree data dict
         self._node_meta: dict[int, dict] = {}
@@ -150,7 +150,7 @@ class FileTreeApp(App):
         tree.root.set_label(f"{self.root_path} [dim](scanning...)[/dim]")
         tree.root.expand()
 
-        # Set reactives — watchers won't rebuild because _mount_complete is False
+        # Set reactives - watchers won't rebuild because _mount_complete is False
         self.sort_by = self._init_sort_by
         self.sort_order = self._init_sort_order
         self.ignore_hidden = self._init_ignore_hidden
@@ -172,7 +172,7 @@ class FileTreeApp(App):
         self._mount_complete = True
 
     # ------------------------------------------------------------------
-    # Filesystem scan — pure data, no UI. Runs on worker thread.
+    # Filesystem scan - pure data, no UI. Runs on worker thread.
     # ------------------------------------------------------------------
 
     def _scan_tree(self, dir_path: str, depth: int) -> dict | None:
@@ -243,7 +243,7 @@ class FileTreeApp(App):
             node["children"].sort(key=lambda c: c["name"].lower(), reverse=reverse)
 
     # ------------------------------------------------------------------
-    # Rendering — takes in-memory data and builds Textual tree nodes.
+    # Rendering - takes in-memory data and builds Textual tree nodes.
     # Always runs on main thread. No IO.
     # ------------------------------------------------------------------
 
@@ -356,7 +356,7 @@ class FileTreeApp(App):
         return label
 
     # ------------------------------------------------------------------
-    # Debounced rebuild — coalesces rapid reactive changes into one render
+    # Debounced rebuild - coalesces rapid reactive changes into one render
     # ------------------------------------------------------------------
 
     def _schedule_rebuild(self) -> None:
@@ -385,13 +385,13 @@ class FileTreeApp(App):
 
     def watch_ignore_hidden(self) -> None:
         if self.is_mounted and self._mount_complete:
-            # Hidden toggle changes what's on disk — rescan needed
+            # Hidden toggle changes what's on disk - rescan needed
             self._do_scan()
             self._update_title()
 
     def watch_show_files(self) -> None:
         if self.is_mounted and self._mount_complete:
-            # File toggle changes what's scanned — rescan needed
+            # File toggle changes what's scanned - rescan needed
             self._do_scan()
             self._update_title()
 

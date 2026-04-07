@@ -12,6 +12,6 @@ help:
 clean:
 	rm -rf "$(BUILDDIR)" api/generated
 
-# Catch-all target — route everything else to sphinx-build.
+# Catch-all target, route everything else to sphinx-build.
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

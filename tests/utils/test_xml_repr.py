@@ -1,4 +1,4 @@
-"""Tests for ptools.utils.xml_repr — XML representation helpers."""
+"""Tests for ptools.utils.xml_repr - XML representation helpers."""
 from ptools.utils.xml_repr import XMLRepr, xmlclass
 
 

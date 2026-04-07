@@ -1,6 +1,17 @@
+"""Parsers for human-readable values such as file sizes."""
+
+__version__ = "0.1.0"
+
+
 class FromHumanized:
+    """Convert human-readable strings into their machine-readable values."""
+
     @staticmethod
     def from_humanized_size(size_str: str) -> int:
+        """Parse a string like ``"1.5MB"`` into a byte count.
+
+        :raises ValueError: if the unit is unknown or the number is malformed.
+        """
         size_str = size_str.strip().upper()
         units = {
             'KB': 1024,
