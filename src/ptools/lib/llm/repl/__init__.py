@@ -1,1 +1,5 @@
+"""Interactive REPL frontend for the ptools LLM client."""
+
+__version__ = "0.1.0"
+
 from .main import start_chat

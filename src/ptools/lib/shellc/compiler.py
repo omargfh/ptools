@@ -18,8 +18,12 @@ from enum import Enum
 from pathlib import Path
 from typing import Iterable, Sequence, Union
 
+__version__ = "0.1.0"
+
 
 class Dialect(str, Enum):
+    """Target shell dialect for the compiler (POSIX-family or PowerShell)."""
+
     SH = "sh"
     BASH = "bash"
     ZSH = "zsh"
@@ -27,10 +31,12 @@ class Dialect(str, Enum):
 
     @property
     def is_posix(self) -> bool:
+        """Whether this dialect uses POSIX-style syntax (sh/bash/zsh)."""
         return self in (Dialect.SH, Dialect.BASH, Dialect.ZSH)
 
     @property
     def shebang(self) -> str:
+        """Return the canonical ``#!`` line for this dialect."""
         return {
             Dialect.SH: "#!/bin/sh",
             Dialect.BASH: "#!/usr/bin/env bash",
@@ -40,10 +46,12 @@ class Dialect(str, Enum):
 
     @property
     def comment(self) -> str:
+        """Return the line-comment character for this dialect."""
         return "#"  # all four use '#' for line comments
 
 
 def _coerce_dialect(d: Union[str, Dialect]) -> Dialect:
+    """Coerce a dialect name or enum value into a :class:`Dialect`."""
     if isinstance(d, Dialect):
         return d
     return Dialect(d.lower())
@@ -68,6 +76,7 @@ class ShellVar:
     export: bool = True
 
     def compile(self, dialect: Union[str, Dialect]) -> str:
+        """Render this variable as source code for the given ``dialect``."""
         d = _coerce_dialect(dialect)
         if d.is_posix:
             q = _posix_single_quote(self.value)
@@ -89,6 +98,7 @@ class ShellAlias:
     command: str
 
     def compile(self, dialect: Union[str, Dialect]) -> str:
+        """Render this alias as source code for the given ``dialect``."""
         d = _coerce_dialect(dialect)
         if d.is_posix:
             return f"alias {self.name}={_posix_single_quote(self.command)}"
@@ -116,6 +126,7 @@ class ShellFunc:
     powershell_body: str
 
     def compile(self, dialect: Union[str, Dialect]) -> str:
+        """Render the appropriate body wrapped in a function declaration for ``dialect``."""
         d = _coerce_dialect(dialect)
         if d.is_posix:
             body = _indent(self.posix_body.strip("\n"), "    ")
@@ -139,14 +150,17 @@ class ShellScript:
     header: str | None = None
 
     def add(self, part: Part) -> "ShellScript":
+        """Append ``part`` to the script and return ``self`` for chaining."""
         self.parts.append(part)
         return self
 
     def extend(self, parts: Iterable[Part]) -> "ShellScript":
+        """Append multiple ``parts`` to the script and return ``self``."""
         self.parts.extend(parts)
         return self
 
     def compile(self, dialect: Union[str, Dialect]) -> str:
+        """Render the entire script (shebang, header, sections) for ``dialect``."""
         d = _coerce_dialect(dialect)
         lines: list[str] = [d.shebang, ""]
         if self.header:
@@ -184,6 +198,7 @@ class ShellScript:
         path: Union[str, Path],
         dialect: Union[str, Dialect],
     ) -> Path:
+        """Compile the script for ``dialect`` and write it to ``path``."""
         p = Path(path)
         p.write_text(self.compile(dialect))
         return p

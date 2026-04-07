@@ -30,6 +30,9 @@ from textual.widgets import Footer, Header, Input, Tree as TextualTree
 from textual.widgets.tree import TreeNode
 from textual.reactive import reactive
 
+__version__ = "0.1.0"
+
+
 class NodeMeta(dict):
     """Metadata stored for each tree node."""
     name: str

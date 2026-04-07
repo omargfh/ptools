@@ -1,3 +1,9 @@
+"""Reusable Click option bundles for YAML dump-style commands.
+
+Exposes :data:`dump`, a :class:`DecoratorCompositor` that ensures the
+optional :mod:`yaml` (PyYAML) dependency is installed and adds the
+standard set of ``yaml.dump`` options to any Click command.
+"""
 from functools import wraps
 
 import click
@@ -5,6 +11,8 @@ import click
 from ptools.utils import require
 
 from ..utils.decorator_compistor import DecoratorCompositor
+
+__version__ = "0.1.0"
 
 dump = DecoratorCompositor.from_list([
     require.library('yaml', pypi_name='PyYAML', prompt_install=True),

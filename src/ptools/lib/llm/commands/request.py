@@ -1,10 +1,16 @@
+"""``@request`` prompt command: inject the body of an HTTP response."""
 from __future__ import annotations
 from typing import Dict, Optional
 import requests
 
 from ptools.lib.llm.command import Command, CommandArgument, CommandSchema
 
+__version__ = "0.1.0"
+
+
 class RequestCommand:
+    """Implementation of the ``@request`` command."""
+
     @staticmethod
     def call(
         url: str,
@@ -12,6 +18,7 @@ class RequestCommand:
         headers: Optional[Dict[str, str]] = None,
         limit: int | None = None
     ):
+        """Issue an HTTP request and return its status code and (truncated) body."""
         try:
             response = requests.request(method=method, url=url, headers=headers)
             return {

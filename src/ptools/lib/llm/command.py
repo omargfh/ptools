@@ -1,8 +1,14 @@
+"""Schema-based command framework used by the ``@command`` LLM prompt syntax."""
 from __future__ import annotations
 from typing import List, Callable, Any
 from pydantic import BaseModel, model_validator, SkipValidation
 
+__version__ = "0.1.0"
+
+
 class CommandArgument(BaseModel):
+    """A single positional or keyword argument accepted by a :class:`Command`."""
+
     name: str | None = None
     value: SkipValidation[Any] = None
     required: bool = False
@@ -35,11 +41,14 @@ class CommandArgument(BaseModel):
         
 
 class CommandSchema(BaseModel):
+    """One acceptable signature for a :class:`Command`, plus the function to invoke."""
+
     arguments: list[CommandArgument] = []
     call: Callable[..., Any] = lambda: None
 
     @model_validator(mode="after")
     def check_required_order(cls, values):
+        """Reject schemas where required arguments follow optional ones."""
         seen_optional = False
         for arg in values.arguments:
             if not arg.required:
@@ -50,6 +59,7 @@ class CommandSchema(BaseModel):
 
     @property
     def arg_map(self):
+        """Return ``{name: CommandArgument}`` for every named argument in this schema."""
         return {arg.name: arg for arg in self.arguments if arg.name}
     
     def __repr__(self):
@@ -59,11 +69,17 @@ class CommandSchema(BaseModel):
         return f"{' '.join(allargs)} @/"
 
 class Command(BaseModel):
+    """A named ``@command`` with one or more acceptable :class:`CommandSchema` signatures."""
+
     name: str
     description: str | None = None
     possible_schemas: List[CommandSchema] = []
 
     def wrap(self, obj, context=None) -> Callable[[], Any]:
+        """Match parsed prompt-command ``obj`` against the schemas and return a thunk.
+
+        :raises ValueError: if no schema matches or required args are missing.
+        """
         if obj['command'] != self.name:
             raise ValueError(f"Command name mismatch: expected {self.name}, got {obj['command']}")
 
@@ -81,6 +97,7 @@ class Command(BaseModel):
         raise ValueError("No matching schema found for command arguments")
 
     def parse_kwarg(self, schema, arg, has_seen_kwargs, index):
+        """Validate a single keyword argument against ``schema``."""
         has_seen_kwargs = True
         arg_name = arg.get('name')
         arg_value = arg.get('value')
@@ -101,6 +118,7 @@ class Command(BaseModel):
         return schema_arg, arg_name, arg_value, has_seen_kwargs, index + 1
 
     def parse_posarg(self, schema, arg, has_seen_kwargs, index, args):
+        """Validate a single positional argument (or variadic group) against ``schema``."""
         if has_seen_kwargs:
             raise ValueError("Positional arguments cannot follow keyword arguments")
         if index >= len(schema.arguments):
@@ -126,6 +144,7 @@ class Command(BaseModel):
         return schema_arg, schema_arg.name, arg, index
 
     def parse_schema(self, args, schema):
+        """Walk every parsed argument in ``args`` and bind it to ``schema``'s parameters."""
         has_seen_kwargs = False
         parsed_args = {}
         index = 0

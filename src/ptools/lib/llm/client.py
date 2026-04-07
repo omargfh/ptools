@@ -1,15 +1,27 @@
+"""Streaming chat clients for the OpenAI-compatible APIs used by ptools llm."""
 import os
 from typing import List, Any
 
 from .entities import LLMMessage
 
+__version__ = "0.1.0"
+
+
 class ChatClient():
+    """Base class for OpenAI-compatible streaming chat clients.
+
+    Subclasses set :attr:`client` (an OpenAI SDK instance) and
+    :attr:`model`. :meth:`run` yields decoded text chunks from a
+    streaming completion.
+    """
+
     def __init__(self):
         self.system_prompt = "You are a helpful assistant."
         self.client: "OpenAI" | None = None
         self.model: str | None = None
 
     def run(self, messages: List[LLMMessage], show=True, **kwargs) -> Any:
+        """Yield streaming response chunks for ``messages`` from the configured model."""
         stream = self.client.chat.completions.create(
             messages=messages,
             model=self.model,
@@ -32,6 +44,8 @@ class ChatClient():
             yield output
 
 class OpenAIChatClient(ChatClient):
+    """Chat client backed by the official OpenAI API (``OPENAI_API_KEY``)."""
+
     def __init__(self, model: str = "gpt-4o-mini"):
         super().__init__()
         from openai import OpenAI
@@ -41,6 +55,8 @@ class OpenAIChatClient(ChatClient):
         )
 
 class GoogleChatClient(ChatClient):
+    """Chat client backed by Google's Gemini OpenAI-compatible endpoint (``GOOGLE_API_KEY``)."""
+
     def __init__(self, model: str = "gemini-1.5-flash"):
         super().__init__()
         from openai import OpenAI

@@ -1,17 +1,24 @@
+"""``@save`` / ``@dump`` prompt commands: persist chat history or extracted code."""
 from __future__ import annotations
 
 from ptools.lib.llm.command import Command, CommandArgument, CommandSchema
 
+__version__ = "0.1.0"
+
+
 class SaveCommand:
+    """Implementation of the ``@save`` command (and ``@dump`` shortcut)."""
+
     @staticmethod
     def call(
         path: str,
         last: int | None = None,
-        capture_code: bool = False, 
+        capture_code: bool = False,
         user_only: bool = False,
         assistant_only: bool = False,
         context=None
     ):
+        """Write a slice of the current chat history (or a code block) to ``path``."""
         if last is not None and last > 1 and capture_code:
             raise ValueError("Error: capture_code can only be used when last is 1.")
 

@@ -1,6 +1,11 @@
+"""Built-in :class:`LLMProfile` presets shipped with ptools."""
 from .entities import LLMProfile
 
+__version__ = "0.1.0"
+
+
 def default():
+    """Return the ``("default", params)`` general-purpose assistant profile."""
     return "default", {
         "temperature": 0.7,
         "max_tokens": 150,
@@ -11,6 +16,7 @@ def default():
     }
     
 def unix_commands():
+    """Return the ``("unix", params)`` profile tuned for terse Unix-command answers."""
     return "unix", {
         "temperature": 0.3,
         "max_tokens": 100,

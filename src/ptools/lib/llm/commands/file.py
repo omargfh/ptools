@@ -1,11 +1,18 @@
+"""``@file`` prompt command: inject file contents (optionally a line range)."""
 from __future__ import annotations
 from typing import List
 
 from ptools.lib.llm.command import Command, CommandArgument, CommandSchema
 
+__version__ = "0.1.0"
+
+
 class FileCommand:
+    """Implementation of the ``@file`` command."""
+
     @staticmethod
     def call(path: str, lines: List[int] | None = None, start: int | None = None, end: int | None = None, context=None):
+        """Read ``path`` and return its full contents or a selected line range."""
         try:
             with open(path, 'r') as f:
                 content = f.readlines()
@@ -26,6 +33,7 @@ class FileCommand:
             return f"Error reading file: {e}"
 
 def parse_range(value: str) -> List[int]:
+    """Parse a ``"start:end"`` or ``"n"`` line range string into a list of ints."""
     if ':' in value:
         start, end = value.split(':')
         return [int(start) if start else 1, int(end) if end else None]

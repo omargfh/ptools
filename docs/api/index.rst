@@ -18,6 +18,30 @@ the installed :mod:`ptools` package and its public submodules.
    ptools.formats
    ptools.formats.json
    ptools.formats.yaml
+   ptools.lib
+   ptools.lib.llm
+   ptools.lib.llm.client
+   ptools.lib.llm.command
+   ptools.lib.llm.commands
+   ptools.lib.llm.commands.file
+   ptools.lib.llm.commands.request
+   ptools.lib.llm.commands.save
+   ptools.lib.llm.commands.shell
+   ptools.lib.llm.constants
+   ptools.lib.llm.decorators
+   ptools.lib.llm.entities
+   ptools.lib.llm.grammar
+   ptools.lib.llm.history
+   ptools.lib.llm.profiles
+   ptools.lib.llm.prompt
+   ptools.lib.llm.repl
+   ptools.lib.llm.repl.intellisense
+   ptools.lib.llm.repl.lexer
+   ptools.lib.llm.repl.main
+   ptools.lib.llm.session
+   ptools.lib.llm.stores
+   ptools.lib.shellc
+   ptools.lib.shellc.compiler
    ptools.utils
    ptools.utils.cache
    ptools.utils.cases

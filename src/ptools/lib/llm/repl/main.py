@@ -1,8 +1,11 @@
+"""Interactive LLM chat REPL built on prompt_toolkit."""
 import threading
 import time
 import sys
 
 from prompt_toolkit import PromptSession
+
+__version__ = "0.1.0"
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.styles import Style
@@ -141,23 +144,27 @@ def print_history(history, assistant_prompt):
     print()
     
 class SmoothPrint():
+    """Print streamed text in fixed-size chunks with a delay between them."""
+
     def __init__(
         self,
         step: int,
-        interval: float, 
+        interval: float,
         print_func=print
     ):
         self.step = step
         self.interval = interval
         self.print_func = print_func
-        
+
     def print(self, text: str, *args, **kwargs):
-        """Print text smoothly in chunks."""
+        """Print ``text`` ``step`` characters at a time, sleeping ``interval`` between."""
         for i in range(0, len(text), self.step):
             self.print_func(text[i:i+self.step], *args, **kwargs)
             time.sleep(self.interval)
-            
+
 class Spinner():
+    """Background-thread spinner shown while waiting for the first response chunk."""
+
     def __init__(self, prefix):
         self.spinner = ["|", "/", "-", "\\"]
         self.i = 0
@@ -166,16 +173,19 @@ class Spinner():
         self.prefix = prefix
 
     def start(self):
+        """Begin spinning on a daemon thread."""
         self.stop_spinner = False
         self.thread.start()
 
     def stop(self):
+        """Stop the spinner and clear its line."""
         self.stop_spinner = True
         self.thread.join()
         sys.stdout.write("\r" + " " * 20 + "\r")  # Clear the spinner line
         sys.stdout.flush()
 
     def spin(self):
+        """Render the next spinner frame in a tight loop until stopped."""
         while not self.stop_spinner:
             sys.stdout.write(f"\r{self.prefix} {self.spinner[self.i % len(self.spinner)]}")
             sys.stdout.flush()

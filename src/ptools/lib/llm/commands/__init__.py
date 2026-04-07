@@ -1,3 +1,7 @@
+"""Built-in ``@command`` implementations injected into LLM prompts."""
+
+__version__ = "0.1.0"
+
 from .file import file_command
 from .shell import shell_command
 from .save import save_command, save_code_command

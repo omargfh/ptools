@@ -1,11 +1,18 @@
+"""Tab-completion providers for the LLM REPL (commands, directives, paths)."""
 from prompt_toolkit.completion import Completer, Completion
 
+__version__ = "0.1.0"
+
+
 class LarkCommandCompleter(Completer):
+    """Completer that suggests ``@command`` names, REPL directives, and paths."""
+
     def __init__(self, commands: list, repl_directives: list):
         self.commands = commands
         self.repl_directives = repl_directives
 
     def get_completions(self, document, complete_event):
+        """Yield context-aware completions for the cursor position in ``document``."""
         text = document.text_before_cursor
         word = document.get_word_under_cursor()
         Word = document.get_word_under_cursor(WORD=True)
@@ -39,7 +46,10 @@ class LarkCommandCompleter(Completer):
                 yield Completion(f"@/", start_position=-len(word))
                 
 class PathCompletion(Completer):
+    """Completer that expands ``./``, ``../``, ``~/`` and absolute file paths."""
+
     def get_completions(self, document, complete_event):
+        """Yield filesystem entries matching the path under the cursor."""
         import os
         import glob
 

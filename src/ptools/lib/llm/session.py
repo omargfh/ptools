@@ -1,7 +1,19 @@
+"""High-level chat session that ties a client, profile, history, and transcript together."""
 from ptools.lib.llm.client import ChatClient
 from ptools.lib.llm.history import PassThroughHistoryTransformer
 from ptools.lib.llm.entities import LLMChatFile, LLMProfile
+
+__version__ = "0.1.0"
+
+
 class ChatSession():
+    """A single conversation with an LLM provider.
+
+    Wraps a :class:`ChatClient`, an :class:`LLMProfile`, and a backing
+    :class:`LLMChatFile` so callers can simply call :meth:`send_message`
+    to drive a streaming exchange while the transcript is persisted.
+    """
+
     def __init__(
         self,
         provider: ChatClient,
@@ -15,6 +27,7 @@ class ChatSession():
         self.history_transformer = history_transformer
 
     def send_message(self, content: str) -> str:
+        """Send ``content`` as a user message and yield the streamed assistant reply."""
         self.chat_file.add_message(role="user", content=content)
 
         system_prompt = self.profile.system_prompt \

@@ -1,12 +1,19 @@
+"""``@shell`` prompt command: inject the output of a local shell command."""
 from __future__ import annotations
 from typing import List
 import subprocess
 
 from ptools.lib.llm.command import Command, CommandArgument, CommandSchema
 
+__version__ = "0.1.0"
+
+
 class ShellCommand:
+    """Implementation of the ``@shell`` command."""
+
     @staticmethod
     def call(command: str, streams: tuple[bool, bool] = (True, False), timeout: int | None = None, check: bool = False, context=None):
+        """Run ``command`` in a subshell and return its captured stdout/stderr."""
         try:
             result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=timeout, check=check)
             output = ""
@@ -19,6 +26,7 @@ class ShellCommand:
             return f"Exception occurred: {e}"
 
 def parse_stream(value: str) -> bool:
+    """Parse a ``"stdout,stderr"`` selector into a ``(want_stdout, want_stderr)`` tuple."""
     streams = value.lower().split(',')
     return 'stdout' in streams, 'stderr' in streams
 

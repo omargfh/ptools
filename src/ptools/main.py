@@ -13,6 +13,8 @@ from importlib import import_module
 import click
 from click.formatting import HelpFormatter
 
+__version__ = "0.1.0"
+
 COMMANDS = {
     "clip": {
         "import_path": "ptools.clip:cli",
@@ -86,22 +88,33 @@ COMMANDS = {
 
 
 def _load_command(import_path: str) -> click.Command:
+    """Import and return the Click command referenced by ``"module:attribute"``."""
     module_name, attribute = import_path.split(":", maxsplit=1)
     module = import_module(module_name)
     return getattr(module, attribute)
 
 
 class LazyGroup(click.Group):
+    """Click group that resolves subcommands from :data:`COMMANDS` on demand.
+
+    Subcommands are stored as ``"module:attribute"`` import paths and only
+    imported the first time they are invoked, keeping CLI startup fast
+    even when individual commands depend on heavy libraries.
+    """
+
     def list_commands(self, ctx: click.Context) -> list[str]:
+        """Return every advertised subcommand name in sorted order."""
         return sorted(COMMANDS)
 
     def get_command(self, ctx: click.Context, cmd_name: str) -> click.Command | None:
+        """Resolve and import ``cmd_name`` from :data:`COMMANDS`, or ``None`` if unknown."""
         command_info = COMMANDS.get(cmd_name)
         if command_info is None:
             return None
         return _load_command(command_info["import_path"])
 
     def format_commands(self, ctx: click.Context, formatter: HelpFormatter) -> None:
+        """Render the subcommand list in ``--help`` using the cached short help strings."""
         rows = [
             (name, COMMANDS[name]["short_help"])
             for name in self.list_commands(ctx)

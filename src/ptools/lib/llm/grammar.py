@@ -1,4 +1,7 @@
+"""Lark grammar and AST transformer for the ``@command`` syntax in LLM prompts."""
 from lark import Lark, Transformer, v_args
+
+__version__ = "0.1.0"
 
 command_grammar = r"""
 ?start: text
@@ -33,6 +36,8 @@ WORD: /[^\s]+/
 parser = Lark(command_grammar, start="start")
 
 class PromptTransformer(Transformer):
+    """Lark transformer that turns the parse tree into a list of text/command dicts."""
+
     def WORD(self, token): return {'text': str(token)}
     def COMMAND(self, token): return str(token)
     def COMMAND_DELIMITER(self, token): return str(token)

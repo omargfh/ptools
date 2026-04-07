@@ -1,8 +1,17 @@
+"""Prompt parser that expands embedded ptools commands into plain text."""
 from .commands import file as File
 from .grammar import parser, PromptTransformer
 from .commands import Commands
 
+__version__ = "0.1.0"
+
+
 def parse_prompt(prompt: str, context=None) -> str:
+    """Parse ``prompt``, run any embedded commands, and return the rendered string.
+
+    :param prompt: Raw user prompt that may contain ptools-llm command syntax.
+    :param context: Optional dict of variables exposed to embedded commands.
+    """
     tree = parser.parse(prompt)
     transformer = PromptTransformer()
     result = transformer.transform(tree)

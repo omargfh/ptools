@@ -1,3 +1,4 @@
+"""Click decorators that wire LLM CLI args into client/profile/chat instances."""
 import os
 from functools import wraps
 
@@ -10,9 +11,12 @@ from .entities import LLMProfile
 from .profiles import profiles
 from .stores import profiles_store, chats_store
 
+__version__ = "0.1.0"
+
 diagnostics = []
 
 def validate_model_key_present(f):
+    """Ensure the API key for the requested model's provider is set in env."""
     @wraps(f)
     def wrapper(*args, **kwargs):
         model = kwargs.get('model')
@@ -32,6 +36,7 @@ def validate_model_key_present(f):
     return wrapper
 
 def get_profile(f):
+    """Resolve ``profile`` and ``model`` kwargs from the profiles store."""
     @wraps(f)
     def wrapper(*args, **kwargs):
         profile_arg = kwargs.get('profile')
@@ -60,6 +65,7 @@ def get_profile(f):
     return wrapper
 
 def get_chat_file(f):
+    """Inject a ``chat`` kwarg with the right :class:`LLMChatFile` for the call."""
     @wraps(f)
     def wrapper(*args, **kwargs):
         history = kwargs.get('history')
@@ -85,6 +91,7 @@ def get_chat_file(f):
     return wrapper
 
 def get_history_transformer(f):
+    """Replace the ``history_transformer`` name with an instantiated transformer."""
     @wraps(f)
     def wrapper(*args, **kwargs):
         history_transformer_name = kwargs.get('history_transformer')
@@ -95,6 +102,7 @@ def get_history_transformer(f):
     return wrapper
 
 def get_chat_client(f):
+    """Build the right :class:`ChatClient` for the chosen model and inject it."""
     @wraps(f)
     def wrapper(*args, **kwargs):
         model = kwargs.get('model')
@@ -118,12 +126,14 @@ def get_chat_client(f):
     return wrapper
 
 def ensure_default_profiles_are_initialized(f):
+    """Seed the profiles store with the bundled built-in profiles if absent."""
     for name, profile in profiles.items():
         if profiles_store.get(name) is None:
             profiles_store.add(name, profile)
     return f
 
 def print_diagnostics(f):
+    """Print buffered :data:`diagnostics` lines when ``--debug`` is set."""
     @wraps(f)
     def wrapper(*args, **kwargs):
         list(map(lambda x: print(x), diagnostics)) if kwargs.get('debug', False) else None

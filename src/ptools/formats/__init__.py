@@ -8,5 +8,7 @@ under the shortened names :obj:`json` and :obj:`yaml` so callers can do::
     formats.json.load(path)
 """
 
+__version__ = "0.1.0"
+
 import ptools.formats.yaml as yaml
 import ptools.formats.json as json
