@@ -1,4 +1,13 @@
-import click 
+"""Shell configuration helpers.
+
+Provides the :command:`ptools shell` CLI for managing a user's shell
+configuration file (e.g. ``~/.zshrc`` or ``~/.bashrc``). The :class:`Shell`
+class encapsulates the low-level append/extend operations and is driven
+by a persistent :class:`~ptools.utils.config.ConfigFile` that remembers
+which shell config file the user has chosen as the default target.
+"""
+
+import click
 import re
 import os
 from datetime import datetime

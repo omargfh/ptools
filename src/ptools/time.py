@@ -1,11 +1,30 @@
+"""Timing utilities.
+
+Exposes the :command:`ptools time` CLI for measuring command execution
+time. The :command:`ptools time it` subcommand runs an arbitrary shell
+command one or more times and reports statistics (mean, median,
+standard deviation, min, max, mode, and/or individual samples) over the
+collected timings.
+"""
+
 from time import time
 import click
 
 
 STAT_CHOICES = ['each', 'mean', 'mode', 'median', 'stddev', 'min', 'max']
+"""Statistics accepted by :option:`ptools time it --stats`."""
 
 
 def fmt_time(x: float) -> str:
+    """Format a duration in seconds as a human-readable string.
+
+    Durations under one second are rendered in milliseconds with three
+    decimal places; longer durations are rendered in seconds.
+
+    :param x: Duration in seconds.
+    :returns: Formatted duration string, e.g. ``"12.345 ms"`` or
+        ``"1.234 seconds"``.
+    """
     return f"{x * 1000:.3f} ms" if x < 1 else f"{x:.3f} seconds"
 
 

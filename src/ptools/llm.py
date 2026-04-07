@@ -1,3 +1,16 @@
+"""LLM chat interface.
+
+Implements the :command:`ptools llm` CLI — a lightweight wrapper around
+OpenAI and Google chat models — and :command:`ptools llm-opts`, a group
+of administrative subcommands for managing API keys, profiles, and
+persisted chat histories.
+
+One-shot prompts, interactive chat sessions, history transformers, and
+per-profile model overrides are all handled in :func:`cli`. The heavier
+model client, session, and store logic lives under
+:mod:`ptools.lib.llm`.
+"""
+
 # version: 1.0.4
 import click
 import os

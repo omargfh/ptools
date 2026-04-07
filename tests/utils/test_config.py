@@ -1,99 +1,128 @@
-"""Tests for ptools.utils.config.ConfigFile and DummyKeyValueStore."""
+"""Tests for ptools.utils.config.ConfigFile, LazyConfigFile, and DummyKeyValueStore."""
 import json
 
 import pytest
+import yaml
 
-from ptools.utils.config import ConfigFile, DummyKeyValueStore
+from ptools.utils.config import ConfigFile, DummyKeyValueStore, LazyConfigFile
+
+
+CONFIG_CLASSES = pytest.mark.parametrize(
+    "cfg_cls", [ConfigFile, LazyConfigFile], ids=["eager", "lazy"]
+)
+FORMATS = pytest.mark.parametrize("fmt", ["json", "yaml"])
 
 
 @pytest.fixture
-def cfg(tmp_path):
-    return ConfigFile(name="unit_test", path=str(tmp_path), quiet=True, format="json")
+def make_cfg():
+    """Factory fixture — call with overrides, get a config instance."""
+    def _make(cfg_cls=ConfigFile, name="unit_test", tmp_path=None, fmt="json", **kw):
+        kw.setdefault("quiet", True)
+        return cfg_cls(name=name, path=str(tmp_path), format=fmt, **kw)
+    return _make
 
 
+def _read_disk(tmp_path, name, fmt):
+    ext = "yaml" if fmt == "yaml" else "json"
+    path = tmp_path / f"{name}.{ext}"
+    with path.open() as f:
+        return yaml.safe_load(f) if fmt == "yaml" else json.load(f)
+
+
+@CONFIG_CLASSES
+@FORMATS
 class TestConfigFile:
-    def test_creates_file_on_init(self, tmp_path):
-        c = ConfigFile(name="init", path=str(tmp_path), quiet=True)
-        assert (tmp_path / "init.json").exists()
+    def test_creates_file_on_init(self, tmp_path, cfg_cls, fmt):
+        c = cfg_cls(name="init", path=str(tmp_path), quiet=True, format=fmt)
+        if cfg_cls is LazyConfigFile:
+            c._initialize()
+        ext = "yaml" if fmt == "yaml" else "json"
+        assert (tmp_path / f"init.{ext}").exists()
+
+    def test_init_data_empty(self, tmp_path, cfg_cls, fmt):
+        c = cfg_cls(name="init", path=str(tmp_path), quiet=True, format=fmt)
         assert c.data == {}
 
-    def test_set_and_get(self, cfg):
-        cfg.set("foo", "bar")
-        assert cfg.get("foo") == "bar"
-        assert cfg["foo"] == "bar"
+    def test_set_and_get(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
+        c.set("foo", "bar")
+        assert c.get("foo") == "bar"
+        assert c["foo"] == "bar"
 
-    def test_set_persists_to_disk(self, cfg, tmp_path):
-        cfg.set("key", {"nested": 1})
-        with (tmp_path / "unit_test.json").open() as f:
-            content = json.load(f)
-        # The on-disk format wraps data: {"encrypted": False, "data": {...}}
+    def test_set_persists_to_disk(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
+        c.set("key", {"nested": 1})
+        content = _read_disk(tmp_path, "unit_test", fmt)
         assert content["encrypted"] is False
         assert content["data"]["key"] == {"nested": 1}
 
-    def test_delete(self, cfg):
-        cfg.set("a", 1)
-        cfg.delete("a")
-        assert cfg.get("a") is None
+    def test_delete(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
+        c.set("a", 1)
+        c.delete("a")
+        assert c.get("a") is None
 
-    def test_delete_missing_is_noop(self, cfg):
-        cfg.delete("never-set")  # should not raise
+    def test_delete_missing_is_noop(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
+        c.delete("never-set")  # should not raise
 
-    def test_exists(self, cfg):
-        cfg.set("present", 1)
-        assert cfg.exists("present") is True
-        assert cfg.exists("missing") is False
+    def test_exists(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
+        c.set("present", 1)
+        assert c.exists("present") is True
+        assert c.exists("missing") is False
 
-    def test_contains(self, cfg):
-        cfg.set("a", 1)
-        assert "a" in cfg
-        assert "b" not in cfg
+    def test_contains(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
+        c.set("a", 1)
+        assert "a" in c
+        assert "b" not in c
 
-    def test_upsert(self, cfg):
-        cfg.upsert("x", 1)
-        cfg.upsert("x", 2)
-        assert cfg.get("x") == 2
+    def test_upsert(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
+        c.upsert("x", 1)
+        c.upsert("x", 2)
+        assert c.get("x") == 2
 
-    def test_clear(self, cfg):
-        cfg.set("a", 1)
-        cfg.set("b", 2)
-        cfg.clear()
-        assert cfg.data == {}
+    def test_clear(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
+        c.set("a", 1)
+        c.set("b", 2)
+        c.clear()
+        assert c.data == {}
 
-    def test_replace(self, cfg):
-        cfg.set("old", 1)
-        cfg.replace({"new": 2})
-        assert cfg.data == {"new": 2}
+    def test_replace(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
+        c.set("old", 1)
+        c.replace({"new": 2})
+        assert c.data == {"new": 2}
 
-    def test_replace_requires_dict(self, cfg):
+    def test_replace_requires_dict(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
         with pytest.raises(TypeError):
-            cfg.replace(["not", "a", "dict"])  # type: ignore[arg-type]
+            c.replace(["not", "a", "dict"])  # type: ignore[arg-type]
 
-    def test_len(self, cfg):
-        cfg.set("a", 1)
-        cfg.set("b", 2)
-        assert len(cfg) == 2
+    def test_len(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
+        c.set("a", 1)
+        c.set("b", 2)
+        assert len(c) == 2
 
-    def test_callable_getter_setter(self, cfg):
-        cfg("k", "v")
-        assert cfg("k") == "v"
+    def test_callable_getter_setter(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
+        c("k", "v")
+        assert c("k") == "v"
 
-    def test_callable_requires_valid_arity(self, cfg):
+    def test_callable_requires_valid_arity(self, tmp_path, make_cfg, cfg_cls, fmt):
+        c = make_cfg(cfg_cls=cfg_cls, tmp_path=tmp_path, fmt=fmt)
         with pytest.raises(TypeError):
-            cfg(1, 2, 3)
+            c(1, 2, 3)
 
-    def test_reload_from_existing_file(self, tmp_path):
-        c1 = ConfigFile(name="reload", path=str(tmp_path), quiet=True)
+    def test_reload_from_existing_file(self, tmp_path, cfg_cls, fmt):
+        c1 = cfg_cls(name="reload", path=str(tmp_path), quiet=True, format=fmt)
         c1.set("persisted", {"v": 42})
-        c2 = ConfigFile(name="reload", path=str(tmp_path), quiet=True)
+        c2 = cfg_cls(name="reload", path=str(tmp_path), quiet=True, format=fmt)
         assert c2.get("persisted") == {"v": 42}
-
-    def test_yaml_format(self, tmp_path):
-        c = ConfigFile(name="ycfg", path=str(tmp_path), quiet=True, format="yaml")
-        c.set("color", "red")
-        assert (tmp_path / "ycfg.yaml").exists()
-
-        c2 = ConfigFile(name="ycfg", path=str(tmp_path), quiet=True, format="yaml")
-        assert c2.get("color") == "red"
 
 
 class TestDummyKeyValueStore:

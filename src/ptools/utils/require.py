@@ -1,11 +1,88 @@
+"""Decorators that declare the external things a command needs.
+
+Each decorator in this module serves two purposes:
+
+1. At call time, it validates that the required library, binary, or
+   API key is actually available and raises (or prompts) otherwise.
+2. At decoration time, it *announces* the requirement into a
+   module-level registry so tooling can enumerate everything ptools
+   depends on without running any commands. See
+   :func:`announced_requirements` and
+   ``scripts/generate_requirements.py``.
+"""
+
 import click
+from dataclasses import dataclass, field
 from functools import wraps
-from typing import List, Dict, Callable
+from typing import List, Dict, Callable, Tuple, Union
 
 from ptools.utils.enums import LogicalOperators
 from ptools.utils.protocols import ImplementsGet
 
-# Methods
+
+@dataclass(frozen=True)
+class LibraryRequirement:
+    """A Python library that must be importable."""
+
+    module: str
+    pypi_name: str | None = None
+    prompt_install: bool = False
+
+    @property
+    def pip_name(self) -> str:
+        """Name to pass to ``pip install`` (defaults to :attr:`module`)."""
+        return self.pypi_name or self.module
+
+
+@dataclass(frozen=True)
+class BinaryRequirement:
+    """One or more executables that must be on ``$PATH``."""
+
+    names: Tuple[str, ...]
+    logical_operator: str  # 'and' | 'or'
+
+
+@dataclass(frozen=True)
+class KeyRequirement:
+    """An API key / secret that must be resolvable from some store."""
+
+    name: str
+    aliases: Tuple[str, ...]
+    logical_operator: str  # 'and' | 'or'
+
+
+Requirement = Union[LibraryRequirement, BinaryRequirement, KeyRequirement]
+
+_REQUIREMENTS: list[Requirement] = []
+
+
+def announce(requirement: Requirement) -> None:
+    """Record a requirement in the module-level registry.
+
+    This is called by every :mod:`ptools.utils.require` decorator at
+    decoration time (i.e. when the surrounding module is imported), so
+    simply importing a module is enough to make its requirements
+    discoverable without actually invoking its commands.
+    """
+    _REQUIREMENTS.append(requirement)
+
+
+def announced_requirements() -> list[Requirement]:
+    """Return a snapshot of every requirement announced so far.
+
+    Callers should import the modules they care about (or walk the
+    whole :mod:`ptools` package) before reading the registry — a
+    requirement only appears here once the module that uses the
+    corresponding decorator has been imported.
+    """
+    return list(_REQUIREMENTS)
+
+
+def clear_announcements() -> None:
+    """Empty the requirement registry. Primarily useful in tests."""
+    _REQUIREMENTS.clear()
+
+
 def _require_library(library: str):
     "Ensure that a library is installed."
     import importlib.util
@@ -59,6 +136,11 @@ def _require_key(
 # Decorators
 def library(library: str, pypi_name: str | None= None, prompt_install: bool = False):
     "Click decorator to ensure a library is installed."
+    announce(LibraryRequirement(
+        module=library,
+        pypi_name=pypi_name,
+        prompt_install=prompt_install,
+    ))
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
@@ -84,6 +166,11 @@ def library(library: str, pypi_name: str | None= None, prompt_install: bool = Fa
 
 def binary(names: List[str] | str, logical_operator: LogicalOperators = LogicalOperators.AND, key: str | None = None):
     "Click decorator to ensure a binary is available."
+    _names = tuple(names) if isinstance(names, list) else (names,)
+    announce(BinaryRequirement(
+        names=_names,
+        logical_operator=logical_operator.value,
+    ))
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
@@ -112,6 +199,13 @@ def key(
     logical_operator: LogicalOperators = LogicalOperators.OR,
 ):
     "Click decorator to ensure that at least one of the possible API key names is set in the store."
+    for _key_name, _aliases in names.items():
+        _alias_tuple = tuple(_aliases) if isinstance(_aliases, list) else (_aliases,)
+        announce(KeyRequirement(
+            name=_key_name,
+            aliases=_alias_tuple,
+            logical_operator=logical_operator.value,
+        ))
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):

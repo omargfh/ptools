@@ -1,2 +1,7 @@
 __pycache__
 *.pyc
+__pypackages__
+venv/
+__pycache__/
+*.pyc
+__pypackages__/

@@ -1,3 +1,17 @@
+"""Pythonic FP-flavored workflow engine.
+
+:command:`ptools flow` reads values from stdin (typically one per line),
+evaluates Python expressions against each value using the
+:class:`~ptools.lib.flow.runner.FlowRunner`, and emits the results in the
+requested output flavor (JSON, YAML, raw Python, etc.).
+
+The module defines the top-level CLI subcommands — :command:`map`,
+:command:`filter`, :command:`reduce`, :command:`group`, :command:`unique`,
+:command:`foreach`, :command:`while`, :command:`exec`, :command:`range`,
+:command:`json`, and :command:`dict` — all of which share a common
+expression-evaluation pipeline and output formatting layer.
+"""
+
 import click
 
 from ptools.lib.flow.values import StreamValue, OutputValue

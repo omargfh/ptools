@@ -1,3 +1,14 @@
+"""rsync power tools.
+
+Provides a small :command:`ptools rsync` CLI that wraps the system
+``rsync`` binary with two convenience modes:
+
+* :command:`ptools rsync do` — forward arbitrary arguments directly to
+  ``rsync`` and echo the full command before running it.
+* :command:`ptools rsync watch` — watch a directory for changes using
+  :mod:`watchdog` and re-run ``rsync`` after a debounce interval.
+"""
+
 import subprocess
 import click
 from watchdog.observers import Observer

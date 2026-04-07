@@ -1,3 +1,13 @@
+"""Top-level ``ptools`` CLI entry point.
+
+Defines a :class:`LazyGroup` click group that advertises every
+subcommand in :data:`COMMANDS` without importing them eagerly. Each
+entry in :data:`COMMANDS` maps a subcommand name to an
+``"module:attribute"`` import path that is resolved on first use. This
+keeps startup time low even though individual subcommands (notably
+:mod:`ptools.llm`) pull in heavy dependencies.
+"""
+
 from importlib import import_module
 
 import click
@@ -67,6 +77,10 @@ COMMANDS = {
     "watch": {
         "import_path": "ptools.watch:cli",
         "short_help": "Watch for changes and rerun commands.",
+    },
+    "settings": {
+        "import_path": "ptools.settings:cli",
+        "short_help": "Manage power tools settings.",
     },
 }
 
