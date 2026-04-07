@@ -9,7 +9,6 @@ import re
 
 __version__ = "0.2.2"
 
-
 class Case:
     """Base class for different case formats.
 
@@ -151,3 +150,5 @@ class CaseConverter:
         if not target_case_class:
             raise ValueError(f"Unsupported target case: {target_case}")
         return str(target_case_class(parts=case_instance.parts, case_type=target_case.lower()))
+
+cases = ['camel', 'snake', 'kebab', 'pascal']

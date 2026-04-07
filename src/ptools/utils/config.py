@@ -35,7 +35,7 @@ class ConfigFile(Generic[T]):
     validation model using Pydantic to ensure the config data adheres to a specific schema or default values.
 
     :param name: Name of the config file (without extension).
-    :param path: Directory to store the config file. Defaults to ``~/.ptools
+    :param path: Directory to store the config file. Defaults to ``~/.ptools``.
     :param quiet: If True, suppresses informational messages. Defaults to False.
     :param encrypt: If True, enables encryption for the config file. Defaults to False.
     :param format: Serialization format for the config file. Defaults to "json". Supported formats
@@ -44,22 +44,21 @@ class ConfigFile(Generic[T]):
                         against this model on load and before saving. This ensures the config adheres to a specific
                         schema and can provide default values.
 
-    :example:
-    ```python
-    from ptools.utils.config import ConfigFile
-    from pydantic import BaseModel, Field
+    Example::
 
-    class MyConfigModel(BaseModel):
-        api_key: str
-        timeout: int = Field(default=30, description="Timeout in seconds")
+        from ptools.utils.config import ConfigFile
+        from pydantic import BaseModel, Field
 
-    config = ConfigFile[MyConfigModel](name="my_config", encrypt=True, model=MyConfigModel)
-    config.set("api_key", "my_secret_key")
-    print(config.get("api_key"))
+        class MyConfigModel(BaseModel):
+            api_key: str
+            timeout: int = Field(default=30, description="Timeout in seconds")
 
-    timeout = config.typed.timeout  # Access with validation and defaults
-    print(timeout)  # Will print 30 if not set, or the value if set
-    ```
+        config = ConfigFile[MyConfigModel](name="my_config", encrypt=True, model=MyConfigModel)
+        config.set("api_key", "my_secret_key")
+        print(config.get("api_key"))
+
+        timeout = config.typed.timeout  # Access with validation and defaults
+        print(timeout)  # Will print 30 if not set, or the value if set
 
     See also :class:`~ptools.utils.config.LazyConfigFile` for a lazily-initialized version of this class.
     """
@@ -381,20 +380,21 @@ def config_to_CLI(
                     not provided, a new Click Group will be created.
     :param name: An optional name for the CLI group. If not provided, it will be derived from the config class name.
 
-    :example:
-    ```python
-    from ptools.utils.config import ConfigFile, config_to_CLI
-    import click
-    config = ConfigFile(name="my_config")
-    cli = config_to_CLI(config)
-    if __name__ == "__main__":
-        cli()
-    ```
-     This will create a CLI with commands like:
-     - `python my_script.py config list`
-     - `python my_script.py config get <key>`
-     - `python my_script.py config set <key> <value>`
-     - `python my_script.py config delete <key>`
+    Example::
+
+        from ptools.utils.config import ConfigFile, config_to_CLI
+        import click
+        config = ConfigFile(name="my_config")
+        cli = config_to_CLI(config)
+        if __name__ == "__main__":
+            cli()
+
+    This will create a CLI with commands like:
+
+    - ``python my_script.py config list``
+    - ``python my_script.py config get <key>``
+    - ``python my_script.py config set <key> <value>``
+    - ``python my_script.py config delete <key>``
     """
 
     name = config.__class__.__name__\

@@ -26,12 +26,13 @@ def disk_cache(cache_dir=None, max_cache_age=3600,  hex_length=32):
     :param max_cache_age: Maximum age of cache entries in seconds. Defaults to 3600 (1 hour).
     :param hex_length: Length of the hexadecimal cache key. Defaults to 32.
 
-    :example:
-    @disk_cache(max_cache_age=600)  # Cache results for 10 minutes
-    def expensive_computation(x):
-        # Simulate an expensive computation
-        time.sleep(5)
-        return x * x
+    Example::
+
+        @disk_cache(max_cache_age=600)  # Cache results for 10 minutes
+        def expensive_computation(x):
+            # Simulate an expensive computation
+            time.sleep(5)
+            return x * x
     """
     import os, json, hashlib, time, atexit
     from pathlib import Path

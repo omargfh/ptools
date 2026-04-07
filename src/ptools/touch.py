@@ -4,14 +4,13 @@ import os
 import pathlib
 
 from ptools.utils.print import FormatUtils
-from ptools.utils.config import ConfigFile
+from ptools.utils.config import LazyConfigFile
 from ptools.utils.decorator_compistor import DecoratorCompositor
 from ptools.utils.cases import CaseConverter, cases
 
 from pydantic import BaseModel, model_validator
 from jinja2 import Template, Environment, meta
 
-config = ConfigFile('touch', quiet=True, format="yaml")
 
 @click.group(name='touch')
 def cli():
@@ -20,11 +19,11 @@ def cli():
 
 class FileNameOptions(BaseModel):
     dir_okay: bool = False
-    file_arg: str = None
+    file_arg: str = None # type: ignore
     extension: str = ".txt"
     allow_empty_extension: bool = False
     allow_arbitrary_extension: bool = True
-    casing: str = None
+    casing: str | None = None
 
     @model_validator(mode='before')
     def validate(cls, values):
@@ -46,7 +45,7 @@ class TouchItem(BaseModel):
     commands: list = []
     group: str = "default"
     description: str
-    template: Template = None
+    template: Template = None # type: ignore
     template_string: str
     arguments: dict = {}
     file_name_options: FileNameOptions = FileNameOptions()
@@ -69,8 +68,13 @@ class TouchItem(BaseModel):
         self.arguments = {**{arg: "<value>" for arg in undeclared_variables}, **self.arguments}
         self.template = Template(self.template_string)
 
+class TouchConfig(BaseModel):
+    values: list[TouchItem] = []
+    groups_meta: dict[str, dict] = {}
 
-values = sorted(config.get('values', []), key=lambda x: x.get('group', 'default'))
+config = LazyConfigFile('touch', quiet=True, format="yaml", model=TouchConfig)
+
+values = sorted(config.typed.values, key=lambda x: x.group)
 
 def set_extension(filepath: pathlib.Path, opts: FileNameOptions):
     filename = filepath.name
@@ -88,8 +92,7 @@ globals = {
   'convert_case': CaseConverter.convert
 }
 
-for item in values:
-  obj = TouchItem(**item)
+for obj in values:
   fopts = obj.file_name_options
 
   arguments = DecoratorCompositor.from_list([
