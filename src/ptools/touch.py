@@ -1,3 +1,20 @@
+"""Template-driven ``touch`` command: create files from Jinja2 templates.
+
+Loads a user config (``~/.ptools/touch.yaml``) describing a list of
+:class:`TouchItem` entries and dynamically registers one Click subcommand
+per entry under the :data:`cli` group. Each subcommand renders its
+template to the output path the user provides.
+
+.. note::
+    Because commands are registered in a loop, the per-iteration
+    ``obj``/``fopts`` values **must** be bound as default arguments on
+    ``touch_command`` (``def touch_command(..., obj=obj, fopts=fopts)``).
+    Without that binding, every registered command would close over the
+    same variables by reference and all end up using the last iteration's
+    :class:`TouchItem` — producing identical output for every command.
+    See ``tests/test_touch.py::TestCommandRegistration`` for a regression
+    test.
+"""
 import click
 
 import os
@@ -109,7 +126,7 @@ for obj in values:
   @click.argument('output', type=click.Path(exists=False, file_okay=True, dir_okay=fopts.dir_okay), required=True)
   @click.option('-c', '--casing', type=click.Choice(cases), default=fopts.casing, help="Convert the filename to the specified casing.")
   @arguments.decorate()
-  def touch_command(output, casing, **kwargs):
+  def touch_command(output, casing, obj=obj, fopts=fopts, **kwargs):
       args = {k: v for k, v in kwargs.items() if v is not None}
       output = pathlib.Path(output)
 
