@@ -1,17 +1,46 @@
 import click
 import humanize
 
-from ptools.lib.flow.decorators import output_flavor
+from ptools.utils.output import output_flavor, OutputFlavorKind
+from ptools.utils import require
+from ptools.utils.config import config_to_CLI
+from ptools.lib.fs.watchers import _get_watcher_data, _watcher_labels, _watcher_labels
 
 @click.group()
 def cli():
-    """Filesystem manipulation tools."""
+    """Filesystem manipulation tools.
+
+    \b
+    Example:
+      $ ptools fs info /tmp/ptools-doc-examples/alpha.txt
+      Path: /tmp/ptools-doc-examples/alpha.txt
+      Size: 6 Bytes (6 bytes)
+      Last modified: Tue Apr  7 16:10:36 2026
+      Last accessed: Tue Apr  7 16:10:36 2026
+      Creation time: Tue Apr  7 16:10:36 2026
+      Is directory: False
+      Is file: True
+      Permissions: 0o100644
+    """
     pass
 
 @click.command()
 @click.argument('path', type=click.Path(exists=True), default=".")
 def info(path):
-    """Display information about a file or directory."""
+    """Display information about a file or directory.
+
+    \b
+    Example:
+      $ ptools fs info /tmp/ptools-doc-examples/alpha.txt
+      Path: /tmp/ptools-doc-examples/alpha.txt
+      Size: 6 Bytes (6 bytes)
+      Last modified: Tue Apr  7 16:10:36 2026
+      Last accessed: Tue Apr  7 16:10:36 2026
+      Creation time: Tue Apr  7 16:10:36 2026
+      Is directory: False
+      Is file: True
+      Permissions: 0o100644
+    """
     import os
     import time
     path  = os.path.abspath(path)
@@ -45,9 +74,16 @@ def walkdir(
     ignore_hidden: bool,
     query: str,
     regex: bool,
-    flavor,
+    flavor: OutputFlavorKind,
 ):
-    """Recursively list files and directories."""
+    """Recursively list files and directories.
+
+    \b
+    Example:
+      $ ptools fs walkdir txt --path /tmp/ptools-doc-examples --max-depth 1 --no-dirs
+      {'kind': 'file', 'name': 'alpha.txt', 'path': '/tmp/ptools-doc-examples/alpha.txt', 'dirpath': '/tmp/ptools-doc-examples'}
+      {'kind': 'file', 'name': 'beta.txt', 'path': '/tmp/ptools-doc-examples/subdir/beta.txt', 'dirpath': '/tmp/ptools-doc-examples/subdir'}
+    """
     import os
     from ptools.lib.flow.values import OutputValue
     from ptools.utils.re import test
@@ -116,6 +152,14 @@ def findfiles(
     regex,
     flavor
 ):
+    """Find files below a directory, optionally filtered by query.
+
+    \b
+    Example:
+      $ ptools fs findfiles txt --path /tmp/ptools-doc-examples --max-depth 1
+      {'kind': 'file', 'name': 'alpha.txt', 'path': '/tmp/ptools-doc-examples/alpha.txt', 'dirpath': '/tmp/ptools-doc-examples'}
+      {'kind': 'file', 'name': 'beta.txt', 'path': '/tmp/ptools-doc-examples/subdir/beta.txt', 'dirpath': '/tmp/ptools-doc-examples/subdir'}
+    """
     return walkdir.callback( # type: ignore
         path=path,
         max_depth=max_depth,
@@ -151,7 +195,14 @@ def tree(
     show_files,
     interactive,
 ):
-    """Print a tree structure of directory content with size information."""
+    """Print a tree structure of directory content with size information.
+
+    \b
+    Example:
+      $ ptools fs tree /tmp/ptools-doc-examples name asc --max-depth 1 --size-threshold 100TB
+      Building tree for /tmp/ptools-doc-examples with max depth 1 and size threshold 100TB...
+      No files or directories found.
+    """
     # Example: ptools fs tree . --max-depth 2 --size-threshold 10MB
     import os
     from ptools.utils.files import get_size
@@ -282,5 +333,79 @@ def tree(
     else:
         click.echo("No files or directories found.")
 
-cli.add_command(info, name='info')
-cli.add_command(walkdir, name='walkdir')
+@cli.group()
+@require.os(["darwin"])
+def watchers():
+    """Audit and manage file watchers on macOS."""
+    pass
+
+
+@watchers.command(name="list")
+@click.option("--top", "-n", type=int, default=25, help="Show top N processes by FD count")
+@click.option("--min-fds", type=int, default=0, help="Only show processes with at least this many FDs",)
+@click.option( "--kqueue-only", "-k", is_flag=True, default=False, help="Only show processes with kqueue FDs",)
+@output_flavor.decorate()
+@require.os(["darwin"])
+def watchers_list(top, min_fds, kqueue_only, flavor):
+    """List processes by number of watched files.
+
+    \b
+    Example:
+        $ ptools fs watchers list --top 10
+        PID    COMMAND         LABEL              USER     FDS     KQUEUES
+        77794  Virtualizatio   macOS VM (Docker?) root     99530   12
+        32827  node            Node.js            user     1899    4
+    """
+    from ptools.lib.flow.values import OutputValue
+
+    data = _get_watcher_data()
+
+    if min_fds > 0:
+        data = [d for d in data if d["fds"] >= min_fds]
+    if kqueue_only:
+        data = [d for d in data if d["kqueues"] > 0]
+
+    data = data[:top]
+
+    if not data:
+        click.echo("No matching processes found.")
+        return
+
+    click.echo(OutputValue(flavor=flavor).format(data))
+
+
+@watchers.command(name="kill")
+@click.argument("pid", type=int)
+@click.option("--force", "-9", is_flag=True, default=False, help="Send SIGKILL instead of SIGTERM")
+@click.confirmation_option(prompt="Are you sure you want to kill this process?")
+@require.os(["darwin"])
+def watchers_kill(pid, force):
+    """Kill a process by PID.
+
+    \b
+    Example:
+      $ ptools fs watchers kill 77794
+      Sent SIGTERM to PID 77794.
+    """
+    import signal
+    import os
+
+    sig = signal.SIGKILL if force else signal.SIGTERM
+    try:
+        os.kill(pid, sig)
+        click.echo(f"Sent {'SIGKILL' if force else 'SIGTERM'} to PID {pid}.")
+    except ProcessLookupError:
+        click.echo(f"PID {pid} not found.")
+    except PermissionError:
+        click.echo(f"Permission denied for PID {pid}. Try with sudo.")
+    except Exception as e:
+        click.echo(f"Error killing PID {pid}: {e}")
+
+# Expose label CRUD via config_to_CLI
+_labels_cli = config_to_CLI(_watcher_labels, name="labels")
+watchers.add_command(_labels_cli, name="labels")
+
+cli.add_command(info, name="info")
+cli.add_command(walkdir, name="walkdir")
+cli.add_command(findfiles, name="findfiles")
+cli.add_command(tree, name="tree")

@@ -135,6 +135,25 @@ def _require_key(
 
     return results
 
+
+def _require_os(
+    os_names: List[str] | str,
+    logical_operator: LogicalOperators = LogicalOperators.OR
+):
+    """Ensure that the current operating system matches one of the specified names.
+
+       :param os_names: A list of OS names to check against (e.g., ['windows', 'linux', 'darwin', 'java']).
+       :param logical_operator: The logical operator to apply if multiple OS names are provided (AND or OR).
+    """
+    import platform
+    current_os = platform.system().lower()
+    os_names = [name.lower() for name in (os_names if isinstance(os_names, list) else [os_names])]
+    matches = [current_os == name for name in os_names]
+    logical_operator.ensure(
+        matches,
+        f"Current OS '{current_os}' does not match any of the required OSes: {', '.join(os_names)}"
+)
+
 # Decorators
 def library(library: str, pypi_name: str | None= None, prompt_install: bool = False):
     "Click decorator to ensure a library is installed."
@@ -214,6 +233,21 @@ def key(
             value = _require_key(names, stores, logical_operator)
             for k, v in value.items():
                 kwargs[k] = v
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def os(names: List[str] | str, logical_operator: LogicalOperators = LogicalOperators.OR):
+    "Click decorator to ensure the command is running on a specific OS."
+    _names = tuple(names) if isinstance(names, list) else (names,)
+    announce(BinaryRequirement(
+        names=_names,
+        logical_operator=logical_operator.value,
+    ))
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            _require_os(names, logical_operator)
             return f(*args, **kwargs)
         return wrapper
     return decorator
