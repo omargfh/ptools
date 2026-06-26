@@ -31,6 +31,7 @@ class SettingsModel(BaseModel):
     """Pydantic model for validating settings values."""
 
     PIP_EXECUTABLE: str = os.environ.get("PIP_EXECUTABLE", f"{sys.executable} -m pip")
+    PTOOLS_DEBUG: bool = os.environ.get("PTOOLS_DEBUG", "0") == "1"
 
 
 settings = LazyConfigFile("settings", quiet=True, model=SettingsModel)
@@ -38,5 +39,6 @@ cli = config_to_CLI(settings, name="settings")
 
 if __name__ != "__main__":
     PIP_EXECUTABLE = settings.typed.PIP_EXECUTABLE
+    PTOOLS_DEBUG = settings.typed.PTOOLS_DEBUG
 else:
     cli = config_to_CLI(settings, name="settings")

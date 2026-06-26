@@ -84,6 +84,10 @@ COMMANDS = {
         "import_path": "ptools.settings:cli",
         "short_help": "Manage power tools settings.",
     },
+    "tmp": {
+        "import_path": "ptools.tmp:tmp",
+        "short_help": "Temporary command for testing purposes.",
+    },
 }
 
 
@@ -127,5 +131,16 @@ class LazyGroup(click.Group):
 @click.group(cls=LazyGroup)
 @click.version_option()
 def cli():
-    """power tools command line interface."""
+    """power tools command line interface.
+
+    \b
+    Example:
+      $ ptools --help
+      Usage: ptools [OPTIONS] COMMAND [ARGS]...
+      ...
+      Commands:
+        flow      Pythonic FP-flavored workflow engine.
+        json      JSON manipulation tools.
+        time      Timing utilities for power tools.
+    """
     pass
