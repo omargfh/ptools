@@ -99,6 +99,64 @@ class DummyEncryption:
         """Return the value as is."""
         return value
 
+class PasswordEncryption(Encryption):
+    """AES-GCM encryptor that derives its key from a user-supplied password using PBKDF2.
+
+    :param password: User-supplied password to derive the key from.
+    :param salt: Optional salt for key derivation. If not provided, a random 16-byte salt is generated.
+    """
+    def __init__(self, password, salt=None):
+        super().__init__(service_name="com.ptools.password_encryption", user_name="passwordUser")
+        self.password = password.encode('utf-8')
+        self.salt = salt if salt else get_random_bytes(16)
+
+    def encrypt(self, value):
+        """Encrypt ``value`` using a key derived from the password and return a dict of hex-encoded nonce/ciphertext/tag/salt.
+
+        :param value: ``str`` or ``bytes`` payload to encrypt.
+        """
+        from Crypto.Protocol.KDF import PBKDF2
+        from Crypto.Hash import SHA256
+
+        # Derive a key from the password and salt
+        self.key = PBKDF2(self.password, self.salt, dkLen=32, count=1000000, hmac_hash_module=SHA256)
+
+        cipher = AES.new(self.key, AES.MODE_GCM)
+
+        if not isinstance(value, bytes):
+            value = value.encode('utf-8')
+
+        ciphertext, tag = cipher.encrypt_and_digest(value)
+        nonce = cipher.nonce
+
+        encrypted_data = {
+            'nonce': bytes.hex(nonce),
+            'ciphertext': bytes.hex(ciphertext),
+            'tag': bytes.hex(tag),
+            'salt': bytes.hex(self.salt)
+        }
+
+        return encrypted_data
+
+    def decrypt(self, encrypted_data):
+        """Decrypt the dict produced by :meth:`encrypt` and return the UTF-8 string."""
+        from Crypto.Protocol.KDF import PBKDF2
+        from Crypto.Hash import SHA256
+
+        # Extract the salt from the encrypted data
+        self.salt = bytes.fromhex(encrypted_data['salt'])
+
+        # Derive the key again using the same password and salt
+        self.key = PBKDF2(self.password, self.salt, dkLen=32, count=1000000, hmac_hash_module=SHA256)
+
+        nonce = bytes.fromhex(encrypted_data['nonce'])
+        ciphertext = bytes.fromhex(encrypted_data['ciphertext'])
+        tag = bytes.fromhex(encrypted_data['tag'])
+
+        cipher = AES.new(self.key, AES.MODE_GCM, nonce=nonce)
+        decrypted_value = cipher.decrypt_and_verify(ciphertext, tag)
+
+        return decrypted_value.decode('utf-8')
 
 if __name__ == "__main__":
     # Example usage
@@ -111,3 +169,16 @@ if __name__ == "__main__":
 
     decrypted = encryption.decrypt(encrypted)
     print("Decrypted:", decrypted)
+
+    # Password based encryption example
+    password_encryption = PasswordEncryption(password="my_secure_password")
+    encrypted_with_password = password_encryption.encrypt(message)
+    print("Encrypted with password:", encrypted_with_password)
+    decrypted_with_password = password_encryption.decrypt(encrypted_with_password)
+    print("Decrypted with password:", decrypted_with_password)
+
+    wrong_password_client = PasswordEncryption(password="wrong_password")
+    try:
+        wrong_password_client.decrypt(encrypted_with_password)
+    except Exception as e:
+        print("Decryption failed with wrong password:", str(e))
