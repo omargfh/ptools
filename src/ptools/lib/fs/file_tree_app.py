@@ -19,16 +19,15 @@ from __future__ import annotations
 
 import os
 from threading import Timer
-from typing import Callable
-from dataclasses import dataclass
 
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.screen import Screen
 from textual.widgets import Footer, Header, Input, Tree as TextualTree
 from textual.widgets.tree import TreeNode
 from textual.reactive import reactive
+
+from ptools.lib.tui.screens import ConfirmScreen, MessageScreen
 
 __version__ = "0.1.0"
 
@@ -449,12 +448,8 @@ class FileTreeApp(App):
             self.filter_text = event.value
 
     def on_key(self, event) -> None:
-        # Dismiss Error
-        if self.screen and isinstance(self.screen, MessageScreen):
-            self.pop_screen()
-
         # Dismiss filter
-        elif event.key == "escape":
+        if event.key == "escape":
             filter_bar = self.query_one("#filter-bar", Input)
             if filter_bar.has_class("visible"):
                 filter_bar.remove_class("visible")
@@ -478,51 +473,6 @@ class FileTreeApp(App):
                         self.bell()
                         self.push_screen(MessageScreen(f"Error executing command: {e}"))
 
-
-class MessageScreen(Screen):
-    """Simple screen to show a message and wait for a key press."""
-
-    def __init__(self, message: str, **kwargs):
-        super().__init__(**kwargs)
-        self.message = message
-
-    def compose(self) -> ComposeResult:
-        yield Header(name="Message")
-        yield Input(value=self.message, id="message-input", disabled=True)
-        yield Input("Press any key to continue...", id="prompt-input", disabled=True)
-        yield Footer()
-
-    def on_mount(self) -> None:
-        self.query_one("#message-input", Input).focus()
-
-class ConfirmScreen(Screen):
-    """Screen to ask user to confirm an action."""
-
-    def __init__(self, message: str, on_confirm: Callable[[], None], **kwargs):
-        super().__init__(**kwargs)
-        self.message = message
-        self.on_confirm = on_confirm
-
-    def compose(self) -> ComposeResult:
-        yield Header(name="Confirm")
-        yield Input(value=self.message, id="confirm-input", disabled=True)
-        yield Input("Press 'y' to confirm, any other key to cancel.", id="prompt-input", disabled=True)
-        yield Footer()
-
-    def on_mount(self) -> None:
-        self.query_one("#confirm-input", Input).focus()
-
-    def on_key(self, event) -> None:
-        try:
-            app: FileTreeApp = self.app # type: ignore
-            if event.key.lower() == "y":
-                self.on_confirm()
-            app.pop_screen()
-            app.action_refresh()
-        except Exception as e:
-            app.pop_screen()
-            app.bell()
-            app.push_screen(MessageScreen(f"Error executing command: {e}"))
 
 def launch_interactive_tree(
     path: str,
