@@ -88,7 +88,7 @@ def to_csv(source_type, content, separator, na_rep, float_format, header, index,
         mode=mode,
         encoding=encoding,
         compression=compression,
-        quoting={'all': 1, 'minimal': 0, 'nonnumeric': 2, 'none': 3}.get(quoting, None),
+        quoting={'all': 1, 'minimal': 0, 'nonnumeric': 2, 'none': 3}.get(quoting, 0), # type: ignore
         quotechar=quotechar,
         lineterminator=lineterminator,
         chunksize=chunksize,
