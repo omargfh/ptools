@@ -41,10 +41,21 @@ def root():
     click.echo(get_project_root())
 
 @cli.command()
-def code():
-    """Make changes to this tool in VSCode."""
-    cmd = f"code {get_project_root()}"
-    os.system(cmd)
+@click.option('--target', '-t', type=click.Choice(['project', 'config']), default='project', help="Which file to open: the project root or the config file.")
+def code(target):
+    """Make changes to this tool in VSCode.
+
+    \b
+    Example:
+      $ ptools dev code
+      # Opens /Users/pas6148/Documents/sdk/ptools in VSCode; no stdout on success.
+    """
+
+    match target:
+        case 'project':
+            os.system(f"code {get_project_root()}")
+        case 'config':
+            os.system(f"code {os.path.join(os.path.expanduser('~'), '.ptools')}")
 
 @cli.command()
 def vim():
