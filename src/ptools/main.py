@@ -52,6 +52,10 @@ COMMANDS = {
         "import_path": "ptools.llm:opts",
         "short_help": "AI related commands.",
     },
+    "proc": {
+        "import_path": "ptools.proc:cli",
+        "short_help": "Process explorer: a better ps aux (TUI + CLI).",
+    },
     "projects": {
         "import_path": "ptools.projects:cli",
         "short_help": "Manage project shortcuts.",
