@@ -134,6 +134,17 @@ class FormatUtils:
         """Italicize ``text`` (alias of :meth:`ASCIIEscapes.italic`)."""
         return ASCIIEscapes.italic(text)
 
+    @staticmethod
+    def truncate(text: str, max_length: int) -> str:
+        """Truncate ``text`` to ``max_length`` characters, adding ellipsis if needed."""
+        if len(text) <= max_length:
+            return text
+        elif max_length > 3:
+            half = (max_length - 3) // 2
+            return text[:half] + "..." + text[-half:]
+        else:
+            return text[:max_length]
+
 class PrintUtils:
     """Thin wrapper that prints :class:`FormatUtils` strings to stdout."""
 
