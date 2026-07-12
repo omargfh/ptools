@@ -227,7 +227,7 @@ class ProcApp(App):
         super().__init__(**kwargs)
         self.joins: set[str] = set(joins or ())
         self.refresh_interval = max(0.5, refresh_interval)
-        self.sort_by = "cpu"
+        self.sort_by = "name"
         self.sort_order = "desc"
         self.tree_mode = tree
         self.paused = False
