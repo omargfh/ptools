@@ -59,3 +59,9 @@ use. The sections below document each subcommand tree in full.
 .. click:: ptools.llm:opts
    :prog: ptools llm-opts
    :nested: full
+
+``ptools proc``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. click:: ptools.proc:cli
+   :prog: ptools proc
+   :nested: full
