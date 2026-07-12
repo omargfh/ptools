@@ -92,6 +92,10 @@ COMMANDS = {
         "import_path": "ptools.tmp:tmp",
         "short_help": "Temporary command for testing purposes.",
     },
+    "vault": {
+        "import_path": "ptools.vault:cli",
+        "short_help": "File encryption and decryption commands.",
+    },
 }
 
 
