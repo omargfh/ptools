@@ -30,7 +30,19 @@ def fmt_time(x: float) -> str:
 
 @click.group()
 def cli():
-    """Timing utilities for power tools."""
+    """Timing utilities for power tools.
+
+    \b
+    Example:
+      $ ptools time it --repeat 1 --stats each --stats mean 'python --version'
+      {
+        "each": [
+          "10.674 ms"
+        ],
+        "mean": "10.674 ms",
+        "execution_time": "105.479 ms"
+      }
+    """
     pass
 
 
@@ -45,7 +57,21 @@ def cli():
 )
 @click.argument('command', type=str, default='ptools --help', nargs=-1, metavar='COMMAND')
 def it(repeat, stats, command):
-    """Time the execution of a command and compute statistics."""
+    """Time the execution of a command and compute statistics.
+
+    \b
+    Example:
+      $ ptools time it --repeat 1 --stats each --stats mean 'python --version'
+      {
+        "each": [
+          "10.674 ms"
+        ],
+        "mean": "10.674 ms",
+        "execution_time": "105.479 ms"
+      }
+
+    Timing values vary by machine and run.
+    """
     import json
     import subprocess
 

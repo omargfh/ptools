@@ -106,14 +106,26 @@ class Projects():
 # Group that doubles as a CLI entry point
 @click.group()
 def cli():
-    """Project management CLI for ptools."""
+    """Project management CLI for ptools.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools projects chdir demo/subdir --quiet
+      /private/tmp/ptools-doc-examples/subdir
+    """
     pass
 
 @cli.command()
 @click.argument('name')
 @click.option('--quiet', is_flag=True, help="Suppress output messages.")
 def chdir(name, quiet):
-    """Change directory to the project with NAME."""
+    """Change directory to the project with NAME.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools projects chdir demo/subdir --quiet
+      /private/tmp/ptools-doc-examples/subdir
+    """
     projects = Projects.get_instance()
     parts = name.split(os.path.sep)
     path = projects.switch(parts[0]) or parts[0]
@@ -124,7 +136,14 @@ def chdir(name, quiet):
 
 @cli.command()
 def list_projects():
-    """List all projects."""
+    """List all projects.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools projects list
+      INFO Listing 1 projects:
+      Project: demo, Path: /private/tmp/ptools-doc-examples
+    """
     projects = Projects.get_instance().get_projects()
     click.echo(FormatUtils.info(f"Listing {FormatUtils.bold(str(len(projects)))} projects:"))
     for name, path in projects.items():
@@ -135,7 +154,14 @@ def list_projects():
 @click.argument('path', default='.', type=click.Path(exists=True, file_okay=False, resolve_path=True))
 @click.option('--force', is_flag=True, help="Force add project even if it already exists.")
 def add_project(name, path, force):
-    """Add a new project with NAME at PATH."""
+    """Add a new project with NAME at PATH.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools projects add demo /tmp/ptools-doc-examples
+      SUCCESS Projects saved to /tmp/ptools-doc-home/.ptools/projects.json.
+      SUCCESS Project 'demo' added at /private/tmp/ptools-doc-examples.
+    """
     projects = Projects.get_instance()
     projects.add_project(name, path, force)
 
@@ -143,14 +169,29 @@ def add_project(name, path, force):
 @click.argument('name')
 @click.confirmation_option(prompt='Are you sure you want to delete this project?')
 def delete_project(name):
-    """Delete the project with NAME."""
+    """Delete the project with NAME.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools projects delete demo --yes
+      SUCCESS Projects saved to /tmp/ptools-doc-home/.ptools/projects.json.
+      SUCCESS Project 'demo' deleted.
+    """
     projects = Projects.get_instance()
     projects.delete_project(name)
 
 @cli.command()
 @click.argument('shellconfigfile', type=click.Path(exists=True, file_okay=True, resolve_path=True))
 def install(shellconfigfile):
-    """Install the shell configuration from SHELLCONFIG."""
+    """Install the shell configuration from SHELLCONFIG.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools projects install /tmp/ptools-doc-home/shellrc
+      SUCCESS Installed pcd function to /private/tmp/ptools-doc-home/shellrc.
+      SUCCESS Installation completed successfully.
+      INFO Please restart your shell or source the configuration file to apply changes.
+    """
     fn = """pcd() {
     if [ "$#" -ne 1 ]; then
         ptools projects ${*:1} # pass all arguments except the first to ptools projects

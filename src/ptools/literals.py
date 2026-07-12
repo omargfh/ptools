@@ -80,7 +80,17 @@ class LiteralsApp():
 @click.option('--choose-collection', '-c', is_flag=True, default=False, help='Choose collection interactively.')
 @click.option('--stay-alive', '-s', is_flag=True, default=False, help='Keep the application running after selection to select more literals.')
 def cli(collection, choose_collection, stay_alive):
-    """Interactively select literals from the configured library."""
+    """Interactively select literals from the configured library.
+
+    \b
+    Example:
+      $ ptools lget snippets
+      # Opens an interactive selector and copies the selected literal to the clipboard.
+
+    \b
+      $ ptools lget missing-collection
+      WARNING No literals found in the specified collection.
+    """
     import pyperclip
 
     all_collections = config.data

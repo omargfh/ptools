@@ -96,7 +96,19 @@ def cli(
     persist: bool,
     debug: bool,
 ):
-    """Interact with a chat interface."""
+    """Interact with a chat interface.
+
+    \b
+    Example:
+      $ ptools llm --model gpt-4o-mini 'Say hello in five words'
+      Hello! How can I help?
+
+    \b
+      $ ptools llm --interactive
+      # Starts the interactive chat REPL.
+
+    Model output varies by provider, prompt, profile, and API key setup.
+    """
     from ptools.lib.llm.constants import google_models, openai_models
     from ptools.lib.llm.prompt import parse_prompt
     from ptools.lib.llm.session import ChatSession
@@ -174,14 +186,26 @@ def cli(
 
 @click.group()
 def opts():
-    """AI related commands."""
+    """AI related commands.
+
+    \b
+    Example:
+      $ ptools llm-opts list-api-keys
+      OPENAI_API_KEY: ********
+    """
     pass
 
 @opts.command(name='set-api-key')
 @click.option('--service', '-s', type=click.Choice(['openai', 'serperdev', 'google']), required=True, help='Service to set the API key for.')
 @click.argument('key', required=False)
 def set_api_key(service: str, key: str | None):
-    """Set the API key for a specific service."""
+    """Set the API key for a specific service.
+
+    \b
+    Example:
+      $ ptools llm-opts set-api-key --service openai sk-example
+      SUCCESS Set API key for openai in config file.
+    """
     key_store = _get_key_store()
     if not key:
         key = click.prompt(f'Enter API key for {service}', hide_input=True)
@@ -192,7 +216,13 @@ def set_api_key(service: str, key: str | None):
 
 @opts.command(name='list-api-keys')
 def list_api_keys():
-    """List all stored API keys."""
+    """List all stored API keys.
+
+    \b
+    Example:
+      $ ptools llm-opts list-api-keys
+      OPENAI_API_KEY: **********
+    """
     from ptools.lib.llm.stores import key_store
     keys = key_store.list()
     if not keys:
@@ -208,7 +238,13 @@ def list_api_keys():
 @click.argument('file', type=click.Path(exists=True), required=True)
 @click.option('--copy', '-c', is_flag=True, help='Copy the file to the config directory instead of linking it.')
 def add_profile(name: str, file: str, copy: bool):
-    """Add a new LLM profile."""
+    """Add a new LLM profile.
+
+    \b
+    Example:
+      $ ptools llm-opts add-profile demo /tmp/ptools-doc-examples/profile.json
+      SUCCESS Added profile "demo" with file "/tmp/ptools-doc-examples/profile.json" to config.
+    """
     from ptools.lib.llm.stores import profiles_store
     if copy:
         import shutil
@@ -223,7 +259,16 @@ def add_profile(name: str, file: str, copy: bool):
 
 @opts.command(name='create-profile')
 def create_profile():
-    """Create a new LLM profile interactively."""
+    """Create a new LLM profile interactively.
+
+    \b
+    Example:
+      $ ptools llm-opts create-profile
+      Enter profile name:
+      Enter temperature [0.7]:
+      Enter max tokens [1024]:
+      ...
+    """
     from ptools.lib.llm.entities import LLMProfile
     from ptools.lib.llm.stores import profiles_store
     name = click.prompt('Enter profile name')
@@ -250,7 +295,13 @@ def create_profile():
 
 @opts.command(name='list-profiles')
 def list_profiles():
-    """List all LLM profiles."""
+    """List all LLM profiles.
+
+    \b
+    Example:
+      $ ptools llm-opts list-profiles
+      INFO demo: /tmp/ptools-doc-examples/profile.json
+    """
     from ptools.lib.llm.stores import profiles_store
     profiles = profiles_store.list()
     if not profiles:
@@ -263,7 +314,13 @@ def list_profiles():
 @click.confirmation_option(prompt='Are you sure you want to delete this profile?')
 @click.argument('name', required=True)
 def delete_profile(name: str):
-    """Delete an LLM profile."""
+    """Delete an LLM profile.
+
+    \b
+    Example:
+      $ ptools llm-opts delete-profile demo --yes
+      SUCCESS Deleted profile "demo".
+    """
     from ptools.lib.llm.stores import profiles_store
     if profiles_store.get(name) is None:
         click.echo(FormatUtils.error(f'Profile "{name}" does not exist.'))
@@ -274,7 +331,13 @@ def delete_profile(name: str):
 @opts.command(name='prune-chats')
 @click.confirmation_option(prompt='Are you sure you want to prune all chat files? This action cannot be undone.')
 def prune_chats():
-    """Delete all chat files."""
+    """Delete all chat files.
+
+    \b
+    Example:
+      $ ptools llm-opts prune-chats --yes
+      INFO No chat files to prune.
+    """
     from ptools.lib.llm.stores import chats_store
     chat_files = chats_store.list()
     if not chat_files:
@@ -287,7 +350,13 @@ def prune_chats():
 
 @opts.command(name='list-chats')
 def list_chats():
-    """List all chat files."""
+    """List all chat files.
+
+    \b
+    Example:
+      $ ptools llm-opts list-chats
+      INFO No chat files found.
+    """
     from ptools.lib.llm.stores import chats_store
     chat_files = chats_store.list()
 

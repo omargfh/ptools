@@ -6,7 +6,13 @@ import ptools.utils.require as require
 @resolve_input()
 @require.library("pyperclip", prompt_install=True)
 def cli(source_type, content):
-    """Copy input data to clipboard."""
+    """Copy input data to clipboard.
+
+    \b
+    Example:
+      $ ptools clip 'hello clipboard'
+      # Copies "hello clipboard" to the clipboard; no stdout on success.
+    """
     import pyperclip
 
     try:

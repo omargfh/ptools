@@ -12,7 +12,21 @@ from ptools.utils.print import FormatUtils
 @click.option('--delay', default=0.5, help='Debounce delay in seconds.')
 @click.pass_context
 def cli(ctx, path, events, delay):
-    """Watch for changes and run a command with given arguments after debounce."""
+    """Watch for changes and run a command with given arguments after debounce.
+
+    \b
+    Example:
+      $ ptools watch
+      Usage: ptools watch [OPTIONS]
+      Try 'ptools watch --help' for help.
+
+      Error: You must pass command arguments after `watch`.
+
+    \b
+      $ ptools watch --path /tmp/ptools-doc-examples echo changed
+      INFO Watching '/tmp/ptools-doc-examples' for changes...
+      INFO Will run: echo changed after 0.5s of no changes.
+    """
     if not ctx.args:
         raise click.UsageError("You must pass command arguments after `watch`.")
     command = ctx.args

@@ -32,12 +32,24 @@ def _run(cmd: list[str], *, cwd: str | None = None) -> int:
 
 @click.group()
 def cli():
-    """developer options for power tools."""
+    """developer options for power tools.
+
+    \b
+    Example:
+      $ ptools dev root
+      /Users/pas6148/Documents/sdk/ptools
+    """
     pass
 
 @cli.command()
 def root():
-    """Print the root directory of the project."""
+    """Print the root directory of the project.
+
+    \b
+    Example:
+      $ ptools dev root
+      /Users/pas6148/Documents/sdk/ptools
+    """
     click.echo(get_project_root())
 
 @cli.command()
@@ -59,14 +71,26 @@ def code(target):
 
 @cli.command()
 def vim():
-    """Make changes to this tool in Vim."""
+    """Make changes to this tool in Vim.
+
+    \b
+    Example:
+      $ ptools dev vim
+      # Opens /Users/pas6148/Documents/sdk/ptools in Vim.
+    """
     cmd = f"vim {get_project_root()}"
     os.system(cmd)
 
 @cli.command()
 @click.argument('command', type=str, default='open')
 def editor(command):
-    """Open the project in the specified editor."""
+    """Open the project in the specified editor.
+
+    \b
+    Example:
+      $ ptools dev editor open
+      # Runs: open /Users/pas6148/Documents/sdk/ptools
+    """
     cmd = f"{command} {get_project_root()}"
     os.system(cmd)
 
@@ -77,7 +101,14 @@ def editor(command):
     help="Optional dependency group(s) to install (e.g. 'docs'). May be repeated.",
 )
 def install(extras):
-    """(re)install the tool."""
+    """(re)install the tool.
+
+    \b
+    Example:
+      $ ptools dev install --extras docs
+      $ uv pip install -e /Users/pas6148/Documents/sdk/ptools[docs]
+      ...
+    """
     target = get_project_root()
     if extras:
         target = f"{target}[{','.join(extras)}]"
@@ -85,7 +116,13 @@ def install(extras):
 
 @cli.command()
 def update():
-    """Update the tool to the latest version."""
+    """Update the tool to the latest version.
+
+    \b
+    Example:
+      $ ptools dev update
+      # Runs git pull, then reinstalls the editable package.
+    """
     cmd = f"git -C {get_project_root()} pull"
     os.system(cmd)
 
@@ -94,7 +131,15 @@ def update():
 @cli.command()
 @click.option('-m', '--message', default='Update power tools', help='Commit message for the changes.')
 def push(message):
-    """Commit and push changes to the repository."""
+    """Commit and push changes to the repository.
+
+    \b
+    Example:
+      $ ptools dev push --message 'Update docs'
+      $ git add .
+      $ git commit -m Update docs
+      $ git push
+    """
     root_dir = get_project_root()
     if _run(["git", "add", "."], cwd=root_dir) != 0:
         raise click.ClickException("git add failed")
@@ -118,7 +163,14 @@ def push(message):
     help="Open the built docs in the default browser when the build succeeds.",
 )
 def docs(builder, clean, open_after):
-    """Build the Sphinx documentation under ``docs/``."""
+    """Build the Sphinx documentation under ``docs/``.
+
+    \b
+    Example:
+      $ ptools dev docs --builder html
+      $ /Users/pas6148/Documents/sdk/ptools/.venv/bin/python -m sphinx -b html /Users/pas6148/Documents/sdk/ptools/docs /Users/pas6148/Documents/sdk/ptools/docs/_build/html
+      Docs built at /Users/pas6148/Documents/sdk/ptools/docs/_build/html/index.html
+    """
     root_dir = get_project_root()
     source = os.path.join(root_dir, "docs")
     build_dir = os.path.join(source, "_build", builder)
@@ -164,6 +216,14 @@ def requirements(output):
     Walks every ``ptools`` submodule so the ``ptools.utils.require``
     decorators announce themselves, then combines what they report with
     the base dependencies declared in ``pyproject.toml``.
+
+    \b
+    Example:
+      $ ptools dev requirements --output -
+      $ /Users/pas6148/Documents/sdk/ptools/.venv/bin/python /Users/pas6148/Documents/sdk/ptools/scripts/generate_requirements.py
+      click>=8.1
+      watchdog>=3.0
+      ...
     """
     root_dir = get_project_root()
     script = os.path.join(root_dir, "scripts", "generate_requirements.py")
@@ -197,6 +257,12 @@ def test(ctx, keyword, verbose, exitfirst):
 
     Any unknown arguments are forwarded to pytest unchanged, so e.g.
     ``ptools dev test tests/test_flow.py --lf`` just works.
+
+    \b
+    Example:
+      $ ptools dev test tests/test_time.py
+      $ /Users/pas6148/Documents/sdk/ptools/.venv/bin/python -m pytest tests/test_time.py
+      ...
     """
     cmd = [sys.executable, "-m", "pytest"]
     if keyword:

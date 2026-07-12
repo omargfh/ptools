@@ -105,20 +105,39 @@ def echo_info(*args, **kwargs):
 
 @click.group()
 def cli():
-    """Shell commands for ptools."""
+    """Shell commands for ptools.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools shell set-default-shell /tmp/ptools-doc-home/shellrc
+      INFO Default shell configuration set to: /tmp/ptools-doc-home/shellrc
+    """
     pass
 
 @click.command(name='set-default-shell')
 @click.argument('shell_config_file', type=click.Path(exists=True))
 def set_default_shell(shell_config_file):
-    """Set the default shell for ptools."""
+    """Set the default shell for ptools.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools shell set-default-shell /tmp/ptools-doc-home/shellrc
+      INFO Default shell configuration set to: /tmp/ptools-doc-home/shellrc
+    """
     Shell().set_default_shell(shell_config_file)
     
 @click.command(name='alias')
 @click.argument('alias_name', type=str)
 @click.argument('command', type=str)
 def add_alias(alias_name, command):
-    """Add an alias for a command."""
+    """Add an alias for a command.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools shell alias ll 'ls -la'
+      INFO Value 'alias ll='ls -la''
+      INFO Alias 'll' added for command: ls -la
+    """
     Shell().add_alias(alias_name, command)
     echo_info(f"Alias '{FormatUtils.highlight(alias_name)}' added for command: {FormatUtils.highlight(command)}")
 
@@ -127,7 +146,14 @@ def add_alias(alias_name, command):
 @click.argument('value', type=str)
 @click.option('--force', is_flag=True, help="Force overwrite if variable already exists.")
 def add_export(var_name, value, force=False):
-    """Add an export statement to the shell configuration."""
+    """Add an export statement to the shell configuration.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools shell x PTOOLS_DOC_EXAMPLE enabled --force
+      INFO Value 'export PTOOLS_DOC_EXAMPLE='enabled''
+      INFO Variable 'PTOOLS_DOC_EXAMPLE' set to: enabled
+    """
     Shell().add_export(var_name, value, force=force)
     echo_info(f"Variable '{FormatUtils.highlight(var_name)}' set to: {FormatUtils.highlight(value)}")
 
@@ -135,7 +161,14 @@ def add_export(var_name, value, force=False):
 @click.argument('var_name', type=str)
 @click.argument('value', type=str)
 def extend_var(var_name, value):
-    """Extend a shell variable with a new value."""
+    """Extend a shell variable with a new value.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools shell xvar PTOOLS_DOC_PATH /tmp/example
+      INFO Value 'PTOOLS_DOC_PATH='/tmp/example''
+      INFO Created new variable 'PTOOLS_DOC_PATH' with value: /tmp/example
+    """
     _, var_exists = Shell().extend_var(var_name, value)
     if var_exists:
         echo_info(f"Extended existing variable '{FormatUtils.highlight(var_name)}' with value: {FormatUtils.highlight(value)}")
@@ -145,7 +178,14 @@ def extend_var(var_name, value):
 @click.command(name='xpath')
 @click.argument('path', type=click.Path(exists=True))
 def extend_path(path):
-    """Extend the PATH variable with a new path."""
+    """Extend the PATH variable with a new path.
+
+    \b
+    Example:
+      $ HOME=/tmp/ptools-doc-home ptools shell xpath /tmp/ptools-doc-examples
+      INFO Value 'PATH=$PATH:/tmp/ptools-doc-examples'
+      INFO Extended PATH with: /tmp/ptools-doc-examples
+    """
     Shell().extend_var('PATH', path)
     echo_info(f"Extended PATH with: {FormatUtils.highlight(path)}")
 

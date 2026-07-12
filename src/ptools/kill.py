@@ -3,13 +3,25 @@ import click
 
 @click.group(name='kill')
 def cli():
-    """kill tools"""
+    """Kill tools.
+
+    \b
+    Example:
+      $ ptools kill port 9
+      No process is using port 9.
+    """
     pass
 
 @cli.command(name="port")
 @click.argument('port', type=int, required=True, nargs=-1)
 def kill_port(port):
-    """Kill process by port number"""
+    """Kill process by port number.
+
+    \b
+    Example:
+      $ ptools kill port 9
+      No process is using port 9.
+    """
     for p in port:
         try:
             if subprocess.run(["lsof", "-i", f":{p}"], capture_output=True, text=True).stdout:
@@ -28,7 +40,13 @@ def kill_port(port):
 @cli.command(name="process")
 @click.argument('process_name', type=str, required=True, nargs=-1)
 def kill_process(process_name):
-    """Kill process by name"""
+    """Kill process by name.
+
+    \b
+    Example:
+      $ ptools kill process definitely-not-running-ptools-example
+      No process found with name 'definitely-not-running-ptools-example'.
+    """
     for name in process_name:
         try:
             pids = subprocess.run(

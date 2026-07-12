@@ -42,7 +42,16 @@ def filter(dict, query, regex=False):
 
 @click.group()
 def cli():
-    """Manage secrets configuration."""
+    """Manage secrets configuration.
+
+    \b
+    Example:
+      $ ptools secrets list
+      WARNING No secrets found.
+
+    Secret values are stored in an encrypted config file backed by the
+    system keyring.
+    """
     pass
 
 @click.command()
@@ -50,7 +59,13 @@ def cli():
 @click.argument('value', required=False)
 @click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
 def set_secret(key, value, config_name):
-    """Set a secret value."""
+    """Set a secret value.
+
+    \b
+    Example:
+      $ ptools secrets set API_TOKEN test-token
+      SUCCESS Secret 'API_TOKEN' set to 'test-token'
+    """
     secrets_config = SecretsConfig(config_name=config_name)
     if value is None:
         # Confirm deletion
@@ -70,7 +85,13 @@ def set_secret(key, value, config_name):
 @click.option('--quiet', is_flag=True, help="Suppress output messages")
 @click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
 def get_secret(key, quiet, config_name):
-    """Get a secret value."""
+    """Get a secret value.
+
+    \b
+    Example:
+      $ ptools secrets get API_TOKEN --quiet
+      test-token
+    """
     secrets_config = SecretsConfig(config_name=config_name)
     value = secrets_config.get_secret(key)
     if value is not None:
@@ -90,7 +111,13 @@ def get_secret(key, quiet, config_name):
 @click.argument('command', nargs=-1)
 @click.option('--get-str', '-s', is_flag=True, help="Get assignment string instead of executing command")
 def with_secrets(query, regex, command, config_name, get_str):
-    """Run a command with secrets."""
+    """Run a command with secrets.
+
+    \b
+    Example:
+      $ ptools secrets exec --query API -- printenv API_TOKEN
+      test-token
+    """
     if get_str:
         get_assignment_string.callback(query, regex, command, config_name)
         return
@@ -121,7 +148,13 @@ def with_secrets(query, regex, command, config_name, get_str):
 @click.option('--show-values', is_flag=True, help="Show secret values")
 @click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
 def list_secrets(query, show_values, regex, config_name):
-    """List all secrets."""
+    """List all secrets.
+
+    \b
+    Example:
+      $ ptools secrets list --query API
+      API_TOKEN: **********
+    """
     secrets_config = SecretsConfig(config_name=config_name)
     secrets = secrets_config.config.list()
     if not secrets:
@@ -144,7 +177,13 @@ def list_secrets(query, show_values, regex, config_name):
 @click.confirmation_option(prompt="Are you sure you want to delete all secrets?")
 @click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
 def delete_all_secrets(config_name):
-    """Delete all secrets."""
+    """Delete all secrets.
+
+    \b
+    Example:
+      $ ptools secrets dangerous-delete-all-secrets --yes
+      SUCCESS All secrets have been deleted.
+    """
     secrets_config = SecretsConfig(config_name=config_name)
     secrets_config.config.clear()
     click.echo(FormatUtils.success("All secrets have been deleted."))
@@ -153,7 +192,13 @@ def delete_all_secrets(config_name):
 @click.argument('key')
 @click.option('--config-name', '-c', help="Configuration file name to use", default=None, required=False)
 def copy_secret(key, config_name):
-    """Copy a secret value to clipboard."""
+    """Copy a secret value to clipboard.
+
+    \b
+    Example:
+      $ ptools secrets copy API_TOKEN
+      # Copies the secret value to the clipboard; no stdout on success.
+    """
     try:
         import pyperclip
     except ImportError:
@@ -175,6 +220,11 @@ def copy_secret(key, config_name):
 def get_assignment_string(query, regex, command, config_name):
     """Get assignment string for secrets.
     ENV1='value1' ENV2='value2' command args...
+
+    \b
+    Example:
+      $ ptools secrets get-assignment-string --query API printenv API_TOKEN
+      API_TOKEN='test-token' printenv API_TOKEN
     """
     secrets_config = SecretsConfig(config_name=config_name)
     if query:

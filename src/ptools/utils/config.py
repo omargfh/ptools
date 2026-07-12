@@ -402,9 +402,10 @@ def config_to_CLI(
         .removesuffix("Config") \
         .lower() if name is None else name
 
+
     @click.group(
         name=name,
-        help=f"CLI for managing {config.__class__.__name__} instance at {config.file_path}."
+        help=f"CLI for managing {name}."
     )
     def group():
         pass
@@ -418,11 +419,17 @@ def config_to_CLI(
         else:
             click.echo(f"{ASCIIEscapes.color(str(key), 'green')}: {value}")
 
-    @cli.command(name="list", help="List all key-value pairs in the config file.")
+    @cli.command(name="list")
     @click.option('--query', '-q', help="Query to filter secrets")
     @click.option('--regex', '-g', is_flag=True, help="Use regex for filtering")
     def list(query: str | None = None, regex: bool = False):
-        """List all key-value pairs in the config file."""
+        """List all key-value pairs in the config file.
+
+        \b
+        Example:
+          $ ptools settings list --query PIP_EXECUTABLE
+          PIP_EXECUTABLE: uv pip
+        """
         data = filter_dict_by_key(config.list(), query, regex)
 
         # Empty State
@@ -435,28 +442,46 @@ def config_to_CLI(
         for key, value in data.items():
             dump_one(str(key).ljust(max_key_length), value)
 
-    @cli.command(name="get", help="Get the value of a key.")
+    @cli.command(name="get")
     @click.argument('key')
     def get(key):
-        """Get the value of a key."""
+        """Get the value of a key.
+
+        \b
+        Example:
+          $ ptools settings get PIP_EXECUTABLE
+          uv pip
+        """
         value = config.get(key)
         if value is not None:
             click.echo(value)
         else:
             exit(1)
 
-    @cli.command(name="set", help="Set the value of a key.")
+    @cli.command(name="set")
     @click.argument('key')
     @click.argument('value')
     def set(key, value):
-        """Set the value of a key."""
+        """Set the value of a key.
+
+        \b
+        Example:
+          $ ptools settings set PIP_EXECUTABLE 'uv pip'
+          Set 'PIP_EXECUTABLE' to 'uv pip'.
+        """
         config.set(key, value)
         click.echo(f"Set '{key}' to '{value}'.")
 
-    @cli.command(name="delete", help="Delete a key.")
+    @cli.command(name="delete")
     @click.argument('key')
     def delete(key):
-        """Delete a key."""
+        """Delete a key.
+
+        \b
+        Example:
+          $ ptools settings delete PIP_EXECUTABLE
+          Deleted key 'PIP_EXECUTABLE'.
+        """
         if key not in config:
             click.echo(FormatUtils.warning(f"Key '{key}' not found in config file {config.file_path}."))
             exit(1)

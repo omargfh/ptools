@@ -20,13 +20,29 @@ import time
 ###################################
 @click.group()
 def cli():
-    """rsync power tools."""
+    """rsync power tools.
+
+    \b
+    Example:
+      $ ptools rsync do
+      Usage: ptools rsync do [OPTIONS]
+      Try 'ptools rsync do --help' for help.
+
+      Error: You must pass arguments to rsync after `do`.
+    """
     pass
 
 @click.command(context_settings=dict(ignore_unknown_options=True, allow_extra_args=True))
 @click.pass_context
 def do(ctx):
-    """Defer to rsync with arbitrary arguments."""
+    """Defer to rsync with arbitrary arguments.
+
+    \b
+    Example:
+      $ ptools rsync do -av /tmp/source/ /tmp/dest/
+      Running: rsync -av /tmp/source/ /tmp/dest/
+      ...
+    """
     if not ctx.args:
         raise click.UsageError("You must pass arguments to rsync after `do`.")
 
@@ -43,7 +59,14 @@ def do(ctx):
 @click.option('--delay', default=0.5, help='Debounce delay in seconds.')
 @click.pass_context
 def watch(ctx, path, delay):
-    """Watch for changes and run rsync with given arguments after debounce."""
+    """Watch for changes and run rsync with given arguments after debounce.
+
+    \b
+    Example:
+      $ ptools rsync watch --path /tmp/source -av /tmp/source/ /tmp/dest/
+      Watching '/tmp/source' for changes...
+      Will run: rsync -av /tmp/source/ /tmp/dest/ after 0.5s of no changes.
+    """
     if not ctx.args:
         raise click.UsageError("You must pass rsync arguments after `watch`.")
     rsync_cmd = ["rsync"] + ctx.args

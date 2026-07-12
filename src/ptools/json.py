@@ -45,7 +45,16 @@ def output_result(result, output_path):
 
 @click.group()
 def cli():
-    """JSON manipulation tools."""
+    """JSON manipulation tools.
+
+    \b
+    Example:
+      $ ptools json format '{"b":2,"a":1}' --sort-keys
+      {
+          "a": 1,
+          "b": 2
+      }
+    """
     pass
 
 @click.command()
@@ -73,7 +82,21 @@ def cli():
 def to_csv(source_type, content, separator, na_rep, float_format, header, index,
            index_label, mode, encoding, compression, quoting, quotechar, lineterminator,
            chunksize, date_format, doublequote, escapechar, decimal, output_path):
-    """Convert JSON input to CSV format."""
+    """Convert JSON input to CSV format.
+
+    \b
+    Example:
+      $ ptools json to-csv '[{"name":"Ada","score":10},{"name":"Lin","score":9}]'
+      name,score
+      Ada,10
+      Lin,9
+
+    This command requires pandas. If pandas is missing, the observed output is:
+
+    \b
+      pandas is not installed. Please install it to use this feature.
+      Do you want to install pandas now? [y/N]: Aborted!
+    """
     json_string = content
     data = read_json(json_string)
     df = json_to_pd(data)
@@ -104,7 +127,16 @@ def to_csv(source_type, content, separator, na_rep, float_format, header, index,
 @formats.json.dump.decorate()
 @click.option('--output', '-o', 'output_path', help="Path to output file", default=None, required=False)
 def format(source_type, content, output_path, **kwargs):
-    """Pretty-print JSON input."""
+    """Pretty-print JSON input.
+
+    \b
+    Example:
+      $ ptools json format '{"b":2,"a":1}' --sort-keys
+      {
+          "a": 1,
+          "b": 2
+      }
+    """
     json_string = content
     data = read_json(json_string)
     pretty_json = json.dumps(data, **kwargs)
@@ -115,7 +147,16 @@ def format(source_type, content, output_path, **kwargs):
 @resolve_input()
 @click.option('--output', '-o', 'output_path', help="Path to output file", default=None, required=False)
 def from_js(source_type, content, output_path, runtime):
-    """Convert JavaScript Object to JSON format."""
+    """Convert JavaScript Object to JSON format.
+
+    \b
+    Example:
+      $ ptools json from-js '({name:"Ada", score:10})'
+      {
+          "name": "Ada",
+          "score": 10
+      }
+    """
     import subprocess
 
     runtime = runtime[0]
@@ -141,7 +182,7 @@ def from_js(source_type, content, output_path, runtime):
     else:
         click.echo(FormatUtils.error("No suitable JavaScript runtime found."), err=True)
         sys.exit(1)
-    
+
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         json_output = result.stdout
@@ -155,9 +196,16 @@ def from_js(source_type, content, output_path, runtime):
 @formats.yaml.dump.decorate()
 @click.option('--output', '-o', 'output_path', help="Path to output file", default=None, required=False)
 def to_yaml(source_type, content, output_path, **kwargs):
-    """Convert JSON input to YAML format."""
+    """Convert JSON input to YAML format.
+
+    \b
+    Example:
+      $ ptools json to-yaml '{"name":"Ada","score":10}'
+      name: Ada
+      score: 10
+    """
     import yaml
-    
+
     json_string = content
     data = read_json(json_string)
     yaml_output = yaml.dump(data, **kwargs).decode('utf-8')
