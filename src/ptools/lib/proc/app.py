@@ -4,6 +4,7 @@ Keybindings:
     arrows / j/k   - navigate
     enter / i      - inspect selected process (detail screen)
     /              - filter bar (query DSL, e.g. ``cpu>50 & name~node``)
+    f              - filter wizard (pick field/operator/value, no DSL needed)
     s / o          - cycle sort column / toggle order
     t              - toggle tree view (with subtree CPU/MEM aggregation)
     space          - pause / resume auto-refresh
@@ -23,23 +24,37 @@ Keybindings:
 
 from __future__ import annotations
 
+from typing import Callable
+
+import click
 import humanize
 from rich.console import Group
 from rich.text import Text
 from textual import work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.containers import Horizontal, Vertical
 from textual.coordinate import Coordinate
-from textual.widgets import DataTable, Footer, Header, Input, Static
+from textual.screen import Screen
+from textual.widgets import DataTable, Footer, Header, Input, OptionList, Static
+from textual.widgets.option_list import Option
 
 from ptools.lib.proc import actions, sources
+from ptools.lib.proc.filter_wizard import (
+    OPERATOR_LABELS,
+    VALUE_PLACEHOLDERS,
+    format_clause,
+    join_clauses,
+    operators_for_kind,
+)
 from ptools.lib.proc.history import History
-from ptools.lib.proc.model import FIELD_MAP, JOINS
+from ptools.lib.proc.model import FIELD_MAP, FIELDS, JOINS
 from ptools.lib.proc.query import QueryError, compile_query, substring_query
 from ptools.lib.proc.render import detail_group
 from ptools.lib.tui.charts import meter, pct_color, sparkline
 from ptools.lib.tui.screens import ConfirmScreen, InputScreen, TextScreen
 from ptools.lib.tui.tables import rows_table
+from ptools.settings import EDITOR
 
 __version__ = "0.1.0"
 
@@ -67,6 +82,7 @@ _HELP_VIEW_KEYS = [
     ("arrows / j k", "navigate"),
     ("enter / i", "inspect selected process"),
     ("/", "filter bar (DSL, e.g. cpu>50 & name~node)"),
+    ("f", "filter wizard (pick field/operator/value)"),
     ("s / o", "cycle sort column / toggle order"),
     ("t", "tree view with subtree ΣCPU/ΣMEM"),
     ("space", "pause / resume auto-refresh"),
@@ -167,6 +183,179 @@ def _tree_order(rows: list[dict], key_fn, reverse: bool) -> list[dict]:
     return ordered
 
 
+def _edit_expression(app: App, expression: str) -> str:
+    """Suspend *app*'s terminal control and open *expression* in ``$EDITOR``.
+
+    Mirrors :func:`ptools.proc._edit_wizard_expression` for the CLI wizard:
+    falls back to the unedited expression when the editor exits without
+    saving. A standalone function (rather than a method) so tests can
+    monkeypatch it directly instead of needing a real terminal/editor.
+    """
+    with app.suspend():
+        edited = click.edit(text=expression, editor=EDITOR)
+    return (edited if edited is not None else expression).strip()
+
+
+class FilterWizardScreen(Screen):
+    """Pick a field, an operator valid for its kind, and a value.
+
+    Unlike a sequential wizard where each step replaces the screen
+    before it, the field list, operator list, and value input are three
+    simultaneously-visible panels (see :attr:`CSS`) so earlier choices
+    stay on screen while later ones are made. Clauses are joined with
+    ``&``/``|`` (toggled with ``o``) using the same shell-agnostic
+    helpers :mod:`ptools.proc`'s CLI wizard uses
+    (:mod:`ptools.lib.proc.filter_wizard`) -- no parallel filter-building
+    logic. Finishing (``f2``) opens the assembled expression in
+    ``$EDITOR`` for a last freeform tweak, then hands the result to
+    *on_submit* (the host app's ``_set_where``).
+    """
+
+    BINDINGS = [
+        Binding("escape", "cancel_wizard", "Cancel"),
+        Binding("f2", "finish_wizard", "Finish (edit & apply)"),
+        Binding("o", "toggle_combinator", "Toggle AND/OR", show=False),
+    ]
+
+    CSS = """
+    FilterWizardScreen #wizard-panels {
+        height: 1fr;
+    }
+    FilterWizardScreen .wizard-panel {
+        width: 1fr;
+        height: 100%;
+        border: solid $primary;
+        padding: 0 1;
+    }
+    FilterWizardScreen .panel-title {
+        text-style: bold;
+        height: 1;
+    }
+    FilterWizardScreen #wizard-status {
+        dock: bottom;
+        height: 4;
+        padding: 0 1;
+        background: $panel;
+    }
+    """
+
+    def __init__(self, on_submit: Callable[[str], None], **kwargs):
+        super().__init__(**kwargs)
+        self.on_submit = on_submit
+        self._clauses: list[str] = []
+        self._combinators: list[str] = []
+        self._pending_combinator = "&"
+        self._field = None
+        self._op: str | None = None
+
+    def compose(self) -> ComposeResult:
+        yield Header(name="Filter wizard")
+        with Horizontal(id="wizard-panels"):
+            with Vertical(classes="wizard-panel"):
+                yield Static("Field", classes="panel-title")
+                yield OptionList(*self._field_options(), id="field-list")
+            with Vertical(classes="wizard-panel"):
+                yield Static("Operator", classes="panel-title")
+                yield OptionList(id="operator-list")
+            with Vertical(classes="wizard-panel"):
+                yield Static("Value", classes="panel-title")
+                yield Input(placeholder="pick a field and operator first", id="value-input")
+        yield Static(id="wizard-status")
+        yield Footer()
+
+    @staticmethod
+    def _field_label(field) -> str:
+        return f"{field.title} — {field.help}" if field.help else field.title
+
+    def _field_options(self) -> list[Option]:
+        return [Option(self._field_label(f), id=f.key) for f in FIELDS]
+
+    def on_mount(self) -> None:
+        self.query_one("#field-list", OptionList).focus()
+        self._update_status()
+
+    def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
+        event.stop()
+        if event.option_list.id == "field-list":
+            self._select_field(event.option_id)
+        elif event.option_list.id == "operator-list":
+            self._select_operator(event.option_id)
+
+    def _select_field(self, field_key: str | None) -> None:
+        if field_key is None:
+            return
+        self._field = FIELD_MAP[field_key]
+        self._op = None
+        op_list = self.query_one("#operator-list", OptionList)
+        op_list.clear_options()
+        for op in operators_for_kind(self._field.kind):
+            op_list.add_option(Option(OPERATOR_LABELS[op], id=op))
+        value_input = self.query_one("#value-input", Input)
+        value_input.value = ""
+        value_input.placeholder = VALUE_PLACEHOLDERS.get(self._field.kind, "")
+        op_list.focus()
+        self._update_status()
+
+    def _select_operator(self, op: str | None) -> None:
+        if op is None:
+            return
+        self._op = op
+        self.query_one("#value-input", Input).focus()
+        self._update_status()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        if event.input.id != "value-input":
+            return
+        event.stop()
+        self._commit_clause(event.value)
+
+    def _commit_clause(self, raw_value: str) -> None:
+        raw_value = raw_value.strip()
+        if self._field is None or self._op is None or not raw_value:
+            self.app.bell()
+            return
+        clause = format_clause(self._field, self._op, raw_value)
+        if self._clauses:
+            self._combinators.append(self._pending_combinator)
+        self._clauses.append(clause)
+
+        self._field = None
+        self._op = None
+        value_input = self.query_one("#value-input", Input)
+        value_input.value = ""
+        value_input.placeholder = "pick a field and operator first"
+        self.query_one("#operator-list", OptionList).clear_options()
+        self.query_one("#field-list", OptionList).focus()
+        self._update_status()
+
+    def action_toggle_combinator(self) -> None:
+        self._pending_combinator = "|" if self._pending_combinator == "&" else "&"
+        self._update_status()
+
+    def _update_status(self) -> None:
+        status = self.query_one("#wizard-status", Static)
+        expr = join_clauses(self._clauses, self._combinators)
+        combinator_name = "AND" if self._pending_combinator == "&" else "OR"
+        status.update(
+            f"Clauses so far: {expr or '(none yet)'}\n"
+            f"next join: {combinator_name} (press 'o' to toggle)   "
+            "enter in value = add clause   f2 = finish (edit & apply)   esc = cancel"
+        )
+
+    def action_cancel_wizard(self) -> None:
+        self.app.pop_screen()
+
+    def action_finish_wizard(self) -> None:
+        expression = join_clauses(self._clauses, self._combinators)
+        if not expression:
+            self.app.bell()
+            return
+        final = _edit_expression(self.app, expression)
+        self.app.pop_screen()
+        if final:
+            self.on_submit(final)
+
+
 class ProcApp(App):
     """Full-screen live process explorer."""
 
@@ -194,6 +383,7 @@ class ProcApp(App):
     BINDINGS = [
         Binding("q", "quit", "Quit"),
         Binding("slash", "show_filter", "Filter", key_display="/"),
+        Binding("f", "show_filter_wizard", "Filter wizard"),
         Binding("s", "cycle_sort", "Sort"),
         Binding("o", "toggle_order", "Order"),
         Binding("t", "toggle_tree", "Tree"),
@@ -479,6 +669,20 @@ class ProcApp(App):
         else:
             filter_bar.add_class("visible")
             filter_bar.focus()
+
+    def action_show_filter_wizard(self) -> None:
+        """Push the field/operator/value filter builder (no DSL required)."""
+        self.push_screen(FilterWizardScreen(self._apply_wizard_filter))
+
+    def _apply_wizard_filter(self, expression: str) -> None:
+        """Feed the wizard's compiled expression through the same path the
+        filter-bar Input uses (``_set_where``), also syncing the bar's
+        displayed text so it reflects what's now active.
+        """
+        filter_bar = self.query_one("#filter-bar", Input)
+        filter_bar.value = expression
+        filter_bar.add_class("visible")
+        self._set_where(expression)
 
     def _hide_filter(self) -> None:
         filter_bar = self.query_one("#filter-bar", Input)

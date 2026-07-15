@@ -2,8 +2,16 @@
 
 import click
 
+from ptools.settings import EDITOR
 from ptools.utils.output import output_flavor, OutputFlavorKind
-from ptools.lib.proc.model import FIELD_MAP, JOINS, required_joins
+from ptools.lib.proc.filter_wizard import (
+    OPERATOR_LABELS,
+    VALUE_PLACEHOLDERS,
+    format_clause,
+    join_clauses,
+    operators_for_kind,
+)
+from ptools.lib.proc.model import FIELD_MAP, FIELDS, JOINS, required_joins
 
 _JOIN_CHOICES = list(JOINS) + ["all"]
 _SORT_CHOICES = ["cpu", "mem", "pid", "name", "age"]
@@ -18,6 +26,104 @@ _JOIN_COLS = {
 }
 # Delta-based collectors need a second sample to be meaningful.
 _PRIME_SLEEP_SECS = 0.25
+
+# ----------------------------------------------------------------------
+# Interactive filter wizard (``proc list --wizard``)
+#
+# The shell-agnostic pieces (which operators a field's kind allows, how
+# to quote/join clauses) live in ``lib.proc.filter_wizard`` so the
+# Textual TUI's own filter screen (``lib.proc.app.FilterWizardScreen``)
+# can reuse them without duplicating this logic.
+# ----------------------------------------------------------------------
+
+
+def _select(options: list[tuple], title: str, selected: str | None = None) -> str | None:
+    """Run an inline arrow-key picker over ``(value, label[, description])`` options.
+
+    Returns the chosen value, or ``None`` when the user cancels (escape).
+    """
+    from ptools.lib.tui.select import SelectApp
+
+    return SelectApp(options, message=title, selected=selected).run() or None
+
+
+def _text(message: str, placeholder: str = "") -> str:
+    """Prompt for a single line of text with a dim placeholder example."""
+    from ptools.lib.tui.select import ask_text
+
+    return ask_text(message, placeholder=placeholder)
+
+
+def _build_wizard_clause() -> str | None:
+    """Pick a field, a kind-appropriate operator, and a value.
+
+    Returns the clause text (e.g. ``cpu>50``), or ``None`` if the user
+    cancels any step.
+    """
+    field_key = _select(
+        [(f.key, f.title, f.help) for f in FIELDS],
+        "Field to filter on:",
+    )
+    if field_key is None:
+        return None
+    field = FIELD_MAP[field_key]
+
+    op = _select(
+        [(o, OPERATOR_LABELS[o]) for o in operators_for_kind(field.kind)],
+        f"Operator for {field.title}:",
+    )
+    if op is None:
+        return None
+
+    value = _text(
+        f"Value for {field.title} {op}:",
+        placeholder=VALUE_PLACEHOLDERS.get(field.kind, ""),
+    ).strip()
+    if not value:
+        return None
+
+    return format_clause(field, op, value)
+
+
+def _run_filter_wizard() -> str | None:
+    """Interactively build a filter expression, chaining clauses with &/|.
+
+    Produces the same expression syntax :func:`~ptools.lib.proc.query.compile_query`
+    accepts from ``--where``/the positional query -- no parallel filtering
+    representation. Returns ``None`` if the user cancels before completing
+    a single clause.
+    """
+    clauses: list[str] = []
+    combinators: list[str] = []
+    while True:
+        clause = _build_wizard_clause()
+        if clause is None:
+            break
+        clauses.append(clause)
+
+        choice = _select(
+            [
+                ("done", "Done"),
+                ("&", "Add another clause (AND)"),
+                ("|", "Add another clause (OR)"),
+            ],
+            "Add another clause?",
+        )
+        if choice is None or choice == "done":
+            break
+        combinators.append(choice)
+
+    return join_clauses(clauses, combinators)
+
+
+def _edit_wizard_expression(expression: str) -> str:
+    """Open *expression* in the ``EDITOR`` setting for freeform tweaks.
+
+    ``click.edit`` returns ``None`` when the editor is closed without
+    saving/changes, in which case the original expression is kept as-is.
+    """
+    edited = click.edit(text=expression, editor=EDITOR)
+    return (edited if edited is not None else expression).strip()
 
 
 def _expand_joins(joins) -> set[str]:
@@ -86,8 +192,9 @@ def cli(ctx, where, joins, refresh, tree):
 @click.option('--top', '-n', type=int, default=0, help="Only show the first N rows (0 = all).")
 @click.option('--cols', '-c', default=None, help="Comma-separated columns (default: core + join columns).")
 @click.option('--raw', is_flag=True, default=False, help="Machine values (bytes/seconds) instead of humanized.")
+@click.option('--wizard', is_flag=True, default=False, help="Interactively build the filter expression (field, operator, value).")
 @output_flavor.decorate()
-def list_processes(query_arg, where, joins, sort, order, top, cols, raw, flavor):
+def list_processes(query_arg, where, joins, sort, order, top, cols, raw, wizard, flavor):
     """List processes, filtered by a query expression.
 
     Fields referenced in the query auto-enable the joins that provide
@@ -102,10 +209,21 @@ def list_processes(query_arg, where, joins, sort, order, top, cols, raw, flavor)
       $ ptools proc list 'port=3000 | port=8080' --cols pid,name,ports
       $ ptools proc list 'cpu>50 & user=me' --top 10 --flavor table
       $ ptools proc list 'files~/Users/me/project' --flavor json
+      $ ptools proc list --wizard
+      ? Field to filter on:
+      ❯ CPU%
+        MEM
+        ...
+      # opens the assembled expression in $EDITOR for a last freeform tweak
     """
     from ptools.lib.flow.values import OutputValue
 
-    expression = " & ".join(f"({part})" for part in [query_arg, where] if part) or None
+    wizard_expr = _run_filter_wizard() if wizard else None
+    if wizard and wizard_expr:
+        wizard_expr = _edit_wizard_expression(wizard_expr)
+        click.echo(f"Filter: {wizard_expr}")
+
+    expression = " & ".join(f"({part})" for part in [query_arg, where, wizard_expr] if part) or None
     query = _compile(expression)
     joins = _expand_joins(joins) | query.required_joins()
     rows = _scan_rows(query, joins)
