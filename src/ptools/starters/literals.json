@@ -1,0 +1,36 @@
+{
+    "cli_emojis": {
+        "success": "✅",
+        "error": "❌",
+        "warning": "⚠️",
+        "info": "ℹ️",
+        "loading": "⏳",
+        "debug": "🐞",
+        "question": "❓",
+        "tip": "💡",
+        "star": "⭐",
+        "fire": "🔥",
+        "rocket": "🚀",
+        "check_mark": "✔️",
+        "cross_mark": "❎",
+        "thumbs_up": "👍"
+    },
+    "filesystem_emojis": {
+        "file": "📄",
+        "folder": "📁",
+        "open_folder": "📂",
+        "image_file": "🖼️",
+        "video_file": "🎞️",
+        "audio_file": "🎵",
+        "code_file": "💻",
+        "archive_file": "🗜️",
+        "pdf_file": "📕",
+        "text_file": "📃"
+    },
+    "filesystem_pipes": {
+        "branch": "├── ",
+        "last_branch": "└── ",
+        "vertical_line": "│   ",
+        "empty_space": "    "
+    }
+}

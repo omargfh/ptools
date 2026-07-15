@@ -1,0 +1,423 @@
+encrypted: false
+data:
+  values:
+    # ── Vue ──────────────────────────────────────────────
+    - command: vfc
+      name: Vue Component
+      group: vue
+      description: Vue.js Single File Component
+      example: components/user-card
+      file_name_options:
+        dir_okay: true
+        file_arg: name
+        extension: .vue
+        casing: pascal
+      template_string: |
+        <template>
+          <div>
+          </div>
+        </template>
+
+        <script lang="ts">
+        </script>
+
+        <script lang="ts" setup>
+        type Props = {};
+        defineProps<Props>();
+        </script>
+
+    - command: vpage
+      name: Nuxt Page
+      group: vue
+      description: Nuxt page component
+      example: pages/user-profile
+      file_name_options:
+        extension: .vue
+        casing: kebab
+      template_string: |
+        <template>
+          <div>
+          </div>
+        </template>
+
+        <script lang="ts" setup>
+        definePageMeta({
+          layout: 'default',
+        });
+
+        useHead({
+          title: '{{ file_stem }}',
+        });
+        </script>
+
+    - command: vlayout
+      name: Nuxt Layout
+      group: vue
+      description: Nuxt layout component
+      example: layouts/default
+      file_name_options:
+        extension: .vue
+        casing: kebab
+      template_string: |
+        <template>
+          <div>
+            <slot />
+          </div>
+        </template>
+
+        <script lang="ts" setup>
+        </script>
+
+    - command: vmiddleware
+      name: Route Middleware
+      group: vue
+      description: Nuxt route middleware
+      example: middleware/auth
+      file_name_options:
+        extension: .ts
+        casing: kebab
+      template_string: |
+        export default defineNuxtRouteMiddleware((to, from) => {
+        });
+
+    - command: vplugin
+      name: Nuxt Plugin
+      group: vue
+      description: Nuxt plugin
+      example: plugins/api-client
+      file_name_options:
+        extension: .ts
+        casing: kebab
+      template_string: |
+        export default defineNuxtPlugin((nuxtApp) => {
+        });
+
+    - command: vcomposable
+      name: Composable
+      group: vue
+      description: Vue composable
+      example: composables/use-auth
+      file_name_options:
+        extension: .ts
+        casing: camel
+      template_string: |
+        export function use{{ convert_case(file_stem, 'pascal') }}() {
+          return {};
+        }
+
+    - command: vstore
+      name: Pinia Store
+      group: vue
+      description: Pinia store
+      example: stores/user
+      file_name_options:
+        extension: .ts
+        casing: camel
+      template_string: |
+        import { defineStore } from 'pinia';
+
+        export const use{{ convert_case(file_stem, 'pascal') }}Store = defineStore('{{ file_stem }}', () => {
+          return {};
+        });
+
+    # ── Nuxt Server (Nitro/H3) ──────────────────────────
+    - command: napi
+      name: API Route
+      group: nuxt-server
+      description: Nuxt API route (H3 event handler)
+      example: server/api/users
+      file_name_options:
+        extension: .ts
+        casing: kebab
+      template_string: |
+        export default defineEventHandler(async (event) => {
+          return {};
+        });
+
+    - command: nmiddleware
+      name: Server Middleware
+      group: nuxt-server
+      description: Nuxt server middleware
+      example: server/middleware/auth
+      file_name_options:
+        extension: .ts
+        casing: kebab
+      template_string: |
+        export default defineEventHandler(async (event) => {
+        });
+
+    - command: nplugin
+      name: Nitro Plugin
+      group: nuxt-server
+      description: Nitro server plugin
+      example: server/plugins/database
+      file_name_options:
+        extension: .ts
+        casing: kebab
+      template_string: |
+        export default defineNitroPlugin((nitroApp) => {
+        });
+
+    # ── Fastify ──────────────────────────────────────────
+    - command: froute
+      name: Route Module
+      group: fastify
+      description: Fastify route module
+      example: routes/users
+      file_name_options:
+        extension: .ts
+        casing: kebab
+      template_string: |
+        import { FastifyInstance } from 'fastify';
+
+        export default async function (fastify: FastifyInstance) {
+          fastify.get('/', async (request, reply) => {
+            return {};
+          });
+        }
+
+    - command: fplugin
+      name: Plugin
+      group: fastify
+      description: Fastify plugin
+      example: plugins/auth
+      file_name_options:
+        extension: .ts
+        casing: kebab
+      template_string: |
+        import fp from 'fastify-plugin';
+        import { FastifyInstance } from 'fastify';
+
+        export default fp(async function (fastify: FastifyInstance, opts) {
+        }, {
+          name: '{{ file_stem }}',
+        });
+
+    - command: fschema
+      name: Typebox Schema
+      group: fastify
+      description: Fastify JSON schema (Typebox)
+      example: schemas/user
+      file_name_options:
+        extension: .ts
+        casing: kebab
+      template_string: |
+        import { Type, Static } from '@sinclair/typebox';
+
+        export const {{ convert_case(file_stem, 'pascal') }}Schema = Type.Object({
+        });
+
+        export type {{ convert_case(file_stem, 'pascal') }} = Static<typeof {{ convert_case(file_stem, 'pascal') }}Schema>;
+
+    # ── React ────────────────────────────────────────────
+    - command: rfc
+      name: React Component
+      group: react
+      description: React Functional Component
+      example: components/UserCard
+      file_name_options:
+        dir_okay: true
+        file_arg: name
+        extension: .tsx
+        casing: pascal
+      template_string: |
+        import React from 'react';
+
+        type Props = {};
+
+        const {{ file_stem }}: React.FC<Props> = (props) => {
+          return (
+            <div>
+            </div>
+          );
+        };
+
+        export default {{ file_stem }};
+
+    # ── General ──────────────────────────────────────────
+    - command: ts
+      name: TypeScript Module
+      group: general
+      description: TypeScript module
+      example: utils/helpers
+      file_name_options:
+        extension: .ts
+        casing: kebab
+      template_string: |
+        export {};
+
+    - command: zod
+      name: Zod Schema
+      group: general
+      description: Zod schema module
+      example: schemas/user
+      file_name_options:
+        extension: .ts
+        casing: kebab
+      template_string: |
+        import { z } from 'zod';
+
+        export const {{ convert_case(file_stem, 'pascal') }}Schema = z.object({
+        });
+
+        export type {{ convert_case(file_stem, 'pascal') }} = z.infer<typeof {{ convert_case(file_stem, 'pascal') }}Schema>;
+
+    - command: dockerfile
+      name: Dockerfile
+      group: general
+      description: Multi-stage Dockerfile for Node.js
+      example: Dockerfile
+      file_name_options:
+        extension: ""
+        allow_empty_extension: true
+        allow_arbitrary_extension: false
+      template_string: |
+        FROM node:22-alpine AS base
+        RUN corepack enable
+        WORKDIR /app
+
+        FROM base AS deps
+        COPY package.json pnpm-lock.yaml ./
+        RUN pnpm install --frozen-lockfile
+
+        FROM base AS build
+        COPY --from=deps /app/node_modules ./node_modules
+        COPY . .
+        RUN pnpm build
+
+        FROM base AS runtime
+        COPY --from=build /app/.output ./.output
+        EXPOSE 3000
+        CMD ["node", ".output/server/index.mjs"]
+
+    - command: k8deploy
+      name: Deployment
+      group: k8s
+      description: Kubernetes Deployment manifest
+      example: k8s/deployment
+      file_name_options:
+        extension: .yaml
+        casing: kebab
+      arguments:
+        image:
+          help: Container image reference
+          default: "registry.local/app:latest"
+        port:
+          help: Container port
+          default: "3000"
+        replicas:
+          help: Number of pod replicas
+          default: "1"
+      template_string: |
+        apiVersion: apps/v1
+        kind: Deployment
+        metadata:
+          name: {{ file_stem }}
+          labels:
+            app: {{ file_stem }}
+        spec:
+          replicas: {{ replicas }}
+          selector:
+            matchLabels:
+              app: {{ file_stem }}
+          template:
+            metadata:
+              labels:
+                app: {{ file_stem }}
+            spec:
+              containers:
+                - name: {{ file_stem }}
+                  image: {{ image }}
+                  ports:
+                    - containerPort: {{ port }}
+                  resources:
+                    requests:
+                      cpu: 100m
+                      memory: 128Mi
+                    limits:
+                      cpu: 500m
+                      memory: 256Mi
+
+    - command: k8svc
+      name: Service
+      group: k8s
+      description: Kubernetes Service manifest
+      example: k8s/service
+      file_name_options:
+        extension: .yaml
+        casing: kebab
+      arguments:
+        port:
+          help: Service port
+          default: "80"
+        target_port:
+          help: Container target port
+          default: "3000"
+      template_string: |
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: {{ file_stem }}
+        spec:
+          selector:
+            app: {{ file_stem }}
+          ports:
+            - port: {{ port }}
+              targetPort: {{ target_port }}
+              protocol: TCP
+
+    - command: k8ing
+      name: Ingress
+      group: k8s
+      description: Kubernetes Ingress (Traefik)
+      example: k8s/ingress
+      file_name_options:
+        extension: .yaml
+        casing: kebab
+      arguments:
+        host:
+          help: Ingress hostname
+          default: "app.local"
+        service_port:
+          help: Backend service port
+          default: "80"
+      template_string: |
+        apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        metadata:
+          name: {{ file_stem }}
+          annotations:
+            traefik.ingress.kubernetes.io/router.entrypoints: websecure
+            traefik.ingress.kubernetes.io/router.tls: "true"
+        spec:
+          rules:
+            - host: {{ host }}
+              http:
+                paths:
+                  - path: /
+                    pathType: Prefix
+                    backend:
+                      service:
+                        name: {{ file_stem }}
+                        port:
+                          number: {{ service_port }}
+
+  groups_meta:
+    vue:
+      name: Vue / Nuxt
+      description: Vue.js / Nuxt client-side templates
+    nuxt-server:
+      name: Nuxt Server
+      description: Nuxt server routes and Nitro plugins
+    fastify:
+      name: Fastify
+      description: Fastify routes, plugins, and schemas
+    react:
+      name: React
+      description: React.js related templates
+    general:
+      name: General
+      description: General TypeScript, Docker, and utility templates
+    k8s:
+      name: Kubernetes
+      description: Kubernetes manifests (k3s/Traefik)

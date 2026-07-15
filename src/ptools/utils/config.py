@@ -26,6 +26,22 @@ RESERVED_CONFIG_KEYS = [
     '_validate', '_initialized'
 ]
 
+
+def starter_file(filename: str):
+    """Return the packaged starter config matching *filename*, if any.
+
+    ptools ships starter configs (e.g. the touch template library) in
+    ``ptools/starters``; a missing user config is seeded from these so
+    commands work out of the box. Returns an ``importlib.resources``
+    traversable or ``None``.
+    """
+    try:
+        from importlib.resources import files
+        candidate = files("ptools") / "starters" / filename
+        return candidate if candidate.is_file() else None
+    except Exception:
+        return None
+
 T = TypeVar('T', bound=BaseModel)
 class ConfigFile(Generic[T]):
     """A simple configuration file manager with optional keychain encryption.
@@ -88,6 +104,17 @@ class ConfigFile(Generic[T]):
 
         if not os.path.exists(self.path):
             os.makedirs(self.path)
+
+        starter = None
+        if not os.path.exists(self.file_path):
+            starter = starter_file(f"{self.name}.{self.serial.ext}")
+
+        if starter is not None:
+            # Seed the user's config from the packaged starter, byte for
+            # byte (preserves YAML comments), then load it normally.
+            with open(self.file_path, 'wb') as f:
+                f.write(starter.read_bytes())
+            self._echo(FormatUtils.info(f"Seeded new config file at {self.file_path} from the packaged starter."))
 
         if os.path.exists(self.file_path):
             with open(self.file_path, 'r') as f: # r+ for possible write

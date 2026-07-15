@@ -135,3 +135,44 @@ class TestDummyKeyValueStore:
         assert d.list() == {}
         assert d.clear() == {}
         d.close()  # should not raise
+
+class TestStarterSeeding:
+    """Missing configs are seeded from packaged starters in ptools/starters."""
+
+    def test_starter_file_lookup(self):
+        from ptools.utils.config import starter_file
+
+        assert starter_file("touch.yaml") is not None
+        assert starter_file("literals.json") is not None
+        assert starter_file("no-such-starter.yaml") is None
+
+    def test_missing_touch_config_seeded_from_starter(self, tmp_path):
+        c = ConfigFile(name="touch", path=str(tmp_path), quiet=True, format="yaml")
+
+        assert (tmp_path / "touch.yaml").exists()
+        assert len(c.data["values"]) > 0
+        assert "groups_meta" in c.data
+
+    def test_missing_literals_config_seeded_from_starter(self, tmp_path):
+        c = ConfigFile(name="literals", path=str(tmp_path), quiet=True, format="json")
+
+        assert "cli_emojis" in c.data
+
+    def test_existing_config_is_not_overwritten(self, tmp_path):
+        (tmp_path / "touch.yaml").write_text(
+            "encrypted: false\ndata:\n  values: []\n"
+        )
+        c = ConfigFile(name="touch", path=str(tmp_path), quiet=True, format="yaml")
+
+        assert c.data["values"] == []
+
+    def test_name_without_starter_creates_empty_config(self, tmp_path):
+        c = ConfigFile(name="no_starter_here", path=str(tmp_path), quiet=True)
+
+        assert c.data == {}
+        assert (tmp_path / "no_starter_here.json").exists()
+
+    def test_seeded_starter_preserves_yaml_comments(self, tmp_path):
+        ConfigFile(name="touch", path=str(tmp_path), quiet=True, format="yaml")
+
+        assert "#" in (tmp_path / "touch.yaml").read_text()
