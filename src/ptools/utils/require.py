@@ -185,6 +185,30 @@ def library(library: str, pypi_name: str | None= None, prompt_install: bool = Fa
         return wrapper
     return decorator
 
+def optional_library(library: str, pypi_name: str | None = None) -> Callable[[], bool]:
+    """Announce an optional library and return an availability check.
+
+    Unlike :func:`library`, nothing is enforced at call time: the
+    returned callable reports whether the library is importable so a
+    command can soft-enable a feature and fall back gracefully. The
+    announcement still lands in the registry, so the library shows up
+    in ``scripts/generate_requirements.py`` output.
+    """
+    announce(LibraryRequirement(
+        module=library,
+        pypi_name=pypi_name,
+    ))
+
+    def available() -> bool:
+        try:
+            _require_library(library)
+            return True
+        except ImportError:
+            return False
+
+    return available
+
+
 def binary(names: List[str] | str, logical_operator: LogicalOperators = LogicalOperators.AND, key: str | None = None):
     "Click decorator to ensure a binary is available."
     _names = tuple(names) if isinstance(names, list) else (names,)

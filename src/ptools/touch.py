@@ -6,13 +6,13 @@ per entry under the :data:`cli` group. Each subcommand renders its
 template to the output path the user provides.
 
 .. note::
-    Because commands are registered in a loop, the per-iteration
-    ``obj``/``fopts`` values **must** be bound as default arguments on
-    ``touch_command`` (``def touch_command(..., obj=obj, fopts=fopts)``).
-    Without that binding, every registered command would close over the
-    same variables by reference and all end up using the last iteration's
-    :class:`TouchItem` — producing identical output for every command.
-    See ``tests/test_touch.py::TestCommandRegistration`` for a regression
+    Because commands are registered in a loop, the per-iteration ``item``
+    value **must** be bound as a default argument on the handler
+    (``def handler(..., _item=item, ...)``). Without that binding, every
+    registered command would close over the same variable by reference
+    and all end up using the last iteration's :class:`TouchItem` —
+    producing identical output for every command. See
+    ``tests/test_touch.py::TestCommandRegistration`` for a regression
     test.
 """
 
@@ -20,19 +20,28 @@ from __future__ import annotations
 
 import os
 import pathlib
+import re
+import shutil
+import tempfile
 
 import click
 from jinja2 import Environment, Template, meta
 from pydantic import BaseModel, model_validator
 
+import ptools.utils.require as require
+from ptools.lib.tui.select import SelectApp, ask_text
 from ptools.utils.cases import CaseConverter, cases
 from ptools.utils.config import LazyConfigFile
 from ptools.utils.decorator_compistor import DecoratorCompositor
 from ptools.utils.print import FormatUtils
 
+# Optional: syntax-highlighted wizard previews when pygments is around.
+_pygments_available = require.optional_library("pygments", pypi_name="Pygments")
+
 messages = {
     "UNEXPECTED ERROR": FormatUtils.error("An unexpected error occurred. Please check your configuration and try again."),
     "INFER_FAILED": FormatUtils.error("Could not infer a command for the given output path. Please specify the command explicitly."),
+    "NO_TEMPLATES": FormatUtils.warning("No touch templates configured. Add entries to ~/.ptools/touch.yaml first."),
 }
 
 class FileNameOptions(BaseModel):
@@ -57,14 +66,40 @@ class FileNameOptions(BaseModel):
         return values
 
 
+class ArgumentSpec(BaseModel):
+    """Metadata for one template variable.
+
+    ``help`` feeds the generated ``--option`` help text, ``example`` is
+    shown as a dim placeholder in the wizard, and ``default`` is used
+    when the variable is not provided (CLI and wizard alike). Plain
+    string argument values in the config are shorthand for ``help``.
+    """
+
+    help: str = "<value>"
+    example: str = ""
+    default: str = ""
+
+
+class GroupMeta(BaseModel):
+    """Per-group metadata rendered in the wizard's group picker."""
+
+    # Display name shown in the picker; falls back to the group key.
+    name: str = ""
+    description: str = ""
+
+
 class TouchItem(BaseModel):
     command: str
     aliases: list[str] = []
     group: str = "default"
     description: str
     template_string: str
-    arguments: dict[str, str] = {}
+    arguments: dict[str, str | ArgumentSpec] = {}
     file_name_options: FileNameOptions = FileNameOptions()
+    # Display name shown in the wizard; falls back to the command.
+    name: str = ""
+    # Example output path, shown as the wizard's placeholder.
+    example: str = ""
 
     # Populated in model_post_init — not user-supplied.
     template: Template | None = None
@@ -79,17 +114,22 @@ class TouchItem(BaseModel):
         parsed = env.parse(self.template_string)
         self._undeclared_vars = meta.find_undeclared_variables(parsed)
 
-        # Discovered vars become arguments (explicit values take precedence).
+        # Discovered vars become arguments (explicit values take
+        # precedence); plain-string specs are shorthand for help text.
+        explicit = {
+            name: spec if isinstance(spec, ArgumentSpec) else ArgumentSpec(help=spec)
+            for name, spec in self.arguments.items()
+        }
         self.arguments = {
-            **{var: "<value>" for var in self._undeclared_vars},
-            **self.arguments,
+            **{var: ArgumentSpec() for var in self._undeclared_vars},
+            **explicit,
         }
         self.template = Template(self.template_string)
 
 
 class TouchConfig(BaseModel):
     values: list[TouchItem] = []
-    groups_meta: dict[str, dict] = {}
+    groups_meta: dict[str, GroupMeta] = {}
 
 
 def set_extension(filepath: pathlib.Path, opts: FileNameOptions) -> pathlib.Path:
@@ -156,6 +196,37 @@ def build_template_context(output: pathlib.Path, args: dict[str, str]) -> dict:
     return {**builtins, **env_vars, **file_vars, **args}
 
 
+def perform_touch(
+    item: TouchItem,
+    output_raw: str,
+    casing: str | None,
+    args: dict[str, str],
+) -> None:
+    """Resolve the output path and write *item*'s rendered template to it.
+
+    Shared by the per-template subcommands and the interactive wizard so
+    both go through identical overwrite/render/write behavior.
+    """
+    resolved = resolve_output(output_raw, item.file_name_options, casing, args)
+
+    if resolved.exists():
+        click.confirm(f"'{resolved}' already exists. Overwrite?", abort=True)
+
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    ctx = build_template_context(resolved, args)
+
+    if item.template is None:
+        click.echo(FormatUtils.error(f"Template for command '{item.command}' is not initialized."))
+        return
+
+    try:
+        rendered = item.template.render(**ctx)
+        resolved.write_text(rendered)
+        click.echo(FormatUtils.success(f"File '{resolved}' created."))
+    except Exception as e:
+        click.echo(FormatUtils.error(f"Error writing '{resolved}': {e}"))
+
+
 def _make_command(item: TouchItem) -> click.Command:
     """Build a Click command for a single :class:`TouchItem`."""
     fopts = item.file_name_options
@@ -166,9 +237,10 @@ def _make_command(item: TouchItem) -> click.Command:
                 f"--{name}",
                 type=str,
                 required=False,
-                help=help_text,
+                default=spec.default or None,
+                help=spec.help,
             )
-            for name, help_text in item.arguments.items()
+            for name, spec in item.arguments.items()
         ]
     )
 
@@ -185,28 +257,9 @@ def _make_command(item: TouchItem) -> click.Command:
         help="Convert the filename to the specified casing.",
     )
     @extra_options.decorate()
-    def handler(output: str, casing: str | None, _item=item, _fopts=fopts, **kwargs):
+    def handler(output: str, casing: str | None, _item=item, **kwargs):
         args = {k: v for k, v in kwargs.items() if v is not None}
-        resolved = resolve_output(output, _fopts, casing, args)
-
-        if resolved.exists():
-            click.confirm(
-                f"'{resolved}' already exists. Overwrite?", abort=True
-            )
-
-        resolved.parent.mkdir(parents=True, exist_ok=True)
-        ctx = build_template_context(resolved, args)
-
-        if _item.template is None:
-            FormatUtils.error(f"Template for command '{_item.command}' is not initialized.")
-            return
-
-        try:
-            rendered = _item.template.render(**ctx)
-            resolved.write_text(rendered)
-            FormatUtils.success(f"File '{resolved}' created.")
-        except Exception as e:
-            FormatUtils.error(f"Error writing '{resolved}': {e}")
+        perform_touch(_item, output, casing, args)
 
     cmd = click.Command(
         name=item.command,
@@ -268,3 +321,387 @@ def infer(output):
             raise click.ClickException(messages["UNEXPECTED ERROR"])
     else:
         click.echo(messages["INFER_FAILED"])
+
+
+def _select(options: list[tuple[str, str]], title: str, selected: str | None = None) -> str | None:
+    """Run an inline arrow-key picker over ``(value, label)`` options.
+
+    Returns the chosen value, or ``None`` when the user cancels (escape).
+    """
+    return SelectApp(options, message=title, selected=selected).run() or None
+
+
+def _text(message: str, placeholder: str = "") -> str:
+    """Prompt for a single line of text with a dim placeholder example."""
+    return ask_text(message, placeholder=placeholder)
+
+
+def _highlight_preview(code: str, filename: str) -> str:
+    """Syntax-highlight *code* for the terminal preview.
+
+    Uses pygments when it is installed and has a lexer registered for
+    *filename*; otherwise returns the code unchanged.
+    """
+    if not _pygments_available():
+        return code
+
+    from pygments import highlight
+    from pygments.formatters import Terminal256Formatter
+    from pygments.lexers import get_lexer_for_filename
+    from pygments.util import ClassNotFound
+
+    try:
+        lexer = get_lexer_for_filename(filename)
+    except ClassNotFound:
+        return code
+    return highlight(code, lexer, Terminal256Formatter())
+
+
+# Context names the wizard never prompts for: template builtins that are
+# functions (prompting for a string would shadow them and break rendering).
+WIZARD_SKIPPED_VARS = {"convert_case", "env"}
+# Context names whose values are derived from the output path/environment;
+# prompting for them is an optional override.
+DERIVED_VARS = {"file_stem", "file_suffix", "file_path", "file_name", "cwd", "home", "user"}
+
+
+def _select_item(items: list[TouchItem], groups_meta: dict[str, GroupMeta]) -> TouchItem | None:
+    """Pick a template in two arrow-key steps: group first, then template.
+
+    The group step is skipped when only one group is configured. Returns
+    ``None`` if the user cancels either step.
+    """
+    groups: dict[str, list[TouchItem]] = {}
+    for item in sorted(items, key=lambda x: x.group):
+        groups.setdefault(item.group, []).append(item)
+
+    def meta(group_key: str) -> GroupMeta:
+        return groups_meta.get(group_key, GroupMeta())
+
+    if len(groups) == 1:
+        group = next(iter(groups))
+    else:
+        group = _select(
+            [
+                (
+                    key,
+                    f"{meta(key).name or key} ({len(members)})",
+                    meta(key).description,
+                )
+                for key, members in groups.items()
+            ],
+            "Select a group:",
+        )
+        if group is None:
+            return None
+
+    members = groups[group]
+    command = _select(
+        [(m.command, m.name or m.command, m.description) for m in members],
+        f"Select a template ({meta(group).name or group}):",
+    )
+    if command is None:
+        return None
+    return next(m for m in members if m.command == command)
+
+
+def _prompt_output(item: TouchItem) -> str:
+    """Prompt for the output path until a non-empty answer is given."""
+    example = item.example or f"my-file{item.file_name_options.extension}"
+    while True:
+        value = _text("Output path:", placeholder=f"e.g. {example}").strip()
+        if value:
+            return value
+
+
+def _prompt_arguments(item: TouchItem) -> dict[str, str]:
+    """Prompt for each template variable; blank answers are omitted.
+
+    A blank answer takes the argument's configured default when there is
+    one; otherwise the variable falls back to the derived context values
+    (``file_stem``, ``cwd``, ...) or renders empty.
+    """
+    args: dict[str, str] = {}
+    for name, spec in sorted(item.arguments.items()):
+        if name in WIZARD_SKIPPED_VARS:
+            continue
+        if spec.default:
+            placeholder = f"default: {spec.default}"
+        elif spec.example:
+            placeholder = f"e.g. {spec.example}"
+        elif spec.help != "<value>":
+            placeholder = spec.help
+        elif name in DERIVED_VARS:
+            placeholder = "leave blank to use the derived value"
+        else:
+            placeholder = "optional"
+        value = _text(f"{name}:", placeholder=placeholder)
+        if value:
+            args[name] = value
+        elif spec.default:
+            args[name] = spec.default
+    return args
+
+
+@cli.command(name="wizard")
+def wizard():
+    """Interactively create a file from a configured template.
+
+    Pick a group and a template with the arrow keys (enter confirms,
+    escape cancels), then answer prompts for the output path, filename
+    casing, and template variables. The rendered file is previewed
+    before anything is written.
+
+    \b
+    Example:
+      $ ptools touch wizard
+      ? Select a group:
+      ❯ docs (2)
+        web (1)
+      ? Select a template (docs):
+      ❯ rfc - RFC document template
+      ? Output path: /tmp/ptools-doc-examples/button
+      ...
+    """
+    items = config.typed.values
+    if not items:
+        click.echo(messages["NO_TEMPLATES"])
+        return
+
+    item = _select_item(items, config.typed.groups_meta)
+    if item is None:
+        click.echo(FormatUtils.warning("No template selected."))
+        return
+    fopts = item.file_name_options
+
+    output_raw = _prompt_output(item)
+
+    casing_choice = _select(
+        [(c, c) for c in ("keep", *cases)],
+        "Filename casing:",
+        selected=fopts.casing or "keep",
+    )
+    if casing_choice is None:
+        click.echo(FormatUtils.warning("Cancelled."))
+        return
+    casing = None if casing_choice == "keep" else casing_choice
+
+    args = _prompt_arguments(item)
+
+    resolved = resolve_output(output_raw, fopts, casing, args)
+
+    if item.template is None:
+        click.echo(FormatUtils.error(f"Template for command '{item.command}' is not initialized."))
+        return
+
+    rendered = item.template.render(**build_template_context(resolved, args))
+
+    click.echo()
+    click.echo(FormatUtils.bold(f"Preview of '{resolved}':"))
+    click.echo(FormatUtils.highlight("-" * 60, "cyan"))
+    click.echo(_highlight_preview(rendered, resolved.name))
+    click.echo(FormatUtils.highlight("-" * 60, "cyan"))
+
+    click.confirm(f"Write to '{resolved}'?", abort=True, default=True)
+    perform_touch(item, output_raw, casing, args)
+
+
+cli.add_command(wizard, "w")
+
+# Sentinel option value for "create a new group" in the new-template wizard's
+# group picker (never collides with a real group key).
+_NEW_GROUP = "__new_group__"
+
+
+def _prompt_nonempty(message: str, placeholder: str = "") -> str:
+    """Prompt via :func:`_text` until a non-blank answer is given."""
+    while True:
+        value = _text(message, placeholder=placeholder).strip()
+        if value:
+            return value
+
+
+def _group_picker_options(
+    items: list[TouchItem], groups_meta: dict[str, GroupMeta]
+) -> list[tuple[str, str, str]]:
+    """Build ``(value, label, description)`` options for every known group.
+
+    Mirrors the group-option shape ``_select_item`` builds for picking a
+    template, including groups that only exist in ``groups_meta`` (no
+    templates yet).
+    """
+    groups: dict[str, list[TouchItem]] = {}
+    for item in items:
+        groups.setdefault(item.group, []).append(item)
+    for key in groups_meta:
+        groups.setdefault(key, [])
+
+    def meta(group_key: str) -> GroupMeta:
+        return groups_meta.get(group_key, GroupMeta())
+
+    return [
+        (key, f"{meta(key).name or key} ({len(members)})", meta(key).description)
+        for key, members in sorted(groups.items())
+    ]
+
+
+# A couple of DERIVED_VARS entries used as illustrative examples in the
+# new-template editor seed - pulled from the set (not hardcoded
+# independently) so the seed can't silently drift out of sync with it.
+_SEED_EXAMPLE_VARS = tuple(v for v in ("file_stem", "cwd") if v in DERIVED_VARS)
+
+# Matches a Jinja2 `{# ... #}` comment (non-greedy, spans lines).
+_JINJA_COMMENT_RE = re.compile(r"\{#.*?#\}", re.DOTALL)
+
+
+def _safe_filename_stub(name: str) -> str:
+    """Sanitize *name* for use as a temp-file basename.
+
+    Defensive: the command name comes from free-text input and nothing
+    upstream restricts its characters, but it becomes a real filename
+    here (e.g. a stray ``/`` would otherwise try to create a subdirectory).
+    """
+    return re.sub(r"[^\w.-]", "_", name) or "template"
+
+
+def _template_seed(command: str) -> str:
+    """Seed text for a new template's editor buffer.
+
+    Written as a Jinja2 ``{# ... #}`` comment: the lexer strips comments
+    before ``model_post_init``'s undeclared-variable discovery ever runs,
+    so the illustrative ``{{ var }}`` examples inside it are never
+    mistaken for real template variables and never leak into rendered
+    output.
+    """
+    examples = " or ".join(f"{{{{ {var} }}}}" for var in _SEED_EXAMPLE_VARS)
+    builtins_desc = " and ".join(
+        f"`{var}(...)`" for var in sorted(WIZARD_SKIPPED_VARS)
+    )
+    return (
+        "{#\n"
+        f"  Jinja2 template for the `{command}` touch command.\n"
+        "\n"
+        f"  Interpolate values with double curly braces, e.g. {examples}.\n"
+        "  Any other {{ name }} you reference below becomes a prompted\n"
+        "  argument automatically - no separate registration step needed.\n"
+        "\n"
+        f"  {builtins_desc} are also available as functions inside the template.\n"
+        "\n"
+        "  Replace this comment with your template body.\n"
+        "#}\n"
+    )
+
+
+def _is_blank_template(content: str) -> bool:
+    """True if *content* has no real body once Jinja ``{# #}`` comments are stripped."""
+    return not _JINJA_COMMENT_RE.sub("", content).strip()
+
+
+def _author_template_body(command: str) -> str | None:
+    """Open ``$EDITOR`` (or vim) on a ``<command>.jinja`` file and return its content.
+
+    ``click.edit(filename=...)`` edits that file in place and always
+    returns ``None`` - its text-returning mode only applies when no
+    ``filename`` is given (see click's ``termui.edit`` docstring) - so the
+    file is created here, in a scratch temp dir, named after the command
+    and seeded with syntax help, and its post-edit content is read back
+    directly rather than relying on ``click.edit``'s return value.
+
+    Returns ``None`` if the author left the file with no real body
+    (unchanged, emptied, or comment-only) - i.e. cancelled.
+    """
+    seed = _template_seed(command)
+    tmpdir = tempfile.mkdtemp(prefix="ptools-touch-new-")
+    try:
+        path = os.path.join(tmpdir, f"{_safe_filename_stub(command)}.jinja")
+        pathlib.Path(path).write_text(seed)
+        click.edit(filename=path, editor=os.environ.get("EDITOR", "vim"))
+        content = pathlib.Path(path).read_text()
+    finally:
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+    if _is_blank_template(content):
+        return None
+    return content
+
+
+@cli.command(name="new")
+def new():
+    """Interactively author a new touch template.
+
+    Prompts for the command name, group, display name, description, and
+    output extension, then opens ``$EDITOR`` (or vim, if unset) to author
+    the Jinja2 template body. Undeclared Jinja2 variables in the body are
+    auto-discovered as arguments, same as hand-authored config entries.
+    The new entry is appended to the user's touch.yaml config and is
+    immediately usable via ``touch wizard``.
+
+    \b
+    Example:
+      $ ptools touch new
+      ? Command name: rfc
+      ? Select a group:
+      ❯ docs (2)
+        + New group
+      ? Display name: RFC Document
+      ? Description: RFC document template
+      ? Output extension: .md
+      (opens $EDITOR to author the template body)
+      Added new template 'rfc'.
+    """
+    items = config.typed.values
+    groups_meta = config.typed.groups_meta
+    existing_commands = {item.command for item in items}
+
+    command_name = _prompt_nonempty("Command name:", placeholder="e.g. rfc")
+    if command_name in existing_commands:
+        raise click.ClickException(
+            f"A template with command '{command_name}' already exists."
+        )
+
+    group_options = _group_picker_options(items, groups_meta) + [
+        (_NEW_GROUP, "+ New group", "Create a new group")
+    ]
+    group_choice = _select(group_options, "Select a group:")
+    if group_choice is None:
+        click.echo(FormatUtils.warning("Cancelled."))
+        return
+    if group_choice == _NEW_GROUP:
+        group = _prompt_nonempty("New group name:", placeholder="e.g. docs")
+    else:
+        group = group_choice
+
+    name = _text("Display name:", placeholder="e.g. RFC Document")
+    description = _text("Description:", placeholder="e.g. RFC document template")
+
+    extension = _text("Output extension:", placeholder="e.g. .md").strip()
+    if extension and not extension.startswith("."):
+        extension = f".{extension}"
+
+    template_string = _author_template_body(command_name)
+    if template_string is None:
+        click.echo(FormatUtils.warning("Cancelled: no template body was written."))
+        return
+
+    fopts = FileNameOptions(extension=extension) if extension else FileNameOptions()
+    new_item = TouchItem(
+        command=command_name,
+        group=group,
+        description=description,
+        template_string=template_string,
+        name=name,
+        file_name_options=fopts,
+    )
+
+    # Persist through ConfigFile.set() rather than mutating config.typed in
+    # place: config.typed rebuilds a fresh TouchConfig from config.data on
+    # every access, so a plain-list append wouldn't survive. The `template`
+    # field (a live Jinja2 Template object, populated in model_post_init) is
+    # excluded from the dump: it isn't YAML-serializable and is rebuilt from
+    # template_string on next load anyway.
+    updated_values = [*items, new_item]
+    config.set(
+        "values", [item.model_dump(exclude={"template"}) for item in updated_values]
+    )
+
+    click.echo(FormatUtils.success(f"Added new template '{new_item.command}'."))

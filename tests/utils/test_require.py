@@ -125,3 +125,23 @@ class TestDecorators:
             return api
 
         assert fn() == "secret"
+
+
+class TestOptionalLibrary:
+    def test_available_when_importable(self):
+        check = require.optional_library("json")
+        assert check() is True
+
+    def test_unavailable_when_missing(self):
+        check = require.optional_library("definitely_not_installed_xyz_1234")
+        assert check() is False
+
+    def test_announces_into_registry(self):
+        require.optional_library("some_optional_lib", pypi_name="some-optional-lib")
+        announced = require.announced_requirements()
+        assert any(
+            isinstance(r, require.LibraryRequirement)
+            and r.module == "some_optional_lib"
+            and r.pip_name == "some-optional-lib"
+            for r in announced
+        )
