@@ -72,15 +72,8 @@ def resolve_input(allow_stdin=True):
     return decorator
 
 
-@disk_cache(max_cache_age=3600)
-def get_size(path, ignore_hidden=False):
-    """Return the total byte size of ``path`` (file or directory tree).
-
-    Results are cached on disk for one hour via :func:`disk_cache`.
-
-    :param path: File or directory to measure.
-    :param ignore_hidden: Skip dot-files when traversing directories.
-    """
+def _get_size(path, ignore_hidden=False):
+    """Uncached implementation of :func:`get_size`."""
     total_size = 0
     if os.path.isfile(path):
         return os.path.getsize(path)
@@ -98,3 +91,21 @@ def get_size(path, ignore_hidden=False):
         pass
 
     return total_size
+
+
+_get_size_cached = disk_cache(max_cache_age=3600)(_get_size)
+
+
+def get_size(path, ignore_hidden=False):
+    """Return the total byte size of ``path`` (file or directory tree).
+
+    Results are cached on disk for one hour via :func:`disk_cache`. The
+    path is normalized before the cache key is computed, so spellings
+    like ``dir`` and ``dir/`` share one cache entry — and a trailing
+    slash on a regular file no longer defeats the ``isfile`` check
+    (which used to crash with ``NotADirectoryError``).
+
+    :param path: File or directory to measure.
+    :param ignore_hidden: Skip dot-files when traversing directories.
+    """
+    return _get_size_cached(os.path.normpath(path), ignore_hidden=ignore_hidden)
