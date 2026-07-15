@@ -44,6 +44,10 @@ COMMANDS = {
         "import_path": "ptools.literals:cli",
         "short_help": "Select a literal from a configured collection.",
     },
+    "lget-add": {
+        "import_path": "ptools.literals:add",
+        "short_help": "Interactively add a new literal to a collection.",
+    },
     "llm": {
         "import_path": "ptools.llm:cli",
         "short_help": "Interact with a chat interface.",

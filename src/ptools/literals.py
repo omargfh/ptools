@@ -5,73 +5,32 @@ from ptools.utils.print import FormatUtils
 from ptools.utils.config import ConfigFile
 import ptools.utils.require as require
 
-from prompt_toolkit import Application
-from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.layout import Layout
-from prompt_toolkit.layout.containers import  Window
-from prompt_toolkit.layout.controls import FormattedTextControl
-from prompt_toolkit.widgets import RadioList, Box
-from prompt_toolkit.shortcuts import clear
+from ptools.lib.tui.select import SelectApp, ask_text
 
 config = ConfigFile('literals', quiet=True)
 
-class RadioListWithCallback(RadioList):
-    def __init__(self, values, on_selection_change=None, *args, **kwargs):
-        super().__init__(values, *args, **kwargs)
-        self.on_selection_change = on_selection_change
+# Sentinel option in the collection picker for "create a new collection
+# instead of choosing an existing one".
+NEW_COLLECTION = "+ new collection"
 
-    def _handle_enter(self):
-        super()._handle_enter()
-        if self.on_selection_change:
-            self.on_selection_change(self.current_value)
+class LiteralsApp(SelectApp):
+    """Select picker with the literals default selection message."""
 
-class LiteralsApp():
-    def __init__(
-        self,
-        items,
-        selected_text="Selected literal: {}",
-        select_handler=None,
-        selected=None
-    ):
-        self.items = items
-        self.radio_list = RadioListWithCallback(items, on_selection_change=self.on_select, default=selected)
-        self.layout = Layout(
-            Box(
-                self.radio_list,
-                padding=0
-            ),
-            focused_element=self.radio_list
-        )
-        self.kb = KeyBindings()
-        self.kb.add("escape")(self.on_cancel)
-        self.app = Application(layout=self.layout, key_bindings=self.kb)
-        self.selected = []
-        self.selected_text = selected_text
-        self.select_handler = select_handler
+    def __init__(self, items, selected_text="Selected literal: {}", **kwargs):
+        super().__init__(items, selected_text=selected_text, **kwargs)
 
-    def on_select(self, value):
-        self.selected = value
-        if self.select_handler:
-            self.select_handler(value)
-        self.exit()
 
-    def on_cancel(self, event):
-        self.exit()
+def _select(options: list[tuple[str, str]], title: str, selected: str | None = None) -> str | None:
+    """Run an inline arrow-key picker over ``(value, label)`` options.
 
-    def run(self):
-        self.app.run()
-        return self.selected
+    Returns the chosen value, or ``None`` when the user cancels (escape).
+    """
+    return LiteralsApp(options, message=title, selected=selected, selected_text="Selected: {}").run() or None
 
-    def exit(self):
-        self.app.layout = Layout(
-            Window(
-                content=FormattedTextControl(
-                    text=self.selected_text.format(self.selected) if self.selected else "No selection made."
-                )
-            )
-        )
-        self.app.invalidate()
-        self.app.exit()
+
+def _text(message: str, placeholder: str = "") -> str:
+    """Prompt for a single line of text with a dim placeholder example."""
+    return ask_text(message, placeholder=placeholder)
 
 
 @click.command(name="lget")
@@ -141,3 +100,63 @@ def cli(collection, choose_collection, stay_alive):
                 break
     else:
         LiteralsApp(*args, **kwargs).run()
+
+
+@click.command(name="lget-add")
+def add():
+    """Interactively add a new literal to a collection.
+
+    Pick an existing collection with the arrow keys, or choose the
+    "+ new collection" option to name a new one, then enter a key and a
+    value for the new entry. The entry is rejected if the key already
+    exists in the target collection, and otherwise persisted immediately
+    so it's visible to ``ptools lget`` on the next invocation.
+
+    \b
+    Example:
+      $ ptools lget-add
+      ? Select a collection:
+      ❯ cli_emojis (14)
+        filesystem_emojis (10)
+        + new collection
+      ? Key: tada
+      ? Value: 🎉
+      [Success] Added 'tada' to 'cli_emojis'.
+    """
+    all_collections = config.data
+
+    options = [
+        (name, f"{name} ({len(values)})")
+        for name, values in all_collections.items()
+    ]
+    options.append((NEW_COLLECTION, NEW_COLLECTION))
+
+    collection = _select(options, "Select a collection:")
+    if not collection:
+        click.echo(FormatUtils.warning("No collection selected."))
+        return
+
+    if collection == NEW_COLLECTION:
+        collection = _text("New collection name:", placeholder="e.g. snippets").strip()
+        if not collection:
+            click.echo(FormatUtils.warning("No collection name given."))
+            return
+
+    existing = all_collections.get(collection, {})
+
+    key = _text("Key:", placeholder="e.g. success").strip()
+    if not key:
+        click.echo(FormatUtils.warning("No key given."))
+        return
+
+    if key in existing:
+        click.echo(FormatUtils.error(f"Key '{key}' already exists in collection '{collection}'."))
+        return
+
+    value = _text("Value:", placeholder="e.g. ✅").strip()
+    if not value:
+        click.echo(FormatUtils.warning("No value given."))
+        return
+
+    config.set(collection, {**existing, key: value})
+    click.echo(FormatUtils.success(f"Added '{key}' to '{collection}'."))
