@@ -32,6 +32,7 @@ class SettingsModel(BaseModel):
 
     PIP_EXECUTABLE: str = os.environ.get("PIP_EXECUTABLE", f"{sys.executable} -m pip")
     PTOOLS_DEBUG: bool = os.environ.get("PTOOLS_DEBUG", "0") == "1"
+    EDITOR: str = os.environ.get("EDITOR", "vim")
 
 
 settings = LazyConfigFile("settings", quiet=True, model=SettingsModel)
@@ -40,5 +41,6 @@ cli = config_to_CLI(settings, name="settings")
 if __name__ != "__main__":
     PIP_EXECUTABLE = settings.typed.PIP_EXECUTABLE
     PTOOLS_DEBUG = settings.typed.PTOOLS_DEBUG
+    EDITOR = settings.typed.EDITOR
 else:
     cli = config_to_CLI(settings, name="settings")
