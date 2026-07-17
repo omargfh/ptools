@@ -13,6 +13,15 @@ Keybindings:
     r             - refresh (rescan from disk)
     q             - quit
     [custom]      - user-defined commands (if any)
+
+The tree is a one-shot snapshot of the filesystem, so it can drift out of
+date as files change on disk. A lightweight background poller re-stats the
+scanned directories and, when it notices an add/remove/rename, marks the
+snapshot stale: a warning toast fires and a "STALE" marker is appended to
+the subtitle until the next refresh. Detection is directory-mtime based, so
+it catches structural changes cheaply but not in-place content edits (a file
+growing without its parent directory changing) -- press ``r`` to force a full
+rescan when in doubt.
 """
 
 from __future__ import annotations
@@ -88,6 +97,7 @@ class FileTreeApp(App):
     ignore_hidden: reactive[bool] = reactive(True)
     show_files: reactive[bool] = reactive(True)
     filter_text: reactive[str] = reactive("")
+    is_stale: reactive[bool] = reactive(False)
 
     def __init__(
         self,
@@ -127,6 +137,12 @@ class FileTreeApp(App):
         # Maps textual node id -> tree data dict
         self._node_meta: dict[int, dict] = {}
 
+        # Snapshot of scanned-directory mtimes, keyed by path. Populated by
+        # _scan_tree and swapped in atomically by _do_scan; the staleness
+        # poller compares against it to detect on-disk drift cheaply.
+        self._scan_dir_mtimes: dict[str, int] = {}
+        self._stale_poll_secs = 2.0
+
         # Debounce timer for rebuilds
         self._rebuild_timer: Timer | None = None
         self._rebuild_debounce_secs = 0.15
@@ -162,13 +178,20 @@ class FileTreeApp(App):
         # Kick off background scan
         self._do_scan()
 
+        # Poll the filesystem so the snapshot's staleness is surfaced.
+        self.set_interval(self._stale_poll_secs, self._check_stale)
+
     @work(thread=True)
     def _do_scan(self) -> None:
         """Scan filesystem on background thread, then render on main thread."""
-        tree_data = self._scan_tree(self.root_path, 0)
+        dir_mtimes: dict[str, int] = {}
+        tree_data = self._scan_tree(self.root_path, 0, dir_mtimes)
         self._tree_data = tree_data
+        # Atomic reference swap so the poller never iterates a half-built dict.
+        self._scan_dir_mtimes = dir_mtimes
         self.call_from_thread(self._render_from_data)
         self.call_from_thread(self._finish_mount)
+        self.call_from_thread(self._clear_stale)
 
     def _finish_mount(self) -> None:
         self._mount_complete = True
@@ -177,8 +200,14 @@ class FileTreeApp(App):
     # Filesystem scan - pure data, no UI. Runs on worker thread.
     # ------------------------------------------------------------------
 
-    def _scan_tree(self, dir_path: str, depth: int) -> dict | None:
-        """Recursively scan directory and compute sizes. Returns a plain dict tree."""
+    def _scan_tree(
+        self, dir_path: str, depth: int, dir_mtimes: dict[str, int]
+    ) -> dict | None:
+        """Recursively scan directory and compute sizes. Returns a plain dict tree.
+
+        Records the mtime of every directory whose children are scanned into
+        ``dir_mtimes`` so the staleness poller can later detect drift.
+        """
         if depth > self.max_depth:
             return None
 
@@ -202,17 +231,28 @@ class FileTreeApp(App):
         if depth >= self.max_depth:
             return node
 
+        # Capture the directory's mtime *before* reading its entries: if a
+        # change races in between, the recorded mtime still predates it and the
+        # poller flags the drift on its next pass.
+        try:
+            dir_mtime = os.stat(dir_path).st_mtime_ns
+        except OSError:
+            dir_mtime = None
+
         try:
             entries = list(os.scandir(dir_path))
         except PermissionError:
             return node
+
+        if dir_mtime is not None:
+            dir_mtimes[dir_path] = dir_mtime
 
         for entry in entries:
             if self.ignore_hidden and entry.name.startswith("."):
                 continue
 
             if entry.is_dir(follow_symlinks=False):
-                child = self._scan_tree(entry.path, depth + 1)
+                child = self._scan_tree(entry.path, depth + 1, dir_mtimes)
                 if child:
                     node["children"].append(child)
 
@@ -372,6 +412,53 @@ class FileTreeApp(App):
         self._rebuild_timer.start()
 
     # ------------------------------------------------------------------
+    # Stale-cache detection - the in-memory tree is a one-shot snapshot,
+    # so poll the scanned directories for drift and surface it to the user.
+    # ------------------------------------------------------------------
+
+    def _is_cache_stale(self) -> bool:
+        """Return True if any scanned directory's mtime differs from the snapshot.
+
+        A directory's mtime bumps whenever an entry is added, removed, or
+        renamed, and a vanished directory counts as drift too. Pure and cheap
+        (a stat per scanned dir) so it is safe to call from the poll worker.
+        """
+        for dir_path, recorded in self._scan_dir_mtimes.items():
+            try:
+                current = os.stat(dir_path).st_mtime_ns
+            except OSError:
+                return True  # directory disappeared
+            if current != recorded:
+                return True
+        return False
+
+    @work(thread=True, exclusive=True, group="stale-check")
+    def _check_stale(self) -> None:
+        """Poll worker: flag the snapshot stale on the first detected drift."""
+        if not self._mount_complete or self.is_stale:
+            return
+        if self._is_cache_stale():
+            self.call_from_thread(self._mark_stale)
+
+    def _mark_stale(self) -> None:
+        self.is_stale = True
+
+    def _clear_stale(self) -> None:
+        self.is_stale = False
+
+    def watch_is_stale(self) -> None:
+        if not (self.is_mounted and self._mount_complete):
+            return
+        self._update_title()
+        if self.is_stale:
+            self.notify(
+                "Filesystem changed on disk - press 'r' to refresh.",
+                title="Cache stale",
+                severity="warning",
+                timeout=6,
+            )
+
+    # ------------------------------------------------------------------
     # Reactive watchers
     # ------------------------------------------------------------------
 
@@ -407,7 +494,10 @@ class FileTreeApp(App):
             f"Hidden: {'off' if self.ignore_hidden else 'on'}",
             f"Files: {'on' if self.show_files else 'off'}",
         ]
-        self.sub_title = " | ".join(parts)
+        subtitle = " | ".join(parts)
+        if self.is_stale:
+            subtitle += "  ⚠ STALE (r to refresh)"
+        self.sub_title = subtitle
 
     # ------------------------------------------------------------------
     # Actions (keybindings)
@@ -427,6 +517,9 @@ class FileTreeApp(App):
 
     def action_refresh(self) -> None:
         """Force rescan from disk."""
+        # Clear the marker up front for snappy feedback; _do_scan re-clears it
+        # once the fresh snapshot (and its mtimes) has landed.
+        self._clear_stale()
         tree = self.query_one("#tree-view", TextualTree)
         tree.clear()
         tree.root.set_label(f"{self.root_path} [dim](scanning...)[/dim]")
