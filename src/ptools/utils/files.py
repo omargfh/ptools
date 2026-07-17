@@ -72,8 +72,13 @@ def resolve_input(allow_stdin=True):
     return decorator
 
 
-def _get_size(path, ignore_hidden=False):
-    """Uncached implementation of :func:`get_size`."""
+def _get_size(path, ignore_hidden=False, use_cache=True):
+    """Uncached implementation of :func:`get_size`.
+
+    ``use_cache`` is threaded through the recursion so a ``use_cache=False``
+    call recomputes the whole subtree fresh rather than summing cached child
+    sizes (each subdirectory is otherwise its own cache entry).
+    """
     total_size = 0
     if os.path.isfile(path):
         return os.path.getsize(path)
@@ -84,9 +89,9 @@ def _get_size(path, ignore_hidden=False):
                 if ignore_hidden and entry.name.startswith('.'):
                     continue
                 if entry.is_dir(follow_symlinks=False):
-                    total_size += get_size(entry.path, ignore_hidden=ignore_hidden)
+                    total_size += get_size(entry.path, ignore_hidden=ignore_hidden, use_cache=use_cache)
                 elif entry.is_file(follow_symlinks=False):
-                    total_size += get_size(entry.path, ignore_hidden=ignore_hidden)
+                    total_size += get_size(entry.path, ignore_hidden=ignore_hidden, use_cache=use_cache)
     except PermissionError:
         pass
 
@@ -96,7 +101,7 @@ def _get_size(path, ignore_hidden=False):
 _get_size_cached = disk_cache(max_cache_age=3600)(_get_size)
 
 
-def get_size(path, ignore_hidden=False):
+def get_size(path, ignore_hidden=False, use_cache=True):
     """Return the total byte size of ``path`` (file or directory tree).
 
     Results are cached on disk for one hour via :func:`disk_cache`. The
@@ -107,5 +112,12 @@ def get_size(path, ignore_hidden=False):
 
     :param path: File or directory to measure.
     :param ignore_hidden: Skip dot-files when traversing directories.
+    :param use_cache: When ``False``, bypass the disk cache entirely —
+        neither reading nor writing it — and recompute the size fresh. The
+        bypass propagates through subdirectories, so the whole subtree is
+        measured from disk.
     """
-    return _get_size_cached(os.path.normpath(path), ignore_hidden=ignore_hidden)
+    norm = os.path.normpath(path)
+    if use_cache:
+        return _get_size_cached(norm, ignore_hidden=ignore_hidden)
+    return _get_size(norm, ignore_hidden=ignore_hidden, use_cache=False)

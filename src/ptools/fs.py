@@ -183,6 +183,7 @@ def findfiles(
 @click.option('--size-flag-threshold', '--size-ft', type=str, default=None, help="Highlight in red files larger than this size (e.g. 100MB)")
 @click.option('--ignore-hidden', is_flag=True, default=True, help="Ignore hidden files and directories")
 @click.option('--show-files/--no-files', '-f/-F', is_flag=True, default=True, help="Show files in the tree")
+@click.option('--cache/--no-cache', default=True, help="Reuse the on-disk size cache; --no-cache recomputes every size fresh from disk")
 @click.option('--interactive', '-i', is_flag=True, default=False, help="Enable interactive mode with clickable file paths")
 def tree(
     path,
@@ -193,6 +194,7 @@ def tree(
     size_flag_threshold,
     ignore_hidden,
     show_files,
+    cache,
     interactive,
 ):
     """Print a tree structure of directory content with size information.
@@ -205,9 +207,13 @@ def tree(
     """
     # Example: ptools fs tree . --max-depth 2 --size-threshold 10MB
     import os
+    from functools import partial
     from ptools.utils.files import get_size
     from ptools.utils.print import TreeText, KnownExtensions
     from ptools.utils.read import FromHumanized
+
+    # Bind the cache choice once so every size lookup below honors it.
+    get_size = partial(get_size, use_cache=cache)
 
     bytes_threshold = \
         FromHumanized.from_humanized_size(size_threshold) \
