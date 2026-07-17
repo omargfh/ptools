@@ -25,6 +25,7 @@ import os
 import sys
 
 from ptools.utils.config import LazyConfigFile, config_to_CLI
+from ptools.utils.shell import detect_shell, detect_shell_config, detect_shell_kind
 from pydantic import BaseModel
 
 class SettingsModel(BaseModel):
@@ -33,7 +34,8 @@ class SettingsModel(BaseModel):
     PIP_EXECUTABLE: str = os.environ.get("PIP_EXECUTABLE", f"{sys.executable} -m pip")
     PTOOLS_DEBUG: bool = os.environ.get("PTOOLS_DEBUG", "0") == "1"
     EDITOR: str = os.environ.get("EDITOR", "vim")
-
+    SHELL_EXECUTABLE: str = os.environ.get("PTOOLS_SHELL", detect_shell())
+    SHELL_CONFIG: str = os.environ.get("PTOOLS_SHELL_CONFIG", detect_shell_config())
 
 settings = LazyConfigFile("settings", quiet=True, model=SettingsModel)
 cli = config_to_CLI(settings, name="settings")
@@ -42,5 +44,8 @@ if __name__ != "__main__":
     PIP_EXECUTABLE = settings.typed.PIP_EXECUTABLE
     PTOOLS_DEBUG = settings.typed.PTOOLS_DEBUG
     EDITOR = settings.typed.EDITOR
+    SHELL_EXECUTABLE = settings.typed.SHELL_EXECUTABLE
+    SHELL_CONFIG = settings.typed.SHELL_CONFIG
+    SHELL_KIND = detect_shell_kind(SHELL_EXECUTABLE)
 else:
     cli = config_to_CLI(settings, name="settings")
