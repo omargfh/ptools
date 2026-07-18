@@ -1,8 +1,9 @@
 """Tests for the top-level ptools CLI entrypoint and LazyGroup loader."""
 import click
+import pytest
 from click.testing import CliRunner
 
-from ptools.main import COMMANDS, LazyGroup, cli
+from ptools.main import COMMANDS, LazyGroup, _load_command, cli
 
 
 def test_cli_help_runs():
@@ -35,3 +36,12 @@ def test_lazy_group_list_commands_is_sorted():
 def test_lazy_group_returns_none_for_unknown():
     group = LazyGroup(name="x")
     assert group.get_command(click.Context(group), "nope") is None
+
+
+@pytest.mark.parametrize("name", sorted(COMMANDS))
+def test_load_command_resolves_every_registered_command(name):
+    import_path = COMMANDS[name]["import_path"]
+    command = _load_command(import_path)
+    assert isinstance(command, click.Command), (
+        f"command {name!r} ({import_path}) resolved to {command!r}, not a click.Command"
+    )
