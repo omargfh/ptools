@@ -85,14 +85,18 @@ def _format_output(
         BinaryRequirement,
         KeyRequirement,
         LibraryRequirement,
+        OSRequirement,
     )
 
     library_reqs = [r for r in announced if isinstance(r, LibraryRequirement)]
-    # Dedup while preserving first-seen order: the same binary requirement
+    # Dedup while preserving first-seen order: the same binary/OS requirement
     # (e.g. a shared @require.binary/os(...) gate) is commonly announced by
     # more than one module, and each announcement should render once.
     binary_reqs = list(dict.fromkeys(
         r for r in announced if isinstance(r, BinaryRequirement)
+    ))
+    os_reqs = list(dict.fromkeys(
+        r for r in announced if isinstance(r, OSRequirement)
     ))
     key_reqs = [r for r in announced if isinstance(r, KeyRequirement)]
 
@@ -123,6 +127,13 @@ def _format_output(
     if binary_reqs:
         lines.append("# System binaries (install via your OS package manager):")
         for req in binary_reqs:
+            joined = f" {req.logical_operator.upper()} ".join(req.names)
+            lines.append(f"#   - {joined}")
+        lines.append("")
+
+    if os_reqs:
+        lines.append("# Operating systems some commands are restricted to:")
+        for req in os_reqs:
             joined = f" {req.logical_operator.upper()} ".join(req.names)
             lines.append(f"#   - {joined}")
         lines.append("")

@@ -6,8 +6,10 @@
 # only to make a full install reproducible in one shot.
 
 # System binaries (install via your OS package manager):
-#   - darwin
 #   - node OR deno OR bun
+
+# Operating systems some commands are restricted to:
+#   - darwin
 
 # --- Base dependencies (from pyproject.toml) ---
 click>=8.1

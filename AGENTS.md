@@ -44,14 +44,13 @@ Single source of truth for agents in this repo. `CLAUDE.md` symlinks here.
 - **Test**: `.venv/bin/python3 -m pytest` (verified — 372 tests collected; `pyproject.toml` sets `pythonpath = ["src"]` so no install is required).
 - **Lint / typecheck**: unverified — `pyproject.toml` configures `[tool.pyright]`, but pyright is not installed in `.venv` and no lint tool (ruff/flake8/black) is configured in the repo.
 - **Docs build**: `.venv/bin/python3 -m sphinx -M html docs docs/_build` (verified via `sphinx-build --help`). Do not use `make -C docs html` — see Gotchas.
-- **Requirements**: `.venv/bin/python3 scripts/generate_requirements.py` prints a full requirements list to stdout; its output now matches the committed `full_requirements.txt` byte-for-byte — see Gotchas for a remaining OS-requirement labeling issue.
+- **Requirements**: `.venv/bin/python3 scripts/generate_requirements.py` prints a full requirements list to stdout; its output matches the committed `full_requirements.txt` byte-for-byte.
 
 ### Gotchas
 
 - `.venv/bin/python3` has no `pip` module (`No module named pip`) — packages are managed externally; don't try to `pip install` into this venv.
 - `python3 -m ptools.main --help` silently exits 0 with no output: `main.py` has no `if __name__ == "__main__"` guard. Use `.venv/bin/ptools` or `python -c "from ptools.main import cli; cli()"`.
 - `make -C docs html` is a silent no-op (`make: Nothing to be done for 'html'`): `html` is listed in `docs/Makefile`'s `.PHONY` with no recipe, which pre-empts the catch-all `%: Makefile` rule. Use `python3 -m sphinx -M html docs docs/_build` instead.
-- `full_requirements.txt` is safe to regenerate again: `python scripts/generate_requirements.py > full_requirements.txt` reproduces the committed file byte-for-byte. One labeling defect remains — the generator still lists the four `@require.os(["darwin"])` gates in `fs.py` under "System binaries" because `require.os()` announces a `BinaryRequirement` instead of an OS-specific type (`.ongoing/require-os-type-confusion`).
 - No CI workflow runs the test suite — `.github/workflows/docs.yml` only builds/deploys Sphinx docs (`.ongoing/ci-test-workflow`).
 - Adding a subcommand means registering it in `src/ptools/main.py`'s `COMMANDS` dict (`"module:attribute"` import path + `short_help`); `LazyGroup` won't discover it otherwise.
 - Command docstrings are the docs: `docs/cli.rst` renders the live Click tree via `sphinx_click`, so help-text edits are doc edits.
