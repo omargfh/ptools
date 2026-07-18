@@ -4,10 +4,10 @@ import keyring
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
-class EncryptionError(BaseException):
+class EncryptionError(Exception):
     """Raised when the keyring is unreachable or encryption/decryption fails."""
     pass
 

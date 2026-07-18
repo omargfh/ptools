@@ -7,6 +7,7 @@ an in-memory keyring backend so nothing in this file ever reads, writes, or
 prompts against the developer's real macOS keychain or real ``~/.ptools``.
 """
 import keyring
+import keyring.errors
 import pytest
 from click.testing import CliRunner
 from keyring.backend import KeyringBackend
@@ -48,6 +49,31 @@ def secrets_keyring(monkeypatch):
 def secrets_env(isolated_home, secrets_keyring):
     """Isolated $HOME + in-memory keyring: the baseline for every secrets
     CLI test in this file."""
+    return isolated_home
+
+
+class BrokenKeyring(KeyringBackend):
+    """Keyring backend that always fails, simulating a locked/unreachable
+    system keychain -- never touches anything real."""
+    priority = 1  # type: ignore[assignment]
+
+    def get_password(self, service, username):
+        raise keyring.errors.KeyringError("keychain is locked")
+
+    def set_password(self, service, username, password):
+        raise keyring.errors.KeyringError("keychain is locked")
+
+    def delete_password(self, service, username):
+        raise keyring.errors.KeyringError("keychain is locked")
+
+
+@pytest.fixture
+def broken_keyring_env(isolated_home, monkeypatch):
+    """Isolated $HOME + a keyring that always raises KeyringError."""
+    backend = BrokenKeyring()
+    monkeypatch.setattr(keyring, "get_keyring", lambda: backend)
+    monkeypatch.setattr(keyring, "get_password", backend.get_password)
+    monkeypatch.setattr(keyring, "set_password", backend.set_password)
     return isolated_home
 
 
@@ -100,3 +126,75 @@ class TestGetExistingKey:
 
         assert result.exit_code == 0, result.output
         assert result.stdout.strip() == "test-token"
+
+
+class TestKeyringFailureReporting:
+    """A locked/unreachable keyring must surface as a single Error: line,
+    not a traceback -- across every subcommand that touches the
+    encrypted config, not just one."""
+
+    def test_list_reports_keyring_failure(self, broken_keyring_env):
+        runner = CliRunner()
+        result = runner.invoke(secrets_cli.cli, ["list"])
+
+        assert result.exit_code != 0
+        assert "Traceback" not in result.output
+        assert result.output.count("Error:") == 1
+        assert "keyring" in result.output.lower()
+        assert "keychain is locked" in result.output
+
+    def test_get_reports_keyring_failure(self, broken_keyring_env):
+        runner = CliRunner()
+        result = runner.invoke(secrets_cli.cli, ["get", "API_TOKEN"])
+
+        assert result.exit_code != 0
+        assert "Traceback" not in result.output
+        assert result.output.count("Error:") == 1
+        assert "keyring" in result.output.lower()
+        assert "keychain is locked" in result.output
+
+    def test_set_reports_keyring_failure(self, broken_keyring_env):
+        runner = CliRunner()
+        result = runner.invoke(secrets_cli.cli, ["set", "API_TOKEN", "value"])
+
+        assert result.exit_code != 0
+        assert "Traceback" not in result.output
+        assert result.output.count("Error:") == 1
+        assert "keyring" in result.output.lower()
+        assert "keychain is locked" in result.output
+
+    def test_missing_key_behavior_unchanged_when_keyring_is_healthy(self, secrets_env):
+        """The fix-get-exit-codes-1.md behavior must survive this PR untouched."""
+        runner = CliRunner()
+        result = runner.invoke(secrets_cli.cli, ["get", "MISSING"])
+
+        assert result.exit_code != 0
+        assert "Secret 'MISSING' not found." in result.output
+        assert "keychain is locked" not in result.output
+
+
+class TestKeyboardInterruptNotSwallowed:
+    """Click's own top-level handler turns a KeyboardInterrupt into
+    Abort -> "Aborted!" -> exit(1) for every command (verified: it does
+    this identically with no ptools code involved). What matters here is
+    that SecretsGroup's ``except EncryptionError`` doesn't sit in front
+    of that and either swallow the interrupt into a zero exit or
+    misreport it as a keyring failure -- which it would if the handler
+    were broadened to ``except Exception``/``except BaseException``.
+    """
+
+    def test_keyboard_interrupt_is_not_caught_as_a_keyring_failure(
+        self, secrets_env, monkeypatch
+    ):
+        def boom(self, key, default=None):
+            raise KeyboardInterrupt
+
+        monkeypatch.setattr(secrets_cli.SecretsConfig, "get_secret", boom)
+
+        runner = CliRunner()
+        result = runner.invoke(secrets_cli.cli, ["get", "API_TOKEN"])
+
+        assert result.exit_code != 0
+        assert isinstance(result.exception, SystemExit)
+        assert "keyring" not in result.output.lower()
+        assert "Error:" not in result.output
