@@ -88,16 +88,11 @@ def _format_output(
         OSRequirement,
     )
 
+    # announced is already deduped by ptools.utils.require.announce(), so
+    # no local dedup is needed here.
     library_reqs = [r for r in announced if isinstance(r, LibraryRequirement)]
-    # Dedup while preserving first-seen order: the same binary/OS requirement
-    # (e.g. a shared @require.binary/os(...) gate) is commonly announced by
-    # more than one module, and each announcement should render once.
-    binary_reqs = list(dict.fromkeys(
-        r for r in announced if isinstance(r, BinaryRequirement)
-    ))
-    os_reqs = list(dict.fromkeys(
-        r for r in announced if isinstance(r, OSRequirement)
-    ))
+    binary_reqs = [r for r in announced if isinstance(r, BinaryRequirement)]
+    os_reqs = [r for r in announced if isinstance(r, OSRequirement)]
     key_reqs = [r for r in announced if isinstance(r, KeyRequirement)]
 
     base_names = {_pip_name_of(dep) for dep in base_deps}
