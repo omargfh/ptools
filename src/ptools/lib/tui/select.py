@@ -4,6 +4,10 @@
   pointer and colored highlight (enter confirms, escape cancels).
 - :func:`ask_text` - single-line text prompt with a dim placeholder
   example.
+- :func:`select` / :func:`text` - thin adapters over the two above,
+  shared by every picker call site instead of each redefining its own.
+- :func:`picker_output` - a prompt_toolkit output that renders to a
+  real terminal even when stdout is piped elsewhere.
 
 Extracted from :mod:`ptools.literals` so other commands (e.g. the touch
 wizard) can reuse the same flows.
@@ -19,7 +23,11 @@ from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.shortcuts import PromptSession
 from prompt_toolkit.styles import Style
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
+
+# A picker option is (value, label) or (value, label, description) -- the
+# same shape SelectApp._normalize accepts.
+PickerOption = tuple[str, str] | tuple[str, str, str]
 
 STYLE = Style.from_dict(
     {
@@ -211,3 +219,83 @@ def ask_text(
         placeholder=[("class:placeholder", placeholder)] if placeholder else None,
         style=STYLE,
     )
+
+
+def select(
+    options: list[PickerOption],
+    message: str = "",
+    *,
+    selected: str | None = None,
+    selected_text: str | None = None,
+    select_handler=None,
+    max_visible: int = 12,
+    app_cls: type[SelectApp] | None = None,
+    input=None,
+    output=None,
+) -> str | None:
+    """Run a vite-style picker; return the chosen value, or ``None`` when cancelled.
+
+    Thin adapter over :class:`SelectApp` -- the same one-line wrapper that
+    ``proc.py``, ``touch.py``, ``literals.py``, and ``utils/config.py``
+    each used to define for themselves. ``options`` accepts ``(value,
+    label)`` or ``(value, label, description)`` tuples, per
+    :meth:`SelectApp._normalize`. ``max_visible`` is forwarded so long
+    option lists stay scrollable rather than being flattened.
+
+    ``app_cls`` swaps in a :class:`SelectApp` subclass (e.g.
+    ``literals.LiteralsApp``) for a caller that needs a different
+    confirmation-line class rather than just a different
+    ``selected_text`` string. It's resolved to :class:`SelectApp` inside
+    the function body -- not as a default parameter value -- so tests
+    that monkeypatch this module's ``SelectApp`` keep working for every
+    caller of :func:`select`.
+    """
+    cls = app_cls if app_cls is not None else SelectApp
+    return (
+        cls(
+            options,
+            message=message,
+            selected=selected,
+            selected_text=selected_text,
+            select_handler=select_handler,
+            max_visible=max_visible,
+            input=input,
+            output=output,
+        ).run()
+        or None
+    )
+
+
+def text(
+    message: str,
+    placeholder: str = "",
+    default: str = "",
+    input=None,
+    output=None,
+) -> str:
+    """Prompt for a single line of text with a dim placeholder example.
+
+    Thin adapter over :func:`ask_text`, shared the same way :func:`select`
+    is shared over :class:`SelectApp`. Callers that want a blank answer
+    treated as "no value" (rather than ``""``) apply ``.strip() or None``
+    themselves -- folding that in here would be a behaviour change for
+    the callers that don't want it.
+    """
+    return ask_text(message, placeholder=placeholder, default=default, input=input, output=output)
+
+
+def picker_output():
+    """Build a prompt_toolkit output that renders to a real terminal.
+
+    A picker is often invoked by a command whose stdout is being
+    captured by its caller -- e.g. ``VALUE=$(ptools settings get)``, or
+    any wizard whose output is redirected to a file. Without this,
+    prompt_toolkit falls back to a ``PlainTextOutput`` that writes the
+    picker's UI straight into that pipe instead of the terminal.
+    ``always_prefer_tty=True`` keeps the picker on the terminal
+    (preferring ``stderr`` over a non-tty ``stdout``) no matter where
+    stdout points.
+    """
+    from prompt_toolkit.output.defaults import create_output
+
+    return create_output(always_prefer_tty=True)
