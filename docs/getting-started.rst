@@ -29,14 +29,14 @@ From the repository root:
 
    sphinx-build -b html docs docs/_build/html
 
-or equivalently, using the provided Makefile:
+or, using the ``ptools dev docs`` subcommand:
 
 .. code-block:: bash
 
    ptools dev docs
 
 Open ``docs/_build/html/index.html`` in a browser to view the rendered
-site. A convenience :file:`Makefile` is also provided ``make -C docs
+site. A convenience :file:`Makefile` is also provided: ``make -C docs
 html`` is equivalent.
 
 Project layout
