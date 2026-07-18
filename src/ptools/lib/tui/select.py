@@ -12,11 +12,11 @@ wizard) can reuse the same flows.
 from __future__ import annotations
 
 from prompt_toolkit import Application
-from prompt_toolkit import prompt as _pt_prompt
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.layout import Layout
 from prompt_toolkit.layout.containers import Window
 from prompt_toolkit.layout.controls import FormattedTextControl
+from prompt_toolkit.shortcuts import PromptSession
 from prompt_toolkit.styles import Style
 
 __version__ = "0.2.0"
@@ -78,6 +78,10 @@ class SelectApp:
         self.selected_text = selected_text
         self.select_handler = select_handler
         self.selected = []
+        # The confirmation line echoes the label the user actually read,
+        # which can differ from the value callers get back (a picker may
+        # use opaque or sentinel values behind readable labels).
+        self.selected_label = ""
 
         kb = KeyBindings()
         kb.add("up")(self._move(-1))
@@ -162,11 +166,11 @@ class SelectApp:
         frags = [("class:check", "✔ ")]
         if self.message:
             frags.append(("class:question", f"{self.message} "))
-        frags.append(("class:answer", str(self.selected)))
+        frags.append(("class:answer", self.selected_label or str(self.selected)))
         return frags
 
     def _accept(self, event):
-        self.selected = self.items[self.index][0]
+        self.selected, self.selected_label, _desc = self.items[self.index]
         if self.select_handler:
             self.select_handler(self.selected)
         self._finish()
@@ -189,9 +193,19 @@ class SelectApp:
         return self.selected
 
 
-def ask_text(message: str, placeholder: str = "", default: str = "") -> str:
-    """Single-line text prompt with a dim placeholder example."""
-    return _pt_prompt(
+def ask_text(
+    message: str, placeholder: str = "", default: str = "", input=None, output=None
+) -> str:
+    """Single-line text prompt with a dim placeholder example.
+
+    ``input``/``output`` mirror :class:`SelectApp`'s: pass a TTY-preferring
+    output to keep the prompt off a piped stdout, or ``create_pipe_input``
+    / ``DummyOutput`` for headless testing. A :class:`PromptSession` is
+    built explicitly because prompt_toolkit's module-level ``prompt()``
+    shortcut doesn't forward them.
+    """
+    session = PromptSession(input=input, output=output)
+    return session.prompt(
         [("class:qmark", "? "), ("class:question", f"{message} ")],
         default=default,
         placeholder=[("class:placeholder", placeholder)] if placeholder else None,
