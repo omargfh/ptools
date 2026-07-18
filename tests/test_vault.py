@@ -81,9 +81,12 @@ class TestSealUnsealRoundTrip:
 class TestWrongPassword:
     """A wrong password must fail loudly and leave the input file untouched.
 
-    This pins the load-bearing ordering at ``vault.py:41,44``: ``decrypt``
-    raises before ``open(output_file, "wb")`` runs, so a mistyped password
-    on an in-place unseal cannot truncate the ciphertext.
+    This pins the load-bearing ordering: ``decrypt`` raises before
+    ``open(output_file, "wb")`` runs, so a mistyped password on an
+    in-place unseal cannot truncate the ciphertext. The error is a
+    single ``click.ClickException`` line, not a raw traceback, and it
+    names wrong-password-or-corrupt-file as the cause without claiming
+    to know which -- GCM's MAC check can't distinguish the two.
     """
 
     def test_wrong_password_leaves_file_untouched(self, tmp_path):
@@ -97,6 +100,9 @@ class TestWrongPassword:
 
         result = runner.invoke(cli, ["unseal", str(target), "-p", "wrong-password"])
         assert result.exit_code != 0
+        assert result.output.count("Error:") == 1
+        assert "wrong password or corrupted file" in result.output
+        assert "Traceback" not in result.output
         assert target.read_bytes() == sealed_bytes
 
 
@@ -105,8 +111,11 @@ class TestCodePayloadIsNotExecuted:
     produce Python literals -- it never calls, imports, or executes
     anything. A file crafted to look like a call must fail to parse
     rather than run; the raised error alone proves it, so these tests
-    assert on the exception and do not check for any executed side
-    effect.
+    assert on the failure and do not check for any executed side effect.
+
+    ``vault.py`` catches the parse failure and re-raises it as a
+    ``click.ClickException``, which Click's runner renders as a single
+    ``Error:`` line and a clean exit rather than a traceback.
     """
 
     PAYLOAD = '__import__("os").system("echo PWNED")'
@@ -119,7 +128,8 @@ class TestCodePayloadIsNotExecuted:
         result = runner.invoke(cli, ["unseal", str(target), "-p", "irrelevant"])
 
         assert result.exit_code != 0
-        assert isinstance(result.exception, (ValueError, SyntaxError))
+        assert result.output.count("Error:") == 1
+        assert "not a valid vault file" in result.output
 
     def test_dig_rejects_a_code_payload(self, tmp_path, monkeypatch):
         _install_fake_keyring(monkeypatch)
@@ -130,7 +140,27 @@ class TestCodePayloadIsNotExecuted:
         result = runner.invoke(cli, ["dig", str(target)])
 
         assert result.exit_code != 0
-        assert isinstance(result.exception, (ValueError, SyntaxError))
+        assert result.output.count("Error:") == 1
+        assert "not a valid vault file" in result.output
+
+
+class TestMalformedVaultFile:
+    """A syntactically valid literal missing required vault fields is not
+    an execution risk (see ``TestCodePayloadIsNotExecuted``) but is still
+    a malformed vault file: ``decrypt`` raises ``KeyError``, which must
+    also become a clean ``ClickException`` rather than a traceback.
+    """
+
+    def test_unseal_rejects_a_dict_missing_required_fields(self, tmp_path):
+        runner = CliRunner()
+        target = tmp_path / "malformed.vault"
+        target.write_text("{'nonce': 'ab', 'ciphertext': 'cd'}")  # no 'tag'/'salt'
+
+        result = runner.invoke(cli, ["unseal", str(target), "-p", "irrelevant"])
+
+        assert result.exit_code != 0
+        assert result.output.count("Error:") == 1
+        assert "Traceback" not in result.output
 
 
 class TestBuryDigRoundTrip:
