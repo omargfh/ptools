@@ -32,7 +32,6 @@ Single source of truth for agents in this repo. `CLAUDE.md` symlinks here.
 | `src/ptools/lib/` | Reusable engines behind the heavier commands: `flow/` (expression runner), `proc/` (process explorer + Textual TUI), `llm/` (chat client, REPL, history), `fs/` (file-tree TUI, watchers), `tui/` (shared select/table/chart widgets) |
 | `src/ptools/utils/` | Cross-cutting helpers: config storage (`config.py`), encryption (`encrypt.py`), the `require` decorators that gate optional deps (`require.py`), serialization (`serial.py`) |
 | `src/ptools/formats/` | Serializer/deserializer backends (`json.py`, `yaml.py`) registered with `utils/serial.py`'s factory |
-| `src/ptools/models/` | Pydantic default-config schemas |
 | `src/ptools/starters/` | Packaged starter config data (`touch.yaml`, `literals.json`), loaded via `importlib.resources` to seed a user's config on first run (`utils/config.py:30-43`) |
 | `tests/` | pytest suite mirroring `src/ptools` 1:1 (`tests/lib/`, `tests/utils/`) |
 | `scripts/` | One-off dev scripts; currently just `generate_requirements.py` |
