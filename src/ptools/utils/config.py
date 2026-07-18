@@ -9,7 +9,7 @@ from pathlib import Path
 import click
 
 from typing import Generic, TypeVar, overload
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter
 
 from ptools.utils.print import ASCIIEscapes, FormatUtils
 from ptools.utils.encrypt import Encryption, EncryptionError
@@ -17,7 +17,7 @@ from ptools.utils.re import filter_dict_by_key
 
 from .serial import  SerializerDeserializerFactory
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 RESERVED_CONFIG_KEYS = [
     'name', 'path', 'file_path',
@@ -393,6 +393,45 @@ class LazyConfigFile(ConfigFile[T]):
         object.__getattribute__(self, '_initialize')()
         return super().__getattr__(item)
 
+def _coerce(config, key, value):
+    """Validate *key*/*value* against the config's model before storing them.
+
+    A model-backed config declares types (``PTOOLS_DEBUG: bool``) but the
+    CLI hands over raw strings, and a model validates on every read. Two
+    ways that goes wrong without a check here:
+
+    - An unparseable value is written straight to disk and bricks the
+      config: every later read raises in :meth:`ConfigFile._validate`,
+      taking down *every* command for that config — including the
+      ``delete`` that would undo it, and, for ``ptools settings``, every
+      module that imports it.
+    - A key the model doesn't declare is dropped on the next read, so the
+      write reports success and then silently vanishes.
+
+    Both become upfront usage errors, and values are stored with their
+    declared type (``True``, not ``"true"``). A config with no model is a
+    free-form key/value store and passes through untouched.
+
+    Only the one field is validated, not the whole model: a config whose
+    *other* fields are missing or stale shouldn't make an unrelated key
+    unsettable.
+    """
+    model = config.model
+    if model is None:
+        return value
+
+    if key not in model.model_fields:
+        valid = ", ".join(sorted(model.model_fields))
+        raise click.UsageError(
+            f"'{key}' is not a valid key for this config. Valid keys: {valid}."
+        )
+
+    try:
+        return TypeAdapter(model.model_fields[key].annotation).validate_python(value)
+    except Exception as e:
+        raise click.UsageError(f"Invalid value for '{key}': {e}") from e
+
+
 def config_to_CLI(
     config: ConfigFile | LazyConfigFile,
     cli: click.Group | None = None,
@@ -496,6 +535,7 @@ def config_to_CLI(
           $ ptools settings set PIP_EXECUTABLE 'uv pip'
           Set 'PIP_EXECUTABLE' to 'uv pip'.
         """
+        value = _coerce(config, key, value)
         config.set(key, value)
         click.echo(f"Set '{key}' to '{value}'.")
 
