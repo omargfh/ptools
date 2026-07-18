@@ -4,6 +4,7 @@ import os
 
 from ptools.utils.print import FormatUtils
 from ptools.utils.config import ConfigFile
+from ptools.utils.encrypt import EncryptionError
 
 config_instance = None
 class SecretsConfig():
@@ -40,7 +41,25 @@ def filter(dict, query, regex=False):
     else:
         return {k: v for k, v in dict.items() if query in k}
 
-@click.group()
+class SecretsGroup(click.Group):
+    """Click group that turns a keyring failure into a one-line error.
+
+    Every subcommand in this group builds an encrypted ``ConfigFile``
+    (see :class:`SecretsConfig`), so a locked, unreachable, or
+    misconfigured system keyring surfaces identically everywhere:
+    catch ``EncryptionError`` once here instead of wrapping each
+    subcommand in its own ``try``/``except``. The original message is
+    preserved as-is -- it already distinguishes an unreachable keyring
+    from a decrypt failure (wrong key/corrupt ciphertext), and
+    collapsing that distinction would misreport one as the other.
+    """
+    def invoke(self, ctx):
+        try:
+            return super().invoke(ctx)
+        except EncryptionError as e:
+            raise click.ClickException(str(e)) from e
+
+@click.group(cls=SecretsGroup)
 def cli():
     """Manage secrets configuration.
 
@@ -101,8 +120,8 @@ def get_secret(key, quiet, config_name):
             click.echo(value)
     else:
         if not quiet:
-            click.echo(FormatUtils.warning(f"Secret '{key}' not found."))
-            raise KeyError(f"Secret '{key}' not found.")
+            raise click.ClickException(f"Secret '{key}' not found.")
+        exit(1)
 
 @click.command()
 @click.option('--query', '-q', help="Query to filter secrets")
