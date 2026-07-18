@@ -45,7 +45,7 @@ def cli():
 
 @click.command()
 def read():
-    """Development command to read from stdin and print the StreamValue representation.
+    """Read from stdin and print the StreamValue representation.
 
 
     Example::
