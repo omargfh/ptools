@@ -393,19 +393,12 @@ def watchers_kill(pid, force):
       $ ptools fs watchers kill 77794
       Sent SIGTERM to PID 77794.
     """
-    import signal
-    import os
+    from ptools.lib.proc import actions
 
-    sig = signal.SIGKILL if force else signal.SIGTERM
     try:
-        os.kill(pid, sig)
-        click.echo(f"Sent {'SIGKILL' if force else 'SIGTERM'} to PID {pid}.")
-    except ProcessLookupError:
-        click.echo(f"PID {pid} not found.")
-    except PermissionError:
-        click.echo(f"Permission denied for PID {pid}. Try with sudo.")
-    except Exception as e:
-        click.echo(f"Error killing PID {pid}: {e}")
+        click.echo(actions.terminate(pid, force=force))
+    except actions.ActionError as e:
+        click.echo(str(e), err=True)
 
 
 @watchers.command(name="killname")
@@ -420,8 +413,15 @@ def watchers_kill(pid, force):
     default=False,
     help="Show what would be killed without killing",
 )
+@click.option(
+    "--yes",
+    "-y",
+    is_flag=True,
+    default=False,
+    help="Skip the confirmation prompt",
+)
 @require.os(["darwin"])
-def watchers_killname(name, force, dry_run):
+def watchers_killname(name, force, dry_run, yes):
     """Kill processes matching a name, command, or label substring.
 
     \b
@@ -433,10 +433,10 @@ def watchers_killname(name, force, dry_run):
       $ ptools fs watchers killname "Docker" --dry-run
       [dry-run] Would kill PID 77794 (Virtualizatio) label="macOS VM (Docker?)"
     """
-    import signal
     import os
 
-    sig = signal.SIGKILL if force else signal.SIGTERM
+    from ptools.lib.proc import actions
+
     sig_name = "SIGKILL" if force else "SIGTERM"
 
     data = _get_watcher_data()
@@ -448,27 +448,33 @@ def watchers_killname(name, force, dry_run):
         or needle in d["exec_path"].lower()
         or needle in d["label"].lower()
     ]
+    matches = [d for d in matches if d["pid"] != os.getpid()]  # never kill ourselves
 
     if not matches:
         click.echo(f"No processes matching '{name}'.")
         return
 
-    for proc in matches:
-        label_str = f' label="{proc["label"]}"' if proc["label"] else ""
-        if dry_run:
+    if dry_run:
+        for proc in matches:
+            label_str = f' label="{proc["label"]}"' if proc["label"] else ""
             click.echo(
                 f"[dry-run] Would kill PID {proc['pid']} ({proc['command']}){label_str} ({proc['fds']} fds)"
             )
-        else:
-            try:
-                os.kill(proc["pid"], sig)
-                click.echo(
-                    f"Killed PID {proc['pid']} ({proc['command']}){label_str} - {sig_name}"
-                )
-            except ProcessLookupError:
-                click.echo(f"PID {proc['pid']} already gone.")
-            except PermissionError:
-                click.echo(f"Permission denied for PID {proc['pid']}. Try with sudo.")
+        return
+
+    if not yes and not click.confirm(f"Kill {len(matches)} process(es) matching '{name}'?"):
+        click.echo("Aborted.")
+        return
+
+    for proc in matches:
+        label_str = f' label="{proc["label"]}"' if proc["label"] else ""
+        try:
+            actions.terminate(proc["pid"], force=force)
+            click.echo(
+                f"Killed PID {proc['pid']} ({proc['command']}){label_str} - {sig_name}"
+            )
+        except actions.ActionError as e:
+            click.echo(str(e), err=True)
 
 
 # Expose label CRUD via config_to_CLI
