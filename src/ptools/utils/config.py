@@ -464,6 +464,14 @@ def _key_options(config, include_unset=False, allow_new=False):
     return options
 
 
+def _field_annotation(config, key):
+    """Return the type *key* is declared as, or ``None`` if undeclared."""
+    model = config.model
+    if model is None or key not in model.model_fields:
+        return None
+    return model.model_fields[key].annotation
+
+
 def _coerce(config, key, value):
     """Validate *key*/*value* against the config's model before storing them.
 
@@ -576,11 +584,13 @@ def config_to_CLI(
         if not sys.stdin.isatty():
             raise click.UsageError(message)
 
-    def select(options, message, output=None):
+    def select(options, message, output=None, selected=None):
         """Run the shared vite-style picker; return ``None`` when cancelled."""
         from ptools.lib.tui.select import SelectApp
 
-        return SelectApp(options, message=message, output=output).run() or None
+        return SelectApp(
+            options, message=message, output=output, selected=selected
+        ).run() or None
 
     def pick_key(message, output, include_unset=False, allow_new=False):
         """Pick a config key interactively, resolving the "+ new key" row.
@@ -605,17 +615,37 @@ def config_to_CLI(
         return key
 
     def ask_value(key, output):
-        """Prompt for *key*'s value, pre-filled with what's stored today.
+        """Prompt for *key*'s value, seeded with what's stored today.
 
-        An encrypted config is prompted for blank: pre-filling would print
-        the stored secret to the terminal. An empty submission cancels,
-        matching the ``proc`` wizard's convention.
+        A key the model declares as ``bool`` has exactly two valid
+        answers, so it gets a picker rather than a free-text box the user
+        could fail to satisfy. The rows carry the *strings* ``"true"`` and
+        ``"false"``: returning a real ``False`` would be indistinguishable
+        from :func:`select`'s falsy "cancelled" result. Callers run the
+        answer through :func:`_coerce`, which turns it into a real bool.
+
+        An encrypted config is prompted blank/unselected: seeding would
+        show the stored secret. An empty submission cancels, matching the
+        ``proc`` wizard's convention.
         """
         from ptools.lib.tui.select import ask_text
 
         require_tty("VALUE is required when not running interactively.")
         current = config.get(key)
-        default = "" if (current is None or config.encryption is not None) else str(current)
+        hide_current = config.encryption is not None
+
+        if _field_annotation(config, key) is bool:
+            preselected = None
+            if current is not None and not hide_current:
+                preselected = "true" if current else "false"
+            return select(
+                [("true", "true"), ("false", "false")],
+                f"Value for {key}:",
+                output=output,
+                selected=preselected,
+            )
+
+        default = "" if (current is None or hide_current) else str(current)
         return ask_text(f"Value for {key}:", default=default, output=output).strip() or None
 
     @cli.command(name="list")

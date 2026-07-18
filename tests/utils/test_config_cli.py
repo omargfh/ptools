@@ -18,10 +18,15 @@ from ptools.utils.config import ConfigFile, _key_options, config_to_CLI
 
 
 class DemoModel(BaseModel):
-    """Two typed fields plus one that's only ever left at its default."""
+    """One of each shape the CLI treats differently.
+
+    ``DEBUG`` is picked from true/false; ``COUNT`` is typed but can still
+    be rejected; ``NOTE`` carries a description the picker surfaces.
+    """
 
     NAME: str = "demo"
     DEBUG: bool = False
+    COUNT: int = 0
     NOTE: str = Field(default="", description="a free-form note")
 
 
@@ -134,7 +139,7 @@ class TestTypedValueCoercion:
 
         assert result.exit_code == 2
         assert "not a valid key" in result.output
-        assert "DEBUG, NAME, NOTE" in result.output
+        assert "COUNT, DEBUG, NAME, NOTE" in result.output
 
     def test_undeclared_key_is_not_written_to_disk(self, cfg, tmp_path):
         cli = config_to_CLI(cfg, name="demo")
@@ -214,12 +219,12 @@ class TestInteractiveFallbacks:
         assert cfg.get("NAME") == "picked-value"
 
     def test_set_still_validates_a_value_typed_into_the_prompt(self, cfg, tty, monkeypatch):
-        patch_select(monkeypatch, ["DEBUG"])
-        patch_ask_text(monkeypatch, ["not-a-bool"])
+        patch_select(monkeypatch, ["COUNT"])
+        patch_ask_text(monkeypatch, ["not-an-int"])
         result = CliRunner().invoke(config_to_CLI(cfg, name="demo"), ["set"])
 
         assert result.exit_code == 2
-        assert "Invalid value for 'DEBUG'" in result.output
+        assert "Invalid value for 'COUNT'" in result.output
 
     def test_delete_confirms_before_removing_the_picked_key(self, cfg, tty, monkeypatch):
         patch_select(monkeypatch, ["NAME"])
@@ -266,6 +271,86 @@ class TestNonInteractiveUse:
         assert runner.invoke(cli, ["get", "NAME"]).output.strip() == "scripted"
 
 
+class TestBooleanFields:
+    """A declared ``bool`` is picked from true/false, not typed freehand."""
+
+    def test_bool_field_offers_a_true_false_picker(self, cfg, tty, monkeypatch):
+        calls = patch_select(monkeypatch, ["DEBUG", "true"])
+        result = CliRunner().invoke(config_to_CLI(cfg, name="demo"), ["set"])
+
+        assert result.exit_code == 0, result.output
+        _message, values, _items = calls[1]
+        assert values == ["true", "false"]
+        assert cfg.get("DEBUG") is True
+
+    def test_picking_false_stores_false(self, cfg, tty, monkeypatch):
+        """Regression: a real ``False`` would read as a cancelled picker.
+
+        ``select`` treats any falsy result as "cancelled", so the rows
+        carry strings and ``_coerce`` converts them.
+        """
+        cfg.set("DEBUG", True)
+        patch_select(monkeypatch, ["DEBUG", "false"])
+        result = CliRunner().invoke(config_to_CLI(cfg, name="demo"), ["set"])
+
+        assert result.exit_code == 0, result.output
+        assert cfg.get("DEBUG") is False
+
+    def test_bool_field_never_opens_a_text_prompt(self, cfg, tty, monkeypatch):
+        import ptools.lib.tui.select as select_module
+
+        patch_select(monkeypatch, ["DEBUG", "true"])
+        monkeypatch.setattr(
+            select_module,
+            "ask_text",
+            lambda *a, **kw: pytest.fail("bool field fell back to a text prompt"),
+        )
+        assert CliRunner().invoke(config_to_CLI(cfg, name="demo"), ["set"]).exit_code == 0
+
+    def test_current_value_is_preselected(self, cfg, tty, monkeypatch):
+        cfg.set("DEBUG", True)
+        selections = []
+
+        import ptools.lib.tui.select as select_module
+
+        class FakeSelectApp:
+            def __init__(self, items, message="", selected=None, **kwargs):
+                selections.append(selected)
+                self._answer = "DEBUG" if selected is None and len(selections) == 1 else "false"
+
+            def run(self):
+                return self._answer
+
+        monkeypatch.setattr(select_module, "SelectApp", FakeSelectApp)
+        CliRunner().invoke(config_to_CLI(cfg, name="demo"), ["set"])
+
+        assert selections[1] == "true"
+
+    def test_cancelling_the_bool_picker_sets_nothing(self, cfg, tty, monkeypatch):
+        patch_select(monkeypatch, ["DEBUG", None])
+        result = CliRunner().invoke(config_to_CLI(cfg, name="demo"), ["set"])
+
+        assert result.exit_code == 1
+        assert cfg.get("DEBUG") is False
+
+    def test_string_field_still_uses_a_text_prompt(self, cfg, tty, monkeypatch):
+        patch_select(monkeypatch, ["NAME"])
+        patch_ask_text(monkeypatch, ["typed"])
+        result = CliRunner().invoke(config_to_CLI(cfg, name="demo"), ["set"])
+
+        assert result.exit_code == 0, result.output
+        assert cfg.get("NAME") == "typed"
+
+    def test_bool_picker_is_reached_through_the_edit_loop_too(self, cfg, tty, monkeypatch):
+        cfg.set("DEBUG", True)
+        # key picker -> action menu -> value picker -> key picker (cancel)
+        patch_select(monkeypatch, ["DEBUG", "set", "false", None])
+        result = CliRunner().invoke(config_to_CLI(cfg, name="demo"), ["edit"])
+
+        assert result.exit_code == 0, result.output
+        assert cfg.get("DEBUG") is False
+
+
 class TestEditLoop:
     """``edit`` re-shows the picker after each change until cancelled."""
 
@@ -294,10 +379,10 @@ class TestEditLoop:
 
     def test_an_invalid_value_keeps_the_loop_alive(self, cfg, tty, monkeypatch):
         """A typo reports the error and returns to the picker, not the shell."""
-        patch_select(monkeypatch, ["DEBUG", "set", None])
-        patch_ask_text(monkeypatch, ["not-a-bool"])
+        patch_select(monkeypatch, ["COUNT", "set", None])
+        patch_ask_text(monkeypatch, ["not-an-int"])
         result = CliRunner().invoke(config_to_CLI(cfg, name="demo"), ["edit"])
 
         assert result.exit_code == 0, result.output
-        assert "Invalid value for 'DEBUG'" in result.output
-        assert cfg.get("DEBUG") is False
+        assert "Invalid value for 'COUNT'" in result.output
+        assert cfg.get("COUNT") == 0

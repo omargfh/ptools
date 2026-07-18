@@ -9,11 +9,11 @@ Each setting is resolved in priority order:
 
 Read settings by importing the module-level constants (``PIP_EXECUTABLE``,
 etc.) or by calling :func:`get` directly. Persist a setting across shells
-with :func:`set_` - that writes to the config file so it survives without
+with :func:`set` - that writes to the config file so it survives without
 needing an env var::
 
     from ptools import settings
-    settings.set_("PIP_EXECUTABLE", "uv pip")
+    settings.set("PIP_EXECUTABLE", "uv pip")
 
 A single env var still wins over the stored value, so you can temporarily
 override without losing the persisted default::
