@@ -29,7 +29,7 @@ Single source of truth for agents in this repo. `CLAUDE.md` symlinks here.
 | Path | Responsibility |
 | --- | --- |
 | `src/ptools/*.py` | One file per top-level CLI subcommand (`touch.py`, `flow.py`, `proc.py`, …), registered in `main.py`'s `COMMANDS` dict |
-| `src/ptools/lib/` | Reusable engines behind the heavier commands: `flow/` (expression runner), `proc/` (process explorer + Textual TUI), `llm/` (chat client, REPL, history), `shellc/` (shell-script compiler), `fs/` (file-tree TUI, watchers), `tui/` (shared select/table/chart widgets) |
+| `src/ptools/lib/` | Reusable engines behind the heavier commands: `flow/` (expression runner), `proc/` (process explorer + Textual TUI), `llm/` (chat client, REPL, history), `fs/` (file-tree TUI, watchers), `tui/` (shared select/table/chart widgets) |
 | `src/ptools/utils/` | Cross-cutting helpers: config storage (`config.py`), encryption (`encrypt.py`), the `require` decorators that gate optional deps (`require.py`), serialization (`serial.py`) |
 | `src/ptools/formats/` | Serializer/deserializer backends (`json.py`, `yaml.py`) registered with `utils/serial.py`'s factory |
 | `src/ptools/models/` | Pydantic default-config schemas |

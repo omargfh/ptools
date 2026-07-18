@@ -40,8 +40,6 @@ the installed :mod:`ptools` package and its public submodules.
    ptools.lib.llm.repl.main
    ptools.lib.llm.session
    ptools.lib.llm.stores
-   ptools.lib.shellc
-   ptools.lib.shellc.compiler
    ptools.utils
    ptools.utils.cache
    ptools.utils.cases
