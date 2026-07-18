@@ -6,6 +6,7 @@
 # only to make a full install reproducible in one shot.
 
 # System binaries (install via your OS package manager):
+#   - darwin
 #   - node OR deno OR bun
 
 # --- Base dependencies (from pyproject.toml) ---
@@ -22,9 +23,9 @@ pydantic>=2.10
 pyyaml>=6.0.0
 requests>=2.32.0
 rich>=13.0
+tabulate>=0.10.0
 textual>=0.1.0
 watchdog>=3.0
-tabulate>=0.8.0
 
 # --- Optional libraries announced by ptools.utils.require ---
 openai
