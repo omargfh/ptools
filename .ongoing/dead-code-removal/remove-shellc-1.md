@@ -1,0 +1,36 @@
+# Remove (or wire up) the unused shellc subsystem
+
+**Goal**: Resolve `src/ptools/lib/shellc/` — 225 LOC of shell-script compiler with zero importers, zero tests, and no CLI surface — by deleting it and correcting the docs that claim it is a live subsystem.
+
+**In scope**: `src/ptools/lib/shellc/` (both files); the `shellc/` entry in `AGENTS.md:32`; the `shellc` docstring reference in `src/ptools/lib/__init__.py:4`; the Sphinx autosummary entries `docs/api/index.rst:43-44` and the generated stubs `docs/api/generated/ptools.lib.shellc.rst`, `docs/api/generated/ptools.lib.shellc.compiler.rst`, `docs/api/generated/ptools.lib.rst:15`.
+
+**Out of scope**: The three hand-rolled shell emitters themselves — `src/ptools/projects.py:34-48` (`_SHELL_FUNCTION_BODY`) and `src/ptools/shell.py:141,151,162` (`add_alias`, `add_export`, `extend_var`). Their behavior must not change in this PR. Rewriting them on top of a compiler is a separate task, not a slice of this one.
+
+**Description**: `src/ptools/lib/shellc/__init__.py:7-13` exports `ShellVar`, `ShellAlias`, `ShellFunc`, `ShellScript`, and `Dialect` from `compiler.py` (204 LOC), which supports four dialects (`compiler.py:24-51`: sh/bash/zsh/PowerShell), per-dialect quoting (`compiler.py:60-68`), and script assembly with a `write()` method (`compiler.py:196`). Nothing imports it. The only `shellc` references anywhere in the repo are its own `__init__.py`, a passing mention in the `lib/` package docstring, three auto-generated Sphinx stubs, and `AGENTS.md`, which lists it alongside genuinely-live engines like `flow/` and `proc/` as "shell-script compiler". The `projects.py` hits for the string `shellc` are the unrelated `shellconfigfile` parameter (`projects.py:378-422`).
+
+Meanwhile three hand-rolled emitters do the job shellc was built for: `projects.py:34-43` hardcodes the `@cd` function as an f-string, and `shell.py:141` (`alias {name}='{command}'`), `shell.py:151` (`export {var}='{value}'`), and `shell.py:162` (`{var}=${var}:{value}`) build lines by concatenation with no quote escaping.
+
+The honest choice is between two options:
+
+1. **Delete it.** shellc is 225 LOC of untested, unreferenced code. `AGENTS.md` core value 6 ("abstractions pay rent") says no pattern without the concrete cost it removes — shellc currently removes no cost, because nothing calls it. Deleting is one commit and fully reversible via git history.
+2. **Wire it up.** Port `projects.py` and `shell.py` onto shellc and delete the hand-rolled emitters. This is the outcome the abstraction was designed for and would fix the missing quote-escaping in `shell.py:141,151`, but it is a multi-PR refactor touching two user-facing commands that write to the user's real shell rc file, with no test coverage on either side to catch a regression.
+
+**Recommendation: delete (option 1), and open a separate task for the quoting bug in `shell.py` if it matters.** Option 2 is the better end state in the abstract, but it cannot be justified today: shellc has never been exercised by a single caller or test, so porting live rc-file-writing code onto it means trusting 204 unproven lines with the user's `.zshrc`. If the emitters are ever consolidated, shellc is recoverable from git with `git log --diff-filter=D -- src/ptools/lib/shellc/`. Deleting now removes the standing lie in `AGENTS.md` immediately, at the cost of losing the PowerShell dialect support (`compiler.py:44,65`) and the `ShellScript` sectioned-output/`write()` machinery (`compiler.py:146-204`), neither of which any current caller needs — `projects.py` and `shell.py` are both POSIX-only and append single lines.
+
+**Acceptance criteria**:
+- `src/ptools/lib/shellc/` no longer exists.
+- `grep -rn "shellc" src/ tests/ docs/ AGENTS.md` returns only the unrelated `shellconfigfile` matches in `src/ptools/projects.py`.
+- `AGENTS.md:32` no longer lists `shellc/` in the `src/ptools/lib/` row.
+- `.venv/bin/python3 -m pytest` passes with the same test count as before (372 at time of writing — shellc has no tests, so the number must not drop).
+- `.venv/bin/python3 -m sphinx -M html docs docs/_build` completes without a "toctree references unknown document" or autosummary import error for `ptools.lib.shellc`.
+- `ptools shell --help` and `ptools projects --help` are byte-identical to before the change.
+
+**Depends on**: none
+
+**Notes**: Deadness verified 2026-07-18 with `grep -rn "shellc" src/ tests/ docs/ scripts/ AGENTS.md`, which returned only: `src/ptools/lib/shellc/__init__.py:7` (its own re-export), `src/ptools/lib/__init__.py:4` (docstring mention), `docs/api/index.rst:43-44` plus three files under `docs/api/generated/` (Sphinx autosummary stubs), `AGENTS.md:32`, and eight `shellconfigfile` false positives in `src/ptools/projects.py`. LOC confirmed with `wc -l src/ptools/lib/shellc/*.py` → 21 + 204 = 225. Test absence confirmed by `ls tests/lib/` — there is no `shellc` test directory or file anywhere under `tests/`.
+
+The `docs/api/generated/` stubs may be regenerated by autosummary; check whether they are committed artifacts or build output before deciding to delete them by hand.
+
+This is the owner's own code. The deletion is recoverable, but the decision belongs to the owner, not the implementer — do not pick option 1 or 2 without explicit approval.
+
+**Status**: proposed — not approved
