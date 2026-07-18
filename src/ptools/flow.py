@@ -5,11 +5,12 @@ evaluates Python expressions against each value using the
 :class:`~ptools.lib.flow.runner.FlowRunner`, and emits the results in the
 requested output flavor (JSON, YAML, raw Python, etc.).
 
-The module defines the top-level CLI subcommands - :command:`map`,
-:command:`filter`, :command:`reduce`, :command:`group`, :command:`unique`,
-:command:`foreach`, :command:`while`, :command:`exec`, :command:`range`,
-:command:`json`, and :command:`dict` - all of which share a common
-expression-evaluation pipeline and output formatting layer.
+The module defines the top-level CLI subcommands - :command:`collect`,
+:command:`dict`, :command:`exec`, :command:`filter`, :command:`foreach`,
+:command:`group`, :command:`json`, :command:`patch`, :command:`range`,
+:command:`read`, :command:`reduce`, :command:`sort`, :command:`unique`,
+and :command:`while` - all of which share a common expression-evaluation
+pipeline and output formatting layer.
 """
 
 import click
@@ -132,7 +133,7 @@ def collect(expression, flavor, debug):
 
     \b
     Example:
-      $ printf '1\\n2\\n3\\n' | ptools flow map 'x * 2'
+      $ printf '1\\n2\\n3\\n' | ptools flow collect 'x * 2'
       2
       4
       6
