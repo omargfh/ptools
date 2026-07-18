@@ -19,7 +19,7 @@ from typing import List, Dict, Callable, Tuple, Union
 from ptools.utils.enums import LogicalOperators
 from ptools.utils.protocols import ImplementsGet
 
-__version__ = "0.1.0"
+__version__ = "0.2.1"
 
 
 @dataclass(frozen=True)
@@ -53,9 +53,23 @@ class KeyRequirement:
     logical_operator: str  # 'and' | 'or'
 
 
-Requirement = Union[LibraryRequirement, BinaryRequirement, KeyRequirement]
+@dataclass(frozen=True)
+class OSRequirement:
+    """One or more operating systems the current platform must match.
+
+    Distinct from :class:`BinaryRequirement`: an OS name (e.g. ``darwin``)
+    is checked against ``platform.system().lower()``, not looked up on
+    ``$PATH``.
+    """
+
+    names: Tuple[str, ...]
+    logical_operator: str  # 'and' | 'or'
+
+
+Requirement = Union[LibraryRequirement, BinaryRequirement, KeyRequirement, OSRequirement]
 
 _REQUIREMENTS: list[Requirement] = []
+_ANNOUNCED: set[Requirement] = set()
 
 
 def announce(requirement: Requirement) -> None:
@@ -65,7 +79,16 @@ def announce(requirement: Requirement) -> None:
     decoration time (i.e. when the surrounding module is imported), so
     simply importing a module is enough to make its requirements
     discoverable without actually invoking its commands.
+
+    Identical requirements (equal by value - every requirement type is a
+    frozen, hashable dataclass) are recorded once, in first-seen order;
+    the same decorator applied to several commands (e.g. four
+    ``@require.os(["darwin"])`` gates) would otherwise leave one entry per
+    application, forcing every consumer to dedup defensively.
     """
+    if requirement in _ANNOUNCED:
+        return
+    _ANNOUNCED.add(requirement)
     _REQUIREMENTS.append(requirement)
 
 
@@ -83,6 +106,7 @@ def announced_requirements() -> list[Requirement]:
 def clear_announcements() -> None:
     """Empty the requirement registry. Primarily useful in tests."""
     _REQUIREMENTS.clear()
+    _ANNOUNCED.clear()
 
 
 def _require_library(library: str):
@@ -264,7 +288,7 @@ def key(
 def os(names: List[str] | str, logical_operator: LogicalOperators = LogicalOperators.OR):
     "Click decorator to ensure the command is running on a specific OS."
     _names = tuple(names) if isinstance(names, list) else (names,)
-    announce(BinaryRequirement(
+    announce(OSRequirement(
         names=_names,
         logical_operator=logical_operator.value,
     ))

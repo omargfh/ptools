@@ -127,6 +127,89 @@ class TestDecorators:
         assert fn() == "secret"
 
 
+class TestOsDecorator:
+    def test_announces_os_requirement(self):
+        require.clear_announcements()
+
+        @require.os(["definitely-not-a-real-os"])
+        def fn():
+            return "ran"
+
+        announced = require.announced_requirements()
+        assert len(announced) == 1
+        assert isinstance(announced[0], require.OSRequirement)
+        assert not isinstance(announced[0], require.BinaryRequirement)
+        assert announced[0].names == ("definitely-not-a-real-os",)
+
+    def test_raises_on_non_matching_os(self):
+        @require.os(["definitely-not-a-real-os"])
+        def fn():
+            return "ran"
+
+        with pytest.raises(ValueError):
+            fn()
+
+    def test_passes_on_matching_os(self):
+        import platform
+
+        @require.os([platform.system().lower()])
+        def fn():
+            return "ran"
+
+        assert fn() == "ran"
+
+
+class TestAnnounceDedup:
+    def test_duplicate_requirement_recorded_once(self):
+        require.clear_announcements()
+
+        @require.os(["darwin"])
+        def a():
+            return "a"
+
+        @require.os(["darwin"])
+        def b():
+            return "b"
+
+        announced = require.announced_requirements()
+        assert len(announced) == 1
+
+    def test_first_seen_order_preserved(self):
+        require.clear_announcements()
+
+        @require.binary("git")
+        def a():
+            return "a"
+
+        @require.binary("ls")
+        def b():
+            return "b"
+
+        @require.binary("git")
+        def c():
+            return "c"
+
+        announced = require.announced_requirements()
+        assert [r.names for r in announced] == [("git",), ("ls",)]
+
+    def test_distinct_requirements_sharing_a_name_are_kept(self):
+        require.clear_announcements()
+
+        require.announce(require.LibraryRequirement(module="foo"))
+        require.announce(require.LibraryRequirement(module="foo", pypi_name="Foo-Alt"))
+
+        announced = require.announced_requirements()
+        assert len(announced) == 2
+
+    def test_clear_announcements_resets_dedup_state(self):
+        require.clear_announcements()
+        require.announce(require.LibraryRequirement(module="foo"))
+        require.clear_announcements()
+        require.announce(require.LibraryRequirement(module="foo"))
+
+        assert len(require.announced_requirements()) == 1
+
+
 class TestOptionalLibrary:
     def test_available_when_importable(self):
         check = require.optional_library("json")
