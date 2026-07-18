@@ -127,6 +127,38 @@ class TestDecorators:
         assert fn() == "secret"
 
 
+class TestOsDecorator:
+    def test_announces_os_requirement(self):
+        require.clear_announcements()
+
+        @require.os(["definitely-not-a-real-os"])
+        def fn():
+            return "ran"
+
+        announced = require.announced_requirements()
+        assert len(announced) == 1
+        assert isinstance(announced[0], require.OSRequirement)
+        assert not isinstance(announced[0], require.BinaryRequirement)
+        assert announced[0].names == ("definitely-not-a-real-os",)
+
+    def test_raises_on_non_matching_os(self):
+        @require.os(["definitely-not-a-real-os"])
+        def fn():
+            return "ran"
+
+        with pytest.raises(ValueError):
+            fn()
+
+    def test_passes_on_matching_os(self):
+        import platform
+
+        @require.os([platform.system().lower()])
+        def fn():
+            return "ran"
+
+        assert fn() == "ran"
+
+
 class TestOptionalLibrary:
     def test_available_when_importable(self):
         check = require.optional_library("json")

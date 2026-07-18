@@ -19,7 +19,7 @@ from typing import List, Dict, Callable, Tuple, Union
 from ptools.utils.enums import LogicalOperators
 from ptools.utils.protocols import ImplementsGet
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 
 @dataclass(frozen=True)
@@ -53,7 +53,20 @@ class KeyRequirement:
     logical_operator: str  # 'and' | 'or'
 
 
-Requirement = Union[LibraryRequirement, BinaryRequirement, KeyRequirement]
+@dataclass(frozen=True)
+class OSRequirement:
+    """One or more operating systems the current platform must match.
+
+    Distinct from :class:`BinaryRequirement`: an OS name (e.g. ``darwin``)
+    is checked against ``platform.system().lower()``, not looked up on
+    ``$PATH``.
+    """
+
+    names: Tuple[str, ...]
+    logical_operator: str  # 'and' | 'or'
+
+
+Requirement = Union[LibraryRequirement, BinaryRequirement, KeyRequirement, OSRequirement]
 
 _REQUIREMENTS: list[Requirement] = []
 
@@ -264,7 +277,7 @@ def key(
 def os(names: List[str] | str, logical_operator: LogicalOperators = LogicalOperators.OR):
     "Click decorator to ensure the command is running on a specific OS."
     _names = tuple(names) if isinstance(names, list) else (names,)
-    announce(BinaryRequirement(
+    announce(OSRequirement(
         names=_names,
         logical_operator=logical_operator.value,
     ))
