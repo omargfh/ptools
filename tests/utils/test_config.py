@@ -1,5 +1,6 @@
 """Tests for ptools.utils.config.ConfigFile, LazyConfigFile, and DummyKeyValueStore."""
 import json
+import os
 
 import pytest
 import yaml
@@ -176,3 +177,129 @@ class TestStarterSeeding:
         ConfigFile(name="touch", path=str(tmp_path), quiet=True, format="yaml")
 
         assert "#" in (tmp_path / "touch.yaml").read_text()
+
+
+class TestAtomicWrites:
+    """A failure part-way through a write must not truncate/corrupt the file.
+
+    ``_writes`` is patched on the *class* (not the instance) because
+    ``ConfigFile.__setattr__`` treats any non-reserved instance
+    attribute as config data to persist (see ``RESERVED_CONFIG_KEYS``) -
+    ``instance._writes = ...`` would silently try to write a function
+    into the config itself.
+    """
+
+    @pytest.mark.parametrize(
+        "method, args",
+        [
+            ("set", ("b", 2)),
+            ("delete", ("a",)),
+            ("clear", ()),
+            ("replace", ({"new": 1},)),
+        ],
+    )
+    def test_write_failure_leaves_file_byte_identical(
+        self, tmp_path, make_cfg, monkeypatch, method, args
+    ):
+        c = make_cfg(tmp_path=tmp_path)
+        c.set("a", 1)
+        before = (tmp_path / "unit_test.json").read_bytes()
+
+        def boom(self, f, data):
+            f.write("partial-garbage")  # proves this landed in the temp file
+            raise RuntimeError("writes exploded")
+
+        monkeypatch.setattr(ConfigFile, "_writes", boom)
+
+        with pytest.raises(RuntimeError):
+            getattr(c, method)(*args)
+
+        assert (tmp_path / "unit_test.json").read_bytes() == before
+
+    def test_temp_file_does_not_survive_a_failed_write(self, tmp_path, make_cfg, monkeypatch):
+        c = make_cfg(tmp_path=tmp_path)
+        c.set("a", 1)
+
+        def boom(self, f, data):
+            raise RuntimeError("writes exploded")
+
+        monkeypatch.setattr(ConfigFile, "_writes", boom)
+
+        with pytest.raises(RuntimeError):
+            c.set("b", 2)
+
+        assert not (tmp_path / "unit_test.json.tmp").exists()
+
+    def test_first_run_creation_failure_leaves_no_partial_file(self, tmp_path, monkeypatch):
+        """The :124 site (first-run seed write) fails atomically too."""
+
+        def boom(self, f, data):
+            f.write("partial-garbage")
+            raise RuntimeError("writes exploded")
+
+        monkeypatch.setattr(ConfigFile, "_writes", boom)
+
+        with pytest.raises(RuntimeError):
+            ConfigFile(name="fresh", path=str(tmp_path), quiet=True)
+
+        assert not (tmp_path / "fresh.json").exists()
+        assert not (tmp_path / "fresh.json.tmp").exists()
+
+    def test_encrypted_store_write_failure_leaves_prior_ciphertext_intact(
+        self, tmp_path, monkeypatch
+    ):
+        import keyring
+        from keyring.backend import KeyringBackend
+
+        from ptools.utils.encrypt import Encryption
+
+        class InMemoryKeyring(KeyringBackend):
+            """Minimal in-process keyring so the test never touches the real OS keychain."""
+
+            priority = 1  # type: ignore[assignment]
+
+            def __init__(self):
+                self._store: dict[tuple[str, str], str] = {}
+
+            def get_password(self, service, username):
+                return self._store.get((service, username))
+
+            def set_password(self, service, username, password):
+                self._store[(service, username)] = password
+
+            def delete_password(self, service, username):
+                self._store.pop((service, username), None)
+
+        backend = InMemoryKeyring()
+        monkeypatch.setattr(keyring, "get_keyring", lambda: backend)
+        monkeypatch.setattr(keyring, "get_password", backend.get_password)
+        monkeypatch.setattr(keyring, "set_password", backend.set_password)
+
+        c = ConfigFile(name="secret", path=str(tmp_path), quiet=True, encrypt=True)
+        c.set("token", "s3cret")
+        before = (tmp_path / "secret.json").read_bytes()
+
+        def boom(self, value):
+            raise RuntimeError("keyring unavailable")
+
+        monkeypatch.setattr(Encryption, "encrypt", boom)
+
+        with pytest.raises(RuntimeError):
+            c.set("token", "new-secret")
+
+        assert (tmp_path / "secret.json").read_bytes() == before
+        assert not (tmp_path / "secret.json.tmp").exists()
+
+        # The prior ciphertext is still readable, not just byte-identical.
+        reopened = ConfigFile(name="secret", path=str(tmp_path), quiet=True, encrypt=True)
+        assert reopened.get("token") == "s3cret"
+
+    def test_write_preserves_existing_permissions(self, tmp_path, make_cfg):
+        c = make_cfg(tmp_path=tmp_path)
+        c.set("a", 1)
+        path = tmp_path / "unit_test.json"
+        os.chmod(path, 0o600)
+
+        c.set("b", 2)
+
+        assert (os.stat(path).st_mode & 0o777) == 0o600

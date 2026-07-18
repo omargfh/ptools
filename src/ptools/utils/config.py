@@ -5,6 +5,7 @@ for storing user configuration on disk, plus :func:`config_to_CLI` to
 expose CRUD operations as a Click command group.
 """
 import os
+import shutil
 import sys
 from pathlib import Path
 import click
@@ -18,7 +19,7 @@ from ptools.utils.re import filter_dict_by_key
 
 from .serial import  SerializerDeserializerFactory
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 RESERVED_CONFIG_KEYS = [
     'name', 'path', 'file_path',
@@ -121,10 +122,9 @@ class ConfigFile(Generic[T]):
             with open(self.file_path, 'r') as f: # r+ for possible write
                 self.data = self._reads(f)
         else:
-            with open(self.file_path, 'w') as f:
-                self.data = self._validate({})
-                self._writes(f, self.data)
-                self._echo(FormatUtils.info(f"Created new config file at {self.file_path}"))
+            self.data = self._validate({})
+            self._atomic_write(lambda f: self._writes(f, self.data))
+            self._echo(FormatUtils.info(f"Created new config file at {self.file_path}"))
 
         self._echo(FormatUtils.success(f"Loaded config file {self.file_path}"))
 
@@ -206,6 +206,37 @@ class ConfigFile(Generic[T]):
         except Exception as e:
             raise RuntimeError(f"Failed to write config file {self.file_path}: {e}")
 
+    def _atomic_write(self, write_fn):
+        """Run ``write_fn(file_object)`` against a temp file, then atomically
+        replace ``self.file_path`` with it via :func:`os.replace`.
+
+        ``write_fn`` does the actual serialization/encryption, so all of
+        that work - including anything that can fail, like a keyring
+        round-trip or an unserializable value - happens inside the temp
+        file's write window instead of after the real target has already
+        been truncated. If ``write_fn`` raises, the temp file is removed
+        and ``self.file_path`` is left byte-for-byte as it was.
+
+        The temp file is created next to ``self.file_path`` (same
+        directory), not in the system temp dir, so :func:`os.replace`
+        stays on one filesystem and stays atomic.
+        """
+        tmp_path = f"{self.file_path}.tmp"
+        try:
+            with open(tmp_path, 'w') as f:
+                write_fn(f)
+            if os.path.exists(self.file_path):
+                # Carry over the existing file's permissions rather than
+                # letting the freshly-created temp file's umask-derived
+                # mode silently replace them.
+                shutil.copymode(self.file_path, tmp_path)
+            os.replace(tmp_path, self.file_path)
+        except BaseException:
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+            raise
 
     def get(self, key, default=None):
         """Return the stored value for ``key`` or ``default`` if missing."""
@@ -214,8 +245,7 @@ class ConfigFile(Generic[T]):
     def set(self, key, value):
         """Persist ``value`` under ``key`` and write the file to disk."""
         self.data[key] = value
-        with open(self.file_path, 'w') as f:
-            self._writes(f, self.data)
+        self._atomic_write(lambda f: self._writes(f, self.data))
         self._echo(FormatUtils.success(f"Updated config file {self.file_path} with key '{key}'"))
         return self.data[key]
 
@@ -223,8 +253,7 @@ class ConfigFile(Generic[T]):
         """Remove ``key`` from the config and rewrite the file. No-op if absent."""
         if key in self.data:
             del self.data[key]
-            with open(self.file_path, 'w') as f:
-                self._writes(f, self.data)
+            self._atomic_write(lambda f: self._writes(f, self.data))
             self._echo(FormatUtils.success(f"Deleted key '{key}' from config file {self.file_path}"))
         else:
             self._echo(FormatUtils.warning(f"Key '{key}' not found in config file {self.file_path}"))
@@ -253,8 +282,7 @@ class ConfigFile(Generic[T]):
     def clear(self):
         """Wipe all stored data and rewrite the file."""
         self.data = {}
-        with open(self.file_path, 'w') as f:
-            self._writes(f, self.data)
+        self._atomic_write(lambda f: self._writes(f, self.data))
         self._echo(FormatUtils.success(f"Cleared all data from config file {self.file_path}"))
         return self.data
 
@@ -280,8 +308,7 @@ class ConfigFile(Generic[T]):
         if not isinstance(new_data, dict):
             raise TypeError("New data must be a dictionary.")
         self.data = new_data
-        with open(self.file_path, 'w') as f:
-            self._writes(f, self.data)
+        self._atomic_write(lambda f: self._writes(f, self.data))
         self._echo(FormatUtils.success(f"Replaced all data in config file {self.file_path}"))
         return self.data
 
