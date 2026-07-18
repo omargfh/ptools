@@ -16,7 +16,8 @@ def cli():
 def seal(input_file, output_file, password):
     """Encrypt a file and write the encrypted data to an output file.
 
-    If OUTPUT_FILE is not provided, the encrypted data will be printed to stdout.
+    If OUTPUT_FILE is not provided, INPUT_FILE is overwritten in place
+    with the encrypted data.
     """
     enc = PasswordEncryption(password)
     try:
@@ -41,7 +42,8 @@ def seal(input_file, output_file, password):
 def unseal(input_file, output_file, password):
     """Decrypt a file and write the decrypted data to an output file.
 
-    If OUTPUT_FILE is not provided, the decrypted data will be printed to stdout.
+    If OUTPUT_FILE is not provided, INPUT_FILE is overwritten in place
+    with the decrypted data.
     """
     enc = PasswordEncryption(password)
     try:
@@ -72,7 +74,8 @@ def unseal(input_file, output_file, password):
 def bury(input_file, output_file):
     """Encrypt a file using the system keyring and write the encrypted data to an output file.
 
-    If OUTPUT_FILE is not provided, the encrypted data will be printed to stdout.
+    If OUTPUT_FILE is not provided, INPUT_FILE is overwritten in place
+    with the encrypted data.
     """
     enc = Encryption(service_name="com.ptools.vault")
     try:
@@ -96,7 +99,8 @@ def bury(input_file, output_file):
 def dig(input_file, output_file):
     """Decrypt a file using the system keyring and write the decrypted data to an output file.
 
-    If OUTPUT_FILE is not provided, the decrypted data will be printed to stdout.
+    If OUTPUT_FILE is not provided, INPUT_FILE is overwritten in place
+    with the decrypted data.
     """
     enc = Encryption(service_name="com.ptools.vault")
     try:
