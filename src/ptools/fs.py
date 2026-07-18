@@ -355,6 +355,9 @@ def watchers():
 def watchers_list(top, min_fds, kqueue_only, flavor):
     """List processes by number of watched files.
 
+    To kill matching processes, use ``ptools proc kill``, e.g.
+    ``ptools proc kill --where 'name~node | exe~node'``.
+
     \b
     Example:
         $ ptools fs watchers list --top 10
@@ -399,82 +402,6 @@ def watchers_kill(pid, force):
         click.echo(actions.terminate(pid, force=force))
     except actions.ActionError as e:
         click.echo(str(e), err=True)
-
-
-@watchers.command(name="killname")
-@click.argument("name", type=str)
-@click.option(
-    "--force", "-9", is_flag=True, default=False, help="Send SIGKILL instead of SIGTERM"
-)
-@click.option(
-    "--dry-run",
-    "-d",
-    is_flag=True,
-    default=False,
-    help="Show what would be killed without killing",
-)
-@click.option(
-    "--yes",
-    "-y",
-    is_flag=True,
-    default=False,
-    help="Skip the confirmation prompt",
-)
-@require.os(["darwin"])
-def watchers_killname(name, force, dry_run, yes):
-    """Kill processes matching a name, command, or label substring.
-
-    \b
-    Example:
-      $ ptools fs watchers killname node
-      Killed PID 32827 (node) - SIGTERM
-      Killed PID 32830 (node) - SIGTERM
-
-      $ ptools fs watchers killname "Docker" --dry-run
-      [dry-run] Would kill PID 77794 (Virtualizatio) label="macOS VM (Docker?)"
-    """
-    import os
-
-    from ptools.lib.proc import actions
-
-    sig_name = "SIGKILL" if force else "SIGTERM"
-
-    data = _get_watcher_data()
-    needle = name.lower()
-    matches = [
-        d
-        for d in data
-        if needle in d["command"].lower()
-        or needle in d["exec_path"].lower()
-        or needle in d["label"].lower()
-    ]
-    matches = [d for d in matches if d["pid"] != os.getpid()]  # never kill ourselves
-
-    if not matches:
-        click.echo(f"No processes matching '{name}'.")
-        return
-
-    if dry_run:
-        for proc in matches:
-            label_str = f' label="{proc["label"]}"' if proc["label"] else ""
-            click.echo(
-                f"[dry-run] Would kill PID {proc['pid']} ({proc['command']}){label_str} ({proc['fds']} fds)"
-            )
-        return
-
-    if not yes and not click.confirm(f"Kill {len(matches)} process(es) matching '{name}'?"):
-        click.echo("Aborted.")
-        return
-
-    for proc in matches:
-        label_str = f' label="{proc["label"]}"' if proc["label"] else ""
-        try:
-            actions.terminate(proc["pid"], force=force)
-            click.echo(
-                f"Killed PID {proc['pid']} ({proc['command']}){label_str} - {sig_name}"
-            )
-        except actions.ActionError as e:
-            click.echo(str(e), err=True)
 
 
 # Expose label CRUD via config_to_CLI

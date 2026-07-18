@@ -1,12 +1,15 @@
-"""Tests for ``ptools kill port``/``ptools kill process``.
+"""Tests for ``ptools kill port``.
+
+``ptools kill process`` was retired in favor of
+``ptools proc kill --where 'name~NAME'`` -- see
+``test_kill_process_no_longer_exists`` below.
 
 Every path that could send a real signal is exercised through mocks:
-``subprocess.run`` (the ``lsof``/``pgrep`` lookups) and
+``subprocess.run`` (the ``lsof`` lookup) and
 ``ptools.lib.proc.actions.os.kill`` (the actual signal) are both
 monkeypatched to recording stubs. No real process is ever touched,
 including the pytest process itself.
 """
-import os
 import signal
 
 from click.testing import CliRunner
@@ -102,78 +105,14 @@ class TestKillPort:
         assert result.exit_code != 0
         assert "No process is listening on port 9." in result.output
 
-    def test_never_shells_out_to_kill(self):
-        source = open(kill.__file__).read()
-        assert '"kill",' not in source
-        assert "'kill'," not in source
-
-
-class TestKillProcess:
-    def test_dry_run_lists_each_pid_individually(self, monkeypatch):
-        monkeypatch.setattr(
-            kill.subprocess, "run", lambda *a, **k: _FakeCompleted("111\n222\n")
-        )
-
-        runner = CliRunner()
-        result = runner.invoke(kill.cli, ["process", "somename", "--dry-run"])
-
-        assert result.exit_code == 0, result.output
-        assert "[dry-run] Would send SIGTERM to PID 111 (somename)." in result.output
-        assert "[dry-run] Would send SIGTERM to PID 222 (somename)." in result.output
-
-    def test_excludes_own_pid(self, monkeypatch):
-        own = os.getpid()
-        monkeypatch.setattr(
-            kill.subprocess, "run", lambda *a, **k: _FakeCompleted(f"{own}\n333\n")
-        )
-
-        runner = CliRunner()
-        result = runner.invoke(kill.cli, ["process", "somename", "--dry-run"])
-
-        assert result.exit_code == 0, result.output
-        assert str(own) not in result.output
-        assert "333" in result.output
-
-    def test_never_signals_own_pid_on_real_kill(self, monkeypatch):
-        own = os.getpid()
-        calls = []
-        monkeypatch.setattr(actions.os, "kill", _fake_kill(calls))
-        monkeypatch.setattr(
-            kill.subprocess, "run", lambda *a, **k: _FakeCompleted(f"{own}\n333\n")
-        )
-
-        runner = CliRunner()
-        result = runner.invoke(kill.cli, ["process", "somename"])
-
-        assert result.exit_code == 0, result.output
-        assert all(pid != own for pid, _sig in calls)
-        assert calls == [(333, signal.SIGTERM)]
-
-    def test_no_match_reports_and_exits_nonzero(self, monkeypatch):
-        monkeypatch.setattr(kill.subprocess, "run", lambda *a, **k: _FakeCompleted(""))
-
-        runner = CliRunner()
-        result = runner.invoke(kill.cli, ["process", "definitely-not-running"])
-
-        assert result.exit_code != 0
-        assert "No process found with name 'definitely-not-running'." in result.output
-
-    def test_no_match_dry_run_still_exits_zero(self, monkeypatch):
-        monkeypatch.setattr(kill.subprocess, "run", lambda *a, **k: _FakeCompleted(""))
-
-        runner = CliRunner()
-        result = runner.invoke(kill.cli, ["process", "definitely-not-running", "--dry-run"])
-
-        assert result.exit_code == 0, result.output
-
     def test_permission_error_surfaces_and_exits_nonzero(self, monkeypatch):
         monkeypatch.setattr(actions.os, "kill", _raising_kill(PermissionError()))
         monkeypatch.setattr(
-            kill.subprocess, "run", lambda *a, **k: _FakeCompleted("111\n")
+            actions.subprocess, "run", lambda *a, **k: _FakeCompleted("111\n")
         )
 
         runner = CliRunner()
-        result = runner.invoke(kill.cli, ["process", "somename"])
+        result = runner.invoke(kill.cli, ["port", "3000"])
 
         assert result.exit_code != 0
         assert "Permission denied for PID 111" in result.output
@@ -182,3 +121,13 @@ class TestKillProcess:
         source = open(kill.__file__).read()
         assert '"kill",' not in source
         assert "'kill'," not in source
+
+
+def test_kill_process_no_longer_exists():
+    # Retired in favor of `ptools proc kill --where 'name~NAME'`; it must
+    # not silently keep working.
+    runner = CliRunner()
+    result = runner.invoke(kill.cli, ["process", "anything"])
+
+    assert result.exit_code != 0
+    assert "No such command" in result.output
