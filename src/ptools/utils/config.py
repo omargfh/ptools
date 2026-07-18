@@ -18,7 +18,7 @@ from ptools.utils.re import filter_dict_by_key
 
 from .serial import  SerializerDeserializerFactory
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 RESERVED_CONFIG_KEYS = [
     'name', 'path', 'file_path',
@@ -377,7 +377,17 @@ class LazyConfigFile(ConfigFile[T]):
             super().__init__(*args, **kwargs)
 
     def __getattribute__(self, item):
-        if item in ('_initialized', '_initialize', '_lazy_args', '_lazy_kwargs'):
+        # Dunder lookups (__class__, __module__, ...) are exempt: they
+        # resolve on the class itself and don't need real data, and
+        # forcing init here would defeat laziness entirely. isinstance()
+        # falls back to an explicit getattr(obj, '__class__') when the
+        # fast type check misses (e.g. inspect.ismodule / inspect.isclass
+        # probing every attribute of a module, as sphinx-autodoc does),
+        # so without this exemption merely introspecting an uninitialized
+        # instance's type would trigger a full init.
+        if item in ('_initialized', '_initialize', '_lazy_args', '_lazy_kwargs') or (
+            item.startswith('__') and item.endswith('__')
+        ):
             return object.__getattribute__(self, item)
         object.__getattribute__(self, '_initialize')()
         return super().__getattribute__(item)
@@ -391,8 +401,33 @@ class LazyConfigFile(ConfigFile[T]):
             super().__setattr__(key, value)
 
     def __getattr__(self, item):
+        # Mirrors the __getattribute__ exemption: a dunder that isn't
+        # resolvable on the class doesn't exist, lazily or otherwise.
+        if item.startswith('__') and item.endswith('__'):
+            raise AttributeError(item)
         object.__getattribute__(self, '_initialize')()
         return super().__getattr__(item)
+
+    def __repr__(self):
+        # repr()/str() are implicit dunder calls (bypass __getattribute__
+        # for the method lookup itself, per the exemption above), but their
+        # inherited ConfigFile bodies read self.name/self.path/self.data,
+        # which *are* real data and would still force a full init. Tools
+        # routinely repr() arbitrary objects for debug logging (e.g.
+        # Sphinx's event dispatcher does this for every emitted event), so
+        # an uninitialized instance needs a safe answer that doesn't touch
+        # the backing file or keyring.
+        if object.__getattribute__(self, '_initialized'):
+            return super().__repr__()
+        args = object.__getattribute__(self, '_lazy_args')
+        kwargs = object.__getattribute__(self, '_lazy_kwargs')
+        name = kwargs.get('name', args[0] if args else None)
+        return f"<{type(self).__name__}(name={name!r}, uninitialized)>"
+
+    def __str__(self):
+        if object.__getattribute__(self, '_initialized'):
+            return super().__str__()
+        return repr(self)
 
 # Sentinel option value for "define a key that isn't stored yet". A NUL
 # byte can't appear in a real key parsed out of JSON/YAML, so this can
