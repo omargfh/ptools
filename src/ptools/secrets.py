@@ -101,8 +101,8 @@ def get_secret(key, quiet, config_name):
             click.echo(value)
     else:
         if not quiet:
-            click.echo(FormatUtils.warning(f"Secret '{key}' not found."))
-            raise KeyError(f"Secret '{key}' not found.")
+            raise click.ClickException(f"Secret '{key}' not found.")
+        exit(1)
 
 @click.command()
 @click.option('--query', '-q', help="Query to filter secrets")
