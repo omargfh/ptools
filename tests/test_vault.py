@@ -100,6 +100,39 @@ class TestWrongPassword:
         assert target.read_bytes() == sealed_bytes
 
 
+class TestCodePayloadIsNotExecuted:
+    """Vault files are parsed with ``ast.literal_eval``, which can only ever
+    produce Python literals -- it never calls, imports, or executes
+    anything. A file crafted to look like a call must fail to parse
+    rather than run; the raised error alone proves it, so these tests
+    assert on the exception and do not check for any executed side
+    effect.
+    """
+
+    PAYLOAD = '__import__("os").system("echo PWNED")'
+
+    def test_unseal_rejects_a_code_payload(self, tmp_path):
+        runner = CliRunner()
+        target = tmp_path / "malicious.vault"
+        target.write_text(self.PAYLOAD)
+
+        result = runner.invoke(cli, ["unseal", str(target), "-p", "irrelevant"])
+
+        assert result.exit_code != 0
+        assert isinstance(result.exception, (ValueError, SyntaxError))
+
+    def test_dig_rejects_a_code_payload(self, tmp_path, monkeypatch):
+        _install_fake_keyring(monkeypatch)
+        runner = CliRunner()
+        target = tmp_path / "malicious.vault"
+        target.write_text(self.PAYLOAD)
+
+        result = runner.invoke(cli, ["dig", str(target)])
+
+        assert result.exit_code != 0
+        assert isinstance(result.exception, (ValueError, SyntaxError))
+
+
 class TestBuryDigRoundTrip:
     """Keyring-based bury/dig, exercised against a monkeypatched keyring only."""
 

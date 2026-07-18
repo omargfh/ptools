@@ -1,3 +1,5 @@
+import ast
+
 import click
 
 from ptools.utils.encrypt import Encryption, PasswordEncryption
@@ -36,7 +38,7 @@ def unseal(input_file, output_file, password):
     """
     enc = PasswordEncryption(password)
     with open(input_file, "r") as f:
-        encrypted_blob = eval(f.read())  # Use eval to convert string back to dict
+        encrypted_blob = ast.literal_eval(f.read())
 
     decrypted_data = enc.decrypt(encrypted_blob)
 
@@ -71,7 +73,7 @@ def dig(input_file, output_file):
     """
     enc = Encryption(service_name="com.ptools.vault")
     with open(input_file, "r") as f:
-        encrypted_blob = eval(f.read())  # Use eval to convert string back to dict
+        encrypted_blob = ast.literal_eval(f.read())
 
     decrypted_data = enc.decrypt(encrypted_blob)
 
