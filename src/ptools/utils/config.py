@@ -5,6 +5,7 @@ for storing user configuration on disk, plus :func:`config_to_CLI` to
 expose CRUD operations as a Click command group.
 """
 import os
+import sys
 from pathlib import Path
 import click
 
@@ -393,6 +394,76 @@ class LazyConfigFile(ConfigFile[T]):
         object.__getattribute__(self, '_initialize')()
         return super().__getattr__(item)
 
+# Sentinel option value for "define a key that isn't stored yet". A NUL
+# byte can't appear in a real key parsed out of JSON/YAML, so this can
+# never collide with an actual entry.
+_NEW_KEY = "\x00new-key"
+
+# Value previews are descriptions on a single picker row; longer values
+# are elided rather than wrapping the row.
+_PREVIEW_MAX = 48
+
+
+def _picker_output():
+    """Build a prompt_toolkit output that renders to a real terminal.
+
+    ``get`` is meant to be used as ``$(ptools settings get KEY)``, so its
+    stdout may be a pipe. Same reasoning as ``ptools projects chdir``
+    (``src/ptools/projects.py``): ``always_prefer_tty=True`` keeps the
+    picker's UI on the terminal instead of letting it write into the pipe
+    the caller is capturing a value from.
+    """
+    from prompt_toolkit.output.defaults import create_output
+
+    return create_output(always_prefer_tty=True)
+
+
+def _preview(value, masked=False):
+    """Render *value* as a one-line picker description."""
+    if masked:
+        return "hidden" if value is not None else "unset"
+    if value is None:
+        return "unset"
+    # Collapse whitespace so a multi-line value stays on its own row.
+    text = " ".join(str(value).split())
+    if len(text) > _PREVIEW_MAX:
+        return f"{text[:_PREVIEW_MAX - 1]}…"
+    return text
+
+
+def _key_options(config, include_unset=False, allow_new=False):
+    """Build ``(value, label, description)`` picker rows for *config*'s keys.
+
+    Stored keys are described by a preview of their value — masked when
+    the config is encrypted, since those values are secrets that
+    shouldn't be painted onto the terminal just to browse key names.
+    With *include_unset*, a model-backed config also offers the fields it
+    declares but hasn't stored yet, described by their Pydantic
+    ``Field(description=...)``.
+
+    *allow_new* is honoured only for a config with no model. A model
+    validates on every read and drops keys it doesn't declare, so an
+    invented key would report success and then silently vanish; the
+    model's own fields (via *include_unset*) are already the complete set
+    of keys worth offering there.
+    """
+    masked = config.encryption is not None
+    data = config.data
+    options = [(str(key), str(key), _preview(value, masked)) for key, value in data.items()]
+
+    if include_unset and config.model is not None:
+        options += [
+            (field_name, field_name, field.description or "unset")
+            for field_name, field in config.model.model_fields.items()
+            if field_name not in data
+        ]
+
+    if allow_new and config.model is None:
+        options.append((_NEW_KEY, "+ new key", "define a key that isn't listed"))
+
+    return options
+
+
 def _coerce(config, key, value):
     """Validate *key*/*value* against the config's model before storing them.
 
@@ -438,8 +509,18 @@ def config_to_CLI(
     name: str | None = None,
 ):
     """Create a CRUD command-line interface for a given ConfigFile or LazyConfigFile instance.
-    The CLI will have commands to list, get, set, and delete key-value pairs in the config file.
+    The CLI will have commands to list, get, set, delete, and interactively edit key-value pairs
+    in the config file.
     The CLI is built using Click and can be easily integrated into a larger command-line application.
+
+    ``get``, ``set``, and ``delete`` take their key as an optional
+    argument: omit it and they open the same vite-style picker used by
+    ``ptools projects chdir`` (:class:`~ptools.lib.tui.select.SelectApp`),
+    listing each key alongside a preview of its value. ``edit`` is the
+    fully interactive form — a browse/mutate loop that re-shows the
+    picker after every change. Values are masked in the picker when the
+    config is encrypted, and every prompt degrades to a plain usage error
+    when stdin isn't a terminal, so scripted use is unaffected.
 
     :param config: An instance of ConfigFile or LazyConfigFile to manage with the CLI.
     :param cli: An optional Click Group to which the config commands will be added. If
@@ -485,6 +566,58 @@ def config_to_CLI(
         else:
             click.echo(f"{ASCIIEscapes.color(str(key), 'green')}: {value}")
 
+    def require_tty(message):
+        """Abort with *message* when there's no terminal to prompt on.
+
+        Without this, omitting an argument in a non-interactive context
+        (CI, a script with redirected stdin) surfaces as a prompt_toolkit
+        traceback rather than a usage error.
+        """
+        if not sys.stdin.isatty():
+            raise click.UsageError(message)
+
+    def select(options, message, output=None):
+        """Run the shared vite-style picker; return ``None`` when cancelled."""
+        from ptools.lib.tui.select import SelectApp
+
+        return SelectApp(options, message=message, output=output).run() or None
+
+    def pick_key(message, output, include_unset=False, allow_new=False):
+        """Pick a config key interactively, resolving the "+ new key" row.
+
+        Returns ``None`` when the user cancels or the config is empty and
+        there's nothing to offer.
+        """
+        from ptools.lib.tui.select import ask_text
+
+        require_tty("KEY is required when not running interactively.")
+        options = _key_options(config, include_unset=include_unset, allow_new=allow_new)
+        if not options:
+            click.echo(
+                FormatUtils.warning(f"No keys stored in config file {config.file_path}."),
+                err=True,
+            )
+            return None
+
+        key = select(options, message, output=output)
+        if key == _NEW_KEY:
+            return ask_text("New key:", placeholder="KEY_NAME", output=output).strip() or None
+        return key
+
+    def ask_value(key, output):
+        """Prompt for *key*'s value, pre-filled with what's stored today.
+
+        An encrypted config is prompted for blank: pre-filling would print
+        the stored secret to the terminal. An empty submission cancels,
+        matching the ``proc`` wizard's convention.
+        """
+        from ptools.lib.tui.select import ask_text
+
+        require_tty("VALUE is required when not running interactively.")
+        current = config.get(key)
+        default = "" if (current is None or config.encryption is not None) else str(current)
+        return ask_text(f"Value for {key}:", default=default, output=output).strip() or None
+
     @cli.command(name="list")
     @click.option('--query', '-q', help="Query to filter secrets")
     @click.option('--regex', '-g', is_flag=True, help="Use regex for filtering")
@@ -509,15 +642,25 @@ def config_to_CLI(
             dump_one(str(key).ljust(max_key_length), value)
 
     @cli.command(name="get")
-    @click.argument('key')
+    @click.argument('key', required=False)
     def get(key):
         """Get the value of a key.
+
+        When KEY is omitted, opens an interactive picker over the stored
+        keys. The picker renders to the terminal even when stdout is a
+        pipe, so ``VALUE=$(ptools settings get)`` still captures only the
+        value.
 
         \b
         Example:
           $ ptools settings get PIP_EXECUTABLE
           uv pip
         """
+        if key is None:
+            key = pick_key("Select a key:", _picker_output())
+            if key is None:
+                exit(1)
+
         value = config.get(key)
         if value is not None:
             click.echo(value)
@@ -525,35 +668,114 @@ def config_to_CLI(
             exit(1)
 
     @cli.command(name="set")
-    @click.argument('key')
-    @click.argument('value')
+    @click.argument('key', required=False)
+    @click.argument('value', required=False)
     def set(key, value):
         """Set the value of a key.
+
+        Omitting KEY opens a picker over the stored keys — plus, for a
+        model-backed config, the fields it declares but hasn't stored yet
+        and a "+ new key" row. Omitting VALUE prompts for one, pre-filled
+        with the current value.
 
         \b
         Example:
           $ ptools settings set PIP_EXECUTABLE 'uv pip'
           Set 'PIP_EXECUTABLE' to 'uv pip'.
         """
+        # Built only if something actually needs prompting, so a fully
+        # scripted `set KEY VALUE` never reaches for a terminal.
+        output = None
+        if key is None:
+            output = _picker_output()
+            key = pick_key("Select a key to set:", output, include_unset=True, allow_new=True)
+            if key is None:
+                exit(1)
+
+        if value is None:
+            output = output if output is not None else _picker_output()
+            value = ask_value(key, output)
+            if value is None:
+                exit(1)
+
         value = _coerce(config, key, value)
         config.set(key, value)
         click.echo(f"Set '{key}' to '{value}'.")
 
     @cli.command(name="delete")
-    @click.argument('key')
+    @click.argument('key', required=False)
     def delete(key):
         """Delete a key.
+
+        When KEY is omitted, opens an interactive picker over the stored
+        keys and confirms before removing the one chosen.
 
         \b
         Example:
           $ ptools settings delete PIP_EXECUTABLE
           Deleted key 'PIP_EXECUTABLE'.
         """
+        if key is None:
+            key = pick_key("Select a key to delete:", _picker_output())
+            if key is None:
+                exit(1)
+            click.confirm(f"Delete '{key}'?", abort=True)
+
         if key not in config:
             click.echo(FormatUtils.warning(f"Key '{key}' not found in config file {config.file_path}."))
             exit(1)
         config.delete(key)
         click.echo(f"Deleted key '{key}'.")
+
+    @cli.command(name="edit")
+    def edit():
+        """Browse and edit the config interactively.
+
+        Loops: pick a key, choose what to do with it, then land back on a
+        freshly-built picker so the effect of each change is visible.
+        Escape at the key picker exits.
+        """
+        require_tty("'edit' requires an interactive terminal.")
+        output = _picker_output()
+
+        while True:
+            key = pick_key(
+                "Select a key to edit:",
+                output,
+                include_unset=True,
+                allow_new=True,
+            )
+            if key is None:
+                return
+
+            action = select(
+                [
+                    ("set", f"Set the value of '{key}'"),
+                    ("delete", f"Delete '{key}'"),
+                    ("back", "Back to the key list"),
+                ],
+                f"What would you like to do with '{key}'?",
+                output=output,
+            )
+
+            if action == "set":
+                value = ask_value(key, output)
+                if value is not None:
+                    try:
+                        value = _coerce(config, key, value)
+                    except click.UsageError as e:
+                        # Stay in the loop: a typo shouldn't drop the user
+                        # out of the editor and lose their place.
+                        click.echo(FormatUtils.error(e.format_message()), err=True)
+                        continue
+                    config.set(key, value)
+                    click.echo(FormatUtils.success(f"Set '{key}' to '{value}'."))
+            elif action == "delete":
+                if key in config.data:
+                    config.delete(key)
+                    click.echo(FormatUtils.success(f"Deleted key '{key}'."))
+                else:
+                    click.echo(FormatUtils.warning(f"Key '{key}' is not stored; nothing to delete."))
 
     return cli
 
