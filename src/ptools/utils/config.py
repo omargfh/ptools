@@ -19,7 +19,7 @@ from ptools.utils.re import filter_dict_by_key
 
 from .serial import  SerializerDeserializerFactory
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 RESERVED_CONFIG_KEYS = [
     'name', 'path', 'file_path',
