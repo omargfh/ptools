@@ -19,7 +19,7 @@ from ptools.utils.re import filter_dict_by_key
 
 from .serial import  SerializerDeserializerFactory
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 RESERVED_CONFIG_KEYS = [
     'name', 'path', 'file_path',
@@ -646,21 +646,13 @@ def config_to_CLI(
         if not sys.stdin.isatty():
             raise click.UsageError(message)
 
-    def select(options, message, output=None, selected=None):
-        """Run the shared vite-style picker; return ``None`` when cancelled."""
-        from ptools.lib.tui.select import SelectApp
-
-        return SelectApp(
-            options, message=message, output=output, selected=selected
-        ).run() or None
-
     def pick_key(message, output, include_unset=False, allow_new=False):
         """Pick a config key interactively, resolving the "+ new key" row.
 
         Returns ``None`` when the user cancels or the config is empty and
         there's nothing to offer.
         """
-        from ptools.lib.tui.select import ask_text
+        from ptools.lib.tui.select import ask_text, select
 
         require_tty("KEY is required when not running interactively.")
         options = _key_options(config, include_unset=include_unset, allow_new=allow_new)
@@ -690,7 +682,7 @@ def config_to_CLI(
         show the stored secret. An empty submission cancels, matching the
         ``proc`` wizard's convention.
         """
-        from ptools.lib.tui.select import ask_text
+        from ptools.lib.tui.select import ask_text, select
 
         require_tty("VALUE is required when not running interactively.")
         current = config.get(key)
@@ -827,6 +819,8 @@ def config_to_CLI(
         freshly-built picker so the effect of each change is visible.
         Escape at the key picker exits.
         """
+        from ptools.lib.tui.select import select
+
         require_tty("'edit' requires an interactive terminal.")
         output = _picker_output()
 

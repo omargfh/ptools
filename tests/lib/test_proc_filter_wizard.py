@@ -1,14 +1,17 @@
 """Tests for the interactive filter-builder wizard (``ptools proc list --wizard``).
 
-Mirrors how ``tests/test_touch.py`` headlessly drives ``touch wizard``:
-``_select``/``_text`` (the same calling convention as ``touch._select``/
-``touch._text``) are monkeypatched to pop canned answers instead of running
-a real prompt_toolkit UI. The shell-agnostic operator/clause-building logic
-(``operators_for_kind``, ``format_clause``, ``join_clauses``) lives in
-``ptools.lib.proc.filter_wizard`` so it's shared with the Textual TUI's own
-filter-wizard screen (see ``tests/lib/test_proc_app_filter_wizard.py``);
-``ptools.proc`` re-imports those helpers by name, so ``proc.operators_for_kind``
-and ``ptools.lib.proc.filter_wizard.operators_for_kind`` are the same function.
+``proc``'s wizard functions import the shared ``select``/``text`` picker
+adapters *inside* their bodies (same pattern as
+``ptools.utils.config.config_to_CLI``), so these tests patch them on their
+defining module (``ptools.lib.tui.select``) -- the same place the runtime
+import resolves them from -- mirroring
+``tests/utils/test_config_cli.py``'s convention. The shell-agnostic
+operator/clause-building logic (``operators_for_kind``, ``format_clause``,
+``join_clauses``) lives in ``ptools.lib.proc.filter_wizard`` so it's shared
+with the Textual TUI's own filter-wizard screen (see
+``tests/lib/test_proc_app_filter_wizard.py``); ``ptools.proc`` re-imports
+those helpers by name, so ``proc.operators_for_kind`` and
+``ptools.lib.proc.filter_wizard.operators_for_kind`` are the same function.
 """
 
 import json
@@ -21,36 +24,40 @@ from ptools.lib.proc.query import compile_query
 
 
 def patch_selector(monkeypatch, answers):
-    """Replace ``proc._select`` with a fake that pops canned *answers*.
+    """Replace the shared ``select`` adapter with a fake that pops canned *answers*.
 
     Returns the list of ``(title, option_values)`` calls for assertions.
     """
+    import ptools.lib.tui.select as select_module
+
     remaining = list(answers)
     calls = []
 
-    def fake(options, title, selected=None):
+    def fake(options, title="", **kwargs):
         calls.append((title, [option[0] for option in options]))
         assert remaining, f"unexpected selector call: {title!r}"
         return remaining.pop(0)
 
-    monkeypatch.setattr(proc, "_select", fake)
+    monkeypatch.setattr(select_module, "select", fake)
     return calls
 
 
 def patch_text(monkeypatch, answers):
-    """Replace ``proc._text`` with a fake that pops canned *answers*.
+    """Replace the shared ``text`` adapter with a fake that pops canned *answers*.
 
     Returns the list of ``(message, placeholder)`` calls for assertions.
     """
+    import ptools.lib.tui.select as select_module
+
     remaining = list(answers)
     calls = []
 
-    def fake(message, placeholder=""):
+    def fake(message, placeholder="", **kwargs):
         calls.append((message, placeholder))
         assert remaining, f"unexpected text prompt: {message!r}"
         return remaining.pop(0)
 
-    monkeypatch.setattr(proc, "_text", fake)
+    monkeypatch.setattr(select_module, "text", fake)
     return calls
 
 

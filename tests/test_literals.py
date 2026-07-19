@@ -29,7 +29,7 @@ def literals_module(isolated_home):
 
 
 def patch_selector(monkeypatch, module, answers):
-    """Replace ``_select`` with a fake that pops canned *answers*.
+    """Replace the shared ``select`` adapter with a fake that pops canned *answers*.
 
     Returns the list of ``(title, option_values, options)`` calls for
     assertions, mirroring tests/test_touch.py's helper.
@@ -37,26 +37,26 @@ def patch_selector(monkeypatch, module, answers):
     remaining = list(answers)
     calls = []
 
-    def fake(options, title, selected=None):
+    def fake(options, title="", **kwargs):
         calls.append((title, [option[0] for option in options], options))
         assert remaining, f"unexpected selector call: {title!r}"
         return remaining.pop(0)
 
-    monkeypatch.setattr(module, "_select", fake)
+    monkeypatch.setattr(module, "select", fake)
     return calls
 
 
 def patch_text(monkeypatch, module, answers):
-    """Replace ``_text`` with a fake that pops canned *answers*."""
+    """Replace the shared ``text`` adapter with a fake that pops canned *answers*."""
     remaining = list(answers)
     calls = []
 
-    def fake(message, placeholder=""):
+    def fake(message, placeholder="", **kwargs):
         calls.append((message, placeholder))
         assert remaining, f"unexpected text prompt: {message!r}"
         return remaining.pop(0)
 
-    monkeypatch.setattr(module, "_text", fake)
+    monkeypatch.setattr(module, "text", fake)
     return calls
 
 
