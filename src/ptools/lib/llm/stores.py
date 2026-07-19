@@ -3,14 +3,19 @@ import os
 from pathlib import Path
 import random
 
-from ptools.utils.config import KeyValueStore
+from ptools.utils.config import LazyConfigFile
 from ptools.lib.llm.entities import LLMProfile, LLMChatFile
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
-key_store = KeyValueStore(name=os.path.join('llm', 'keys'), quiet=True, encrypt=True)
+# LazyConfigFile (not KeyValueStore) so that importing this module never
+# touches the keyring or ~/.ptools/: ConfigFile.__init__ decrypts/creates
+# the backing file eagerly, which is both an unwanted import-time side
+# effect and, under Sphinx's mocked keyring, an import failure that drops
+# these modules from the API docs. Initialization is deferred to first use.
+key_store = LazyConfigFile(name=os.path.join('llm', 'keys'), quiet=True, encrypt=True)
 
-class ProfilesStore(KeyValueStore):
+class ProfilesStore(LazyConfigFile):
     """Key/value store of LLM profile names to JSON files on disk."""
 
     @property
@@ -42,7 +47,7 @@ class ProfilesStore(KeyValueStore):
 
 profiles_store = ProfilesStore(name=os.path.join('llm', 'profiles'), quiet=True, encrypt=False)
 
-class ChatsStore(KeyValueStore):
+class ChatsStore(LazyConfigFile):
     """Key/value store of chat-file names to their on-disk paths."""
 
     def get_chat_by_name(self, name: str) -> LLMChatFile | None:
