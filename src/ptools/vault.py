@@ -2,6 +2,7 @@ import ast
 
 import click
 
+from ptools import settings
 from ptools.utils.encrypt import Encryption, PasswordEncryption
 
 @click.group()
@@ -17,7 +18,9 @@ def seal(input_file, output_file, password):
     """Encrypt a file and write the encrypted data to an output file.
 
     If OUTPUT_FILE is not provided, INPUT_FILE is overwritten in place
-    with the encrypted data.
+    with the encrypted data, unless the VAULT_IN_PLACE setting is false,
+    in which case the encrypted data is printed to stdout and INPUT_FILE
+    is left untouched.
     """
     enc = PasswordEncryption(password)
     try:
@@ -27,6 +30,10 @@ def seal(input_file, output_file, password):
         raise click.ClickException(f"Failed to read '{input_file}': {e}")
 
     encrypted_blob = enc.encrypt(plaintext)
+
+    if output_file is None and not settings.get("VAULT_IN_PLACE"):
+        click.echo(str(encrypted_blob))
+        return
 
     output_file = output_file or f"{input_file}"
     try:
@@ -43,7 +50,9 @@ def unseal(input_file, output_file, password):
     """Decrypt a file and write the decrypted data to an output file.
 
     If OUTPUT_FILE is not provided, INPUT_FILE is overwritten in place
-    with the decrypted data.
+    with the decrypted data, unless the VAULT_IN_PLACE setting is false,
+    in which case the decrypted data is printed to stdout and INPUT_FILE
+    is left untouched.
     """
     enc = PasswordEncryption(password)
     try:
@@ -61,6 +70,10 @@ def unseal(input_file, output_file, password):
             f"Failed to decrypt '{input_file}': wrong password or corrupted file."
         )
 
+    if output_file is None and not settings.get("VAULT_IN_PLACE"):
+        click.echo(decrypted_data)
+        return
+
     output_file = output_file or f"{input_file}"
     try:
         with open(output_file, "wb") as f:
@@ -75,7 +88,9 @@ def bury(input_file, output_file):
     """Encrypt a file using the system keyring and write the encrypted data to an output file.
 
     If OUTPUT_FILE is not provided, INPUT_FILE is overwritten in place
-    with the encrypted data.
+    with the encrypted data, unless the VAULT_IN_PLACE setting is false,
+    in which case the encrypted data is printed to stdout and INPUT_FILE
+    is left untouched.
     """
     enc = Encryption(service_name="com.ptools.vault")
     try:
@@ -85,6 +100,10 @@ def bury(input_file, output_file):
         raise click.ClickException(f"Failed to read '{input_file}': {e}")
 
     encrypted_blob = enc.encrypt(plaintext)
+
+    if output_file is None and not settings.get("VAULT_IN_PLACE"):
+        click.echo(str(encrypted_blob))
+        return
 
     output_file = output_file or f"{input_file}"
     try:
@@ -100,7 +119,9 @@ def dig(input_file, output_file):
     """Decrypt a file using the system keyring and write the decrypted data to an output file.
 
     If OUTPUT_FILE is not provided, INPUT_FILE is overwritten in place
-    with the decrypted data.
+    with the decrypted data, unless the VAULT_IN_PLACE setting is false,
+    in which case the decrypted data is printed to stdout and INPUT_FILE
+    is left untouched.
     """
     enc = Encryption(service_name="com.ptools.vault")
     try:
@@ -117,6 +138,10 @@ def dig(input_file, output_file):
         raise click.ClickException(
             f"Failed to decrypt '{input_file}': wrong password or corrupted file."
         )
+
+    if output_file is None and not settings.get("VAULT_IN_PLACE"):
+        click.echo(decrypted_data)
+        return
 
     output_file = output_file or f"{input_file}"
     try:
