@@ -40,17 +40,16 @@ Single source of truth for agents in this repo. `CLAUDE.md` symlinks here.
 ### Commands
 
 - **Run the CLI**: `.venv/bin/ptools --help` (verified). `python3 -m ptools.main --help` does **not** work — see Gotchas.
-- **Test**: `.venv/bin/python3 -m pytest` (verified — 372 tests collected; `pyproject.toml` sets `pythonpath = ["src"]` so no install is required).
+- **Test**: `.venv/bin/python3 -m pytest` (verified — `pyproject.toml` sets `pythonpath = ["src"]` so no install is required). Deliberately no test count here: it re-rots on every PR, and "the suite passes" is the claim that matters.
 - **Lint / typecheck**: unverified — `pyproject.toml` configures `[tool.pyright]`, but pyright is not installed in `.venv` and no lint tool (ruff/flake8/black) is configured in the repo.
-- **Docs build**: `.venv/bin/python3 -m sphinx -M html docs docs/_build` (verified via `sphinx-build --help`). Do not use `make -C docs html` — see Gotchas.
+- **Docs build**: `make -C docs html` or `.venv/bin/python3 -m sphinx -M html docs docs/_build` (both verified). `.github/workflows/docs.yml` passes `-W`, so any Sphinx warning fails the build.
 - **Requirements**: `.venv/bin/python3 scripts/generate_requirements.py` prints a full requirements list to stdout; its output matches the committed `full_requirements.txt` byte-for-byte.
 
 ### Gotchas
 
 - `.venv/bin/python3` has no `pip` module (`No module named pip`) — packages are managed externally; don't try to `pip install` into this venv.
 - `python3 -m ptools.main --help` silently exits 0 with no output: `main.py` has no `if __name__ == "__main__"` guard. Use `.venv/bin/ptools` or `python -c "from ptools.main import cli; cli()"`.
-- `make -C docs html` is a silent no-op (`make: Nothing to be done for 'html'`): `html` is listed in `docs/Makefile`'s `.PHONY` with no recipe, which pre-empts the catch-all `%: Makefile` rule. Use `python3 -m sphinx -M html docs docs/_build` instead.
-- No CI workflow runs the test suite — `.github/workflows/docs.yml` only builds/deploys Sphinx docs (`.ongoing/ci-test-workflow`).
+- Inside a `git worktree`, `.venv/bin/ptools` and a bare `python -c "import ptools"` resolve to the **main checkout's** `src/ptools` via the venv's editable-install `.pth`, not the worktree's. `pytest` is unaffected (`pythonpath = ["src"]` + rootdir detection). For any other import- or CLI-based check in a worktree, prepend `PYTHONPATH=src` and confirm with `python -c "import ptools; print(ptools.__file__)"`.
 - Adding a subcommand means registering it in `src/ptools/main.py`'s `COMMANDS` dict (`"module:attribute"` import path + `short_help`); `LazyGroup` won't discover it otherwise.
 - Command docstrings are the docs: `docs/cli.rst` renders the live Click tree via `sphinx_click`, so help-text edits are doc edits.
 - Reuse `ptools.lib.tui.select.SelectApp` / `ask_text` for any new interactive prompt instead of building a new picker or using raw `prompt_toolkit` widgets (e.g. `RadioList`); keep long option lists passed through `max_visible` so they stay scrollable.
