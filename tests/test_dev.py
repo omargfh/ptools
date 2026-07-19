@@ -178,7 +178,7 @@ class TestEditCommand:
         assert "edit" in dev.cli.commands
 
     def test_edit_project_uses_the_editor_setting(self, monkeypatch):
-        monkeypatch.setattr(dev, "EDITOR", "nano")
+        monkeypatch.setenv("EDITOR", "nano")
         calls = []
         monkeypatch.setattr(dev.os, "system", lambda cmd: calls.append(cmd))
 
@@ -189,7 +189,7 @@ class TestEditCommand:
         assert calls == [f"nano {dev.get_project_root()}"]
 
     def test_edit_config_target_opens_the_ptools_config_dir(self, monkeypatch):
-        monkeypatch.setattr(dev, "EDITOR", "nano")
+        monkeypatch.setenv("EDITOR", "nano")
         calls = []
         monkeypatch.setattr(dev.os, "system", lambda cmd: calls.append(cmd))
 
@@ -202,7 +202,7 @@ class TestEditCommand:
         assert calls[0].endswith(".ptools")
 
     def test_edit_respects_a_different_editor_setting(self, monkeypatch):
-        monkeypatch.setattr(dev, "EDITOR", "code")
+        monkeypatch.setenv("EDITOR", "code")
         calls = []
         monkeypatch.setattr(dev.os, "system", lambda cmd: calls.append(cmd))
 

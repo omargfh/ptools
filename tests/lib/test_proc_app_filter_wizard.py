@@ -349,7 +349,7 @@ class TestEditExpressionHelper:
         result = app_mod._edit_expression(FakeApp(), "(cpu>50)")
 
         assert result == "cpu>1"
-        assert calls == {"suspended": True, "text": "(cpu>50)", "editor": app_mod.EDITOR}
+        assert calls == {"suspended": True, "text": "(cpu>50)", "editor": app_mod.settings.EDITOR}
 
     def test_falls_back_to_original_when_editor_makes_no_change(self, monkeypatch):
         import click
