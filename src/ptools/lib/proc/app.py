@@ -54,9 +54,9 @@ from ptools.lib.proc.render import detail_group
 from ptools.lib.tui.charts import meter, pct_color, sparkline
 from ptools.lib.tui.screens import ConfirmScreen, InputScreen, TextScreen
 from ptools.lib.tui.tables import rows_table
-from ptools.settings import EDITOR
+from ptools import settings
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 BASE_COLUMNS = ["pid", "name", "user", "cpu", "_spark", "mem", "mem_pct", "status", "age"]
 JOIN_COLUMNS = {
@@ -192,7 +192,7 @@ def _edit_expression(app: App, expression: str) -> str:
     monkeypatch it directly instead of needing a real terminal/editor.
     """
     with app.suspend():
-        edited = click.edit(text=expression, editor=EDITOR)
+        edited = click.edit(text=expression, editor=settings.EDITOR)
     return (edited if edited is not None else expression).strip()
 
 

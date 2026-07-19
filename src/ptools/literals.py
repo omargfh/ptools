@@ -2,12 +2,15 @@ import click
 
 
 from ptools.utils.print import FormatUtils
-from ptools.utils.config import ConfigFile
+from ptools.utils.config import LazyConfigFile
 import ptools.utils.require as require
 
 from ptools.lib.tui.select import SelectApp, select, text
 
-config = ConfigFile('literals', quiet=True)
+# Lazy so importing this module never reads/creates ~/.ptools/literals.json;
+# ConfigFile.__init__ does that eagerly, deferred here until first use
+# (config.data, below, inside the actual commands).
+config = LazyConfigFile('literals', quiet=True)
 
 # Sentinel option in the collection picker for "create a new collection
 # instead of choosing an existing one".

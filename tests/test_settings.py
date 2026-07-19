@@ -123,7 +123,12 @@ class TestEnvOverridesPersistedValue:
 
     def test_env_var_is_not_persisted_to_disk(self, monkeypatch, tmp_path):
         """A one-off env override must not get baked into the config file."""
-        _reload_settings(monkeypatch, tmp_path, EDITOR="one-off-editor")
+        settings_mod = _reload_settings(monkeypatch, tmp_path, EDITOR="one-off-editor")
+        # settings.json is created lazily on first real access to the
+        # underlying LazyConfigFile -- reloading the module alone (above)
+        # no longer touches disk, so force that materialization here to
+        # inspect what actually landed on it.
+        settings_mod.settings.data
 
         on_disk = json.loads((tmp_path / ".ptools" / "settings.json").read_text())
         assert on_disk["data"]["EDITOR"] == "vim"

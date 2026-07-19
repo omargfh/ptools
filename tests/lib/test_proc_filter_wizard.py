@@ -239,7 +239,7 @@ class TestEditWizardExpression:
 
         monkeypatch.setattr(proc.click, "edit", fake_edit)
         proc._edit_wizard_expression("(cpu>50)")
-        assert calls == {"text": "(cpu>50)", "editor": proc.EDITOR}
+        assert calls == {"text": "(cpu>50)", "editor": proc.settings.EDITOR}
 
     def test_strips_whitespace_from_edited_result(self, monkeypatch):
         monkeypatch.setattr(proc.click, "edit", lambda text, editor: "  cpu>90  \n")

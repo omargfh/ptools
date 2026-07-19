@@ -8,9 +8,12 @@ Each setting is resolved in priority order:
 3. Hard-coded default (lowest)
 
 Read settings by importing the module-level constants (``PIP_EXECUTABLE``,
-etc.) or by calling :func:`get` directly. Persist a setting across shells
-with :func:`set` - that writes to the config file so it survives without
-needing an env var::
+etc.) or by calling :func:`get` directly. Both are resolved lazily on
+first access (via a :pep:`562` module ``__getattr__``) rather than at
+import time, so merely importing ``ptools.settings`` - or a submodule
+that imports it - never reads or creates ``~/.ptools/settings.json``.
+Persist a setting across shells with :func:`set` - that writes to the
+config file so it survives without needing an env var::
 
     from ptools import settings
     settings.set("PIP_EXECUTABLE", "uv pip")
@@ -97,12 +100,26 @@ def set(name, value):
     return settings.set(name, value)
 
 
-if __name__ != "__main__":
-    PIP_EXECUTABLE = get("PIP_EXECUTABLE")
-    PTOOLS_DEBUG = get("PTOOLS_DEBUG")
-    EDITOR = get("EDITOR")
-    SHELL_EXECUTABLE = get("SHELL_EXECUTABLE")
-    SHELL_CONFIG = get("SHELL_CONFIG")
-    SHELL_KIND = detect_shell_kind(SHELL_EXECUTABLE)
-else:
-    cli = config_to_CLI(settings, name="settings")
+# Names resolved lazily via __getattr__ below rather than assigned here:
+# assigning them at module scope would force settings.data (and so the
+# LazyConfigFile's disk read/create) on every import of this module,
+# which is exactly the eager cost LazyConfigFile exists to avoid.
+_MODULE_CONSTANTS = frozenset({
+    "PIP_EXECUTABLE", "PTOOLS_DEBUG", "EDITOR", "SHELL_EXECUTABLE", "SHELL_CONFIG",
+})
+
+
+def __getattr__(name):
+    """:pep:`562` module attribute access for the settings constants.
+
+    Only fires when *name* isn't already a real module attribute, and
+    only then calls :func:`get` (or, for ``SHELL_KIND``, derives it from
+    ``SHELL_EXECUTABLE``) - so ``import ptools.settings`` alone never
+    touches ``settings.data``, but ``ptools.settings.EDITOR`` still
+    resolves the current env/persisted/default value on demand.
+    """
+    if name in _MODULE_CONSTANTS:
+        return get(name)
+    if name == "SHELL_KIND":
+        return detect_shell_kind(get("SHELL_EXECUTABLE"))
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

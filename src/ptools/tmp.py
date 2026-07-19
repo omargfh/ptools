@@ -1,6 +1,6 @@
 import click
 from ptools.utils.print import FormatUtils as fmt
-from ptools.settings import PTOOLS_DEBUG
+from ptools import settings
 
 @click.command(name="tmp", help="Temporary command for REPL purposes.")
 @click.argument("command", type=str, nargs=-1, required=True, metavar="COMMAND")
@@ -23,7 +23,7 @@ def tmp(command):
     command = " ".join(command)
     command = command.replace("{}", tmpdir) if "{}" in command else " ".join([command, tmpdir])
 
-    if PTOOLS_DEBUG:
+    if settings.PTOOLS_DEBUG:
         click.echo(fmt.info(f"Temporary directory created at: {tmpdir}"))
         click.echo(fmt.info(f"Executing command: {command}"))
 

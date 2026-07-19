@@ -8,11 +8,13 @@ import pytest
 def literals_module(isolated_home):
     """Import ptools.literals against an isolated, pre-seeded config file.
 
-    ``ptools.literals`` builds its module-level ``ConfigFile`` at import
-    time (it's not lazy like touch.py's), so $HOME must be pinned before
-    the module is (re)imported. Writing the file ourselves — rather than
-    letting it seed from the packaged starter — keeps the fixture data
-    small and stable regardless of what starters/literals.json contains.
+    ``ptools.literals``'s module-level ``config`` is a ``LazyConfigFile``:
+    it doesn't touch disk at import time, but the commands under test
+    read it on their first call, so $HOME still needs to be pinned (and
+    the fixture file written) before the command actually runs. Writing
+    the file ourselves — rather than letting it seed from the packaged
+    starter — keeps the fixture data small and stable regardless of what
+    starters/literals.json contains.
     """
     config_dir = isolated_home / ".ptools"
     config_dir.mkdir(exist_ok=True)
@@ -216,7 +218,7 @@ class TestAddCommand:
         assert fresh.data["colors"]["blue"] == "#0000ff"
 
         # And via reloading the module, mirroring how a new process would
-        # re-run literals.py's module-level `config = ConfigFile(...)`.
+        # re-run literals.py's module-level `config = LazyConfigFile(...)`.
         import importlib
 
         reloaded = importlib.reload(literals_module)

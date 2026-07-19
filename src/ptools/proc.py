@@ -2,7 +2,7 @@
 
 import click
 
-from ptools.settings import EDITOR
+from ptools import settings
 from ptools.utils.output import output_flavor, OutputFlavorKind
 from ptools.lib.proc.filter_wizard import (
     OPERATOR_LABELS,
@@ -116,7 +116,7 @@ def _edit_wizard_expression(expression: str) -> str:
     ``click.edit`` returns ``None`` when the editor is closed without
     saving/changes, in which case the original expression is kept as-is.
     """
-    edited = click.edit(text=expression, editor=EDITOR)
+    edited = click.edit(text=expression, editor=settings.EDITOR)
     return (edited if edited is not None else expression).strip()
 
 

@@ -16,7 +16,7 @@ import sys
 
 import click
 
-from ptools.settings import EDITOR, PIP_EXECUTABLE
+from ptools import settings
 
 def get_project_root():
     """Get the root directory of the project."""
@@ -76,9 +76,9 @@ def edit(target):
     # fixed local paths, so this isn't a new command-injection surface.
     match target:
         case 'project':
-            os.system(f"{EDITOR} {get_project_root()}")
+            os.system(f"{settings.EDITOR} {get_project_root()}")
         case 'config':
-            os.system(f"{EDITOR} {os.path.join(os.path.expanduser('~'), '.ptools')}")
+            os.system(f"{settings.EDITOR} {os.path.join(os.path.expanduser('~'), '.ptools')}")
 
 @cli.command()
 def vim():
@@ -123,7 +123,7 @@ def install(extras):
     target = get_project_root()
     if extras:
         target = f"{target}[{','.join(extras)}]"
-    _run([*PIP_EXECUTABLE.split(), "install", "-e", target])
+    _run([*settings.PIP_EXECUTABLE.split(), "install", "-e", target])
 
 @cli.command()
 def update():
