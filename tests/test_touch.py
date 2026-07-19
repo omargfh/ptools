@@ -202,7 +202,7 @@ class TestCommandRegistration:
 
 
 def patch_selector(monkeypatch, module, answers):
-    """Replace ``_select`` with a fake that pops canned *answers*.
+    """Replace the shared ``select`` adapter with a fake that pops canned *answers*.
 
     Returns the list of ``(title, option_values, options)`` calls for
     assertions.
@@ -210,29 +210,29 @@ def patch_selector(monkeypatch, module, answers):
     remaining = list(answers)
     calls = []
 
-    def fake(options, title, selected=None):
+    def fake(options, title="", **kwargs):
         calls.append((title, [option[0] for option in options], options))
         assert remaining, f"unexpected selector call: {title!r}"
         return remaining.pop(0)
 
-    monkeypatch.setattr(module, "_select", fake)
+    monkeypatch.setattr(module, "select", fake)
     return calls
 
 
 def patch_text(monkeypatch, module, answers):
-    """Replace ``_text`` with a fake that pops canned *answers*.
+    """Replace the shared ``text`` adapter with a fake that pops canned *answers*.
 
     Returns the list of ``(message, placeholder)`` calls for assertions.
     """
     remaining = list(answers)
     calls = []
 
-    def fake(message, placeholder=""):
+    def fake(message, placeholder="", **kwargs):
         calls.append((message, placeholder))
         assert remaining, f"unexpected text prompt: {message!r}"
         return remaining.pop(0)
 
-    monkeypatch.setattr(module, "_text", fake)
+    monkeypatch.setattr(module, "text", fake)
     return calls
 
 
@@ -310,10 +310,10 @@ class TestSelectItem:
 class TestWizard:
     """Tests for the interactive ``touch wizard`` subcommand.
 
-    Selection (group, template, casing) is arrow-key driven via
-    ``_select`` and text questions (output path, template variables) go
-    through ``_text``, so both are monkeypatched here. Only the final
-    write confirmation still reads CliRunner's ``input``.
+    Selection (group, template, casing) is arrow-key driven via the
+    shared ``select`` adapter and text questions (output path, template
+    variables) go through ``text``, so both are monkeypatched here. Only
+    the final write confirmation still reads CliRunner's ``input``.
     """
 
     def _run(self, module, wizard_input, command="wizard"):
@@ -612,8 +612,8 @@ def make_fake_file_editor(monkeypatch, module, append=None, replace_with=None):
 class TestNewCommand:
     """Tests for the interactive ``touch new`` template-authoring wizard.
 
-    Follows the same headless-driving pattern as ``TestWizard``: ``_select``
-    and ``_text`` are monkeypatched to pop canned answers. ``click.edit``
+    Follows the same headless-driving pattern as ``TestWizard``: ``select``
+    and ``text`` are monkeypatched to pop canned answers. ``click.edit``
     (the multi-line template-body editor) is monkeypatched via
     :func:`make_fake_file_editor`, which edits the real seeded temp file in
     place rather than returning text - matching how ``click.edit(filename=...)``

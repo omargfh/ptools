@@ -37,47 +37,37 @@ _PRIME_SLEEP_SECS = 0.25
 # ----------------------------------------------------------------------
 
 
-def _select(options: list[tuple], title: str, selected: str | None = None) -> str | None:
-    """Run an inline arrow-key picker over ``(value, label[, description])`` options.
-
-    Returns the chosen value, or ``None`` when the user cancels (escape).
-    """
-    from ptools.lib.tui.select import SelectApp
-
-    return SelectApp(options, message=title, selected=selected).run() or None
-
-
-def _text(message: str, placeholder: str = "") -> str:
-    """Prompt for a single line of text with a dim placeholder example."""
-    from ptools.lib.tui.select import ask_text
-
-    return ask_text(message, placeholder=placeholder)
-
-
-def _build_wizard_clause() -> str | None:
+def _build_wizard_clause(output=None) -> str | None:
     """Pick a field, a kind-appropriate operator, and a value.
 
     Returns the clause text (e.g. ``cpu>50``), or ``None`` if the user
-    cancels any step.
+    cancels any step. ``output`` is a TTY-preferring prompt_toolkit output
+    (see :func:`~ptools.lib.tui.select.picker_output`) so the picker still
+    renders when the command's stdout is redirected.
     """
-    field_key = _select(
+    from ptools.lib.tui.select import select, text
+
+    field_key = select(
         [(f.key, f.title, f.help) for f in FIELDS],
         "Field to filter on:",
+        output=output,
     )
     if field_key is None:
         return None
     field = FIELD_MAP[field_key]
 
-    op = _select(
+    op = select(
         [(o, OPERATOR_LABELS[o]) for o in operators_for_kind(field.kind)],
         f"Operator for {field.title}:",
+        output=output,
     )
     if op is None:
         return None
 
-    value = _text(
+    value = text(
         f"Value for {field.title} {op}:",
         placeholder=VALUE_PLACEHOLDERS.get(field.kind, ""),
+        output=output,
     ).strip()
     if not value:
         return None
@@ -93,21 +83,25 @@ def _run_filter_wizard() -> str | None:
     representation. Returns ``None`` if the user cancels before completing
     a single clause.
     """
+    from ptools.lib.tui.select import picker_output, select
+
+    output = picker_output()
     clauses: list[str] = []
     combinators: list[str] = []
     while True:
-        clause = _build_wizard_clause()
+        clause = _build_wizard_clause(output)
         if clause is None:
             break
         clauses.append(clause)
 
-        choice = _select(
+        choice = select(
             [
                 ("done", "Done"),
                 ("&", "Add another clause (AND)"),
                 ("|", "Add another clause (OR)"),
             ],
             "Add another clause?",
+            output=output,
         )
         if choice is None or choice == "done":
             break

@@ -5,7 +5,7 @@ from ptools.utils.print import FormatUtils
 from ptools.utils.config import ConfigFile
 import ptools.utils.require as require
 
-from ptools.lib.tui.select import SelectApp, ask_text
+from ptools.lib.tui.select import SelectApp, select, text
 
 config = ConfigFile('literals', quiet=True)
 
@@ -18,19 +18,6 @@ class LiteralsApp(SelectApp):
 
     def __init__(self, items, selected_text="Selected literal: {}", **kwargs):
         super().__init__(items, selected_text=selected_text, **kwargs)
-
-
-def _select(options: list[tuple[str, str]], title: str, selected: str | None = None) -> str | None:
-    """Run an inline arrow-key picker over ``(value, label)`` options.
-
-    Returns the chosen value, or ``None`` when the user cancels (escape).
-    """
-    return LiteralsApp(options, message=title, selected=selected, selected_text="Selected: {}").run() or None
-
-
-def _text(message: str, placeholder: str = "") -> str:
-    """Prompt for a single line of text with a dim placeholder example."""
-    return ask_text(message, placeholder=placeholder)
 
 
 @click.command(name="lget")
@@ -131,20 +118,22 @@ def add():
     ]
     options.append((NEW_COLLECTION, NEW_COLLECTION))
 
-    collection = _select(options, "Select a collection:")
+    collection = select(
+        options, "Select a collection:", app_cls=LiteralsApp, selected_text="Selected: {}"
+    )
     if not collection:
         click.echo(FormatUtils.warning("No collection selected."))
         return
 
     if collection == NEW_COLLECTION:
-        collection = _text("New collection name:", placeholder="e.g. snippets").strip()
+        collection = text("New collection name:", placeholder="e.g. snippets").strip()
         if not collection:
             click.echo(FormatUtils.warning("No collection name given."))
             return
 
     existing = all_collections.get(collection, {})
 
-    key = _text("Key:", placeholder="e.g. success").strip()
+    key = text("Key:", placeholder="e.g. success").strip()
     if not key:
         click.echo(FormatUtils.warning("No key given."))
         return
@@ -153,7 +142,7 @@ def add():
         click.echo(FormatUtils.error(f"Key '{key}' already exists in collection '{collection}'."))
         return
 
-    value = _text("Value:", placeholder="e.g. ✅").strip()
+    value = text("Value:", placeholder="e.g. ✅").strip()
     if not value:
         click.echo(FormatUtils.warning("No value given."))
         return
