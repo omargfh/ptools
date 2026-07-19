@@ -8,11 +8,13 @@ import pytest
 def literals_module(isolated_home):
     """Import ptools.literals against an isolated, pre-seeded config file.
 
-    ``ptools.literals`` builds its module-level ``ConfigFile`` at import
-    time (it's not lazy like touch.py's), so $HOME must be pinned before
-    the module is (re)imported. Writing the file ourselves — rather than
-    letting it seed from the packaged starter — keeps the fixture data
-    small and stable regardless of what starters/literals.json contains.
+    ``ptools.literals``'s module-level ``config`` is a ``LazyConfigFile``:
+    it doesn't touch disk at import time, but the commands under test
+    read it on their first call, so $HOME still needs to be pinned (and
+    the fixture file written) before the command actually runs. Writing
+    the file ourselves — rather than letting it seed from the packaged
+    starter — keeps the fixture data small and stable regardless of what
+    starters/literals.json contains.
     """
     config_dir = isolated_home / ".ptools"
     config_dir.mkdir(exist_ok=True)
@@ -29,7 +31,7 @@ def literals_module(isolated_home):
 
 
 def patch_selector(monkeypatch, module, answers):
-    """Replace ``_select`` with a fake that pops canned *answers*.
+    """Replace the shared ``select`` adapter with a fake that pops canned *answers*.
 
     Returns the list of ``(title, option_values, options)`` calls for
     assertions, mirroring tests/test_touch.py's helper.
@@ -37,26 +39,26 @@ def patch_selector(monkeypatch, module, answers):
     remaining = list(answers)
     calls = []
 
-    def fake(options, title, selected=None):
+    def fake(options, title="", **kwargs):
         calls.append((title, [option[0] for option in options], options))
         assert remaining, f"unexpected selector call: {title!r}"
         return remaining.pop(0)
 
-    monkeypatch.setattr(module, "_select", fake)
+    monkeypatch.setattr(module, "select", fake)
     return calls
 
 
 def patch_text(monkeypatch, module, answers):
-    """Replace ``_text`` with a fake that pops canned *answers*."""
+    """Replace the shared ``text`` adapter with a fake that pops canned *answers*."""
     remaining = list(answers)
     calls = []
 
-    def fake(message, placeholder=""):
+    def fake(message, placeholder="", **kwargs):
         calls.append((message, placeholder))
         assert remaining, f"unexpected text prompt: {message!r}"
         return remaining.pop(0)
 
-    monkeypatch.setattr(module, "_text", fake)
+    monkeypatch.setattr(module, "text", fake)
     return calls
 
 
@@ -216,7 +218,7 @@ class TestAddCommand:
         assert fresh.data["colors"]["blue"] == "#0000ff"
 
         # And via reloading the module, mirroring how a new process would
-        # re-run literals.py's module-level `config = ConfigFile(...)`.
+        # re-run literals.py's module-level `config = LazyConfigFile(...)`.
         import importlib
 
         reloaded = importlib.reload(literals_module)

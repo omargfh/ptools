@@ -16,7 +16,7 @@ import sys
 
 import click
 
-from ptools.settings import EDITOR, PIP_EXECUTABLE
+from ptools import settings
 
 def get_project_root():
     """Get the root directory of the project."""
@@ -76,9 +76,9 @@ def edit(target):
     # fixed local paths, so this isn't a new command-injection surface.
     match target:
         case 'project':
-            os.system(f"{EDITOR} {get_project_root()}")
+            os.system(f"{settings.EDITOR} {get_project_root()}")
         case 'config':
-            os.system(f"{EDITOR} {os.path.join(os.path.expanduser('~'), '.ptools')}")
+            os.system(f"{settings.EDITOR} {os.path.join(os.path.expanduser('~'), '.ptools')}")
 
 @cli.command()
 def vim():
@@ -123,7 +123,7 @@ def install(extras):
     target = get_project_root()
     if extras:
         target = f"{target}[{','.join(extras)}]"
-    _run([*PIP_EXECUTABLE.split(), "install", "-e", target])
+    _run([*settings.PIP_EXECUTABLE.split(), "install", "-e", target])
 
 @cli.command()
 def update():
@@ -299,15 +299,20 @@ def doctor():
         [MISSING] openai (pip install openai)
       Binaries:
         [ok]      git
+      Operating system:
+        [ok]      darwin
       API keys (cannot verify generically; check manually):
         - OPENAI_API_KEY (aliases: OPENAI_API_KEY)
       Error: 1 requirement(s) missing; see above.
     """
+    import platform
+
     from ptools.utils.enums import LogicalOperators
     from ptools.utils.require import (
         BinaryRequirement,
         KeyRequirement,
         LibraryRequirement,
+        OSRequirement,
         announced_requirements,
     )
 
@@ -333,6 +338,9 @@ def doctor():
     key_reqs = list(dict.fromkeys(
         req for req in announced if isinstance(req, KeyRequirement)
     ))
+    os_reqs = list(dict.fromkeys(
+        req for req in announced if isinstance(req, OSRequirement)
+    ))
 
     missing_count = 0
 
@@ -355,6 +363,20 @@ def doctor():
     for req in sorted(binary_reqs, key=lambda r: r.names):
         found = [shutil.which(name) is not None for name in req.names]
         satisfied = LogicalOperators(req.logical_operator).apply(found)
+        joined = f" {req.logical_operator.upper()} ".join(req.names)
+        if satisfied:
+            click.echo(f"  {click.style('[ok]', fg='green')}      {joined}")
+        else:
+            missing_count += 1
+            click.echo(f"  {click.style('[MISSING]', fg='red')} {joined}")
+
+    click.echo(click.style("Operating system:", bold=True))
+    if not os_reqs:
+        click.echo("  (none announced)")
+    current_os = platform.system().lower()
+    for req in sorted(os_reqs, key=lambda r: r.names):
+        matches = [current_os == name.lower() for name in req.names]
+        satisfied = LogicalOperators(req.logical_operator).apply(matches)
         joined = f" {req.logical_operator.upper()} ".join(req.names)
         if satisfied:
             click.echo(f"  {click.style('[ok]', fg='green')}      {joined}")

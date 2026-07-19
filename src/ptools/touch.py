@@ -29,7 +29,7 @@ from jinja2 import Environment, Template, meta
 from pydantic import BaseModel, model_validator
 
 import ptools.utils.require as require
-from ptools.lib.tui.select import SelectApp, ask_text
+from ptools.lib.tui.select import picker_output, select, text
 from ptools.utils.cases import CaseConverter, cases
 from ptools.utils.config import LazyConfigFile
 from ptools.utils.decorator_compistor import DecoratorCompositor
@@ -323,19 +323,6 @@ def infer(output):
         click.echo(messages["INFER_FAILED"])
 
 
-def _select(options: list[tuple[str, str]], title: str, selected: str | None = None) -> str | None:
-    """Run an inline arrow-key picker over ``(value, label)`` options.
-
-    Returns the chosen value, or ``None`` when the user cancels (escape).
-    """
-    return SelectApp(options, message=title, selected=selected).run() or None
-
-
-def _text(message: str, placeholder: str = "") -> str:
-    """Prompt for a single line of text with a dim placeholder example."""
-    return ask_text(message, placeholder=placeholder)
-
-
 def _highlight_preview(code: str, filename: str) -> str:
     """Syntax-highlight *code* for the terminal preview.
 
@@ -365,11 +352,15 @@ WIZARD_SKIPPED_VARS = {"convert_case", "env"}
 DERIVED_VARS = {"file_stem", "file_suffix", "file_path", "file_name", "cwd", "home", "user"}
 
 
-def _select_item(items: list[TouchItem], groups_meta: dict[str, GroupMeta]) -> TouchItem | None:
+def _select_item(
+    items: list[TouchItem], groups_meta: dict[str, GroupMeta], output=None
+) -> TouchItem | None:
     """Pick a template in two arrow-key steps: group first, then template.
 
     The group step is skipped when only one group is configured. Returns
-    ``None`` if the user cancels either step.
+    ``None`` if the user cancels either step. ``output`` is a
+    TTY-preferring prompt_toolkit output (see
+    :func:`~ptools.lib.tui.select.picker_output`).
     """
     groups: dict[str, list[TouchItem]] = {}
     for item in sorted(items, key=lambda x: x.group):
@@ -381,7 +372,7 @@ def _select_item(items: list[TouchItem], groups_meta: dict[str, GroupMeta]) -> T
     if len(groups) == 1:
         group = next(iter(groups))
     else:
-        group = _select(
+        group = select(
             [
                 (
                     key,
@@ -391,30 +382,32 @@ def _select_item(items: list[TouchItem], groups_meta: dict[str, GroupMeta]) -> T
                 for key, members in groups.items()
             ],
             "Select a group:",
+            output=output,
         )
         if group is None:
             return None
 
     members = groups[group]
-    command = _select(
+    command = select(
         [(m.command, m.name or m.command, m.description) for m in members],
         f"Select a template ({meta(group).name or group}):",
+        output=output,
     )
     if command is None:
         return None
     return next(m for m in members if m.command == command)
 
 
-def _prompt_output(item: TouchItem) -> str:
+def _prompt_output(item: TouchItem, output=None) -> str:
     """Prompt for the output path until a non-empty answer is given."""
     example = item.example or f"my-file{item.file_name_options.extension}"
     while True:
-        value = _text("Output path:", placeholder=f"e.g. {example}").strip()
+        value = text("Output path:", placeholder=f"e.g. {example}", output=output).strip()
         if value:
             return value
 
 
-def _prompt_arguments(item: TouchItem) -> dict[str, str]:
+def _prompt_arguments(item: TouchItem, output=None) -> dict[str, str]:
     """Prompt for each template variable; blank answers are omitted.
 
     A blank answer takes the argument's configured default when there is
@@ -435,7 +428,7 @@ def _prompt_arguments(item: TouchItem) -> dict[str, str]:
             placeholder = "leave blank to use the derived value"
         else:
             placeholder = "optional"
-        value = _text(f"{name}:", placeholder=placeholder)
+        value = text(f"{name}:", placeholder=placeholder, output=output)
         if value:
             args[name] = value
         elif spec.default:
@@ -468,25 +461,27 @@ def wizard():
         click.echo(messages["NO_TEMPLATES"])
         return
 
-    item = _select_item(items, config.typed.groups_meta)
+    output = picker_output()
+    item = _select_item(items, config.typed.groups_meta, output)
     if item is None:
         click.echo(FormatUtils.warning("No template selected."))
         return
     fopts = item.file_name_options
 
-    output_raw = _prompt_output(item)
+    output_raw = _prompt_output(item, output)
 
-    casing_choice = _select(
+    casing_choice = select(
         [(c, c) for c in ("keep", *cases)],
         "Filename casing:",
         selected=fopts.casing or "keep",
+        output=output,
     )
     if casing_choice is None:
         click.echo(FormatUtils.warning("Cancelled."))
         return
     casing = None if casing_choice == "keep" else casing_choice
 
-    args = _prompt_arguments(item)
+    args = _prompt_arguments(item, output)
 
     resolved = resolve_output(output_raw, fopts, casing, args)
 
@@ -513,10 +508,10 @@ cli.add_command(wizard, "w")
 _NEW_GROUP = "__new_group__"
 
 
-def _prompt_nonempty(message: str, placeholder: str = "") -> str:
-    """Prompt via :func:`_text` until a non-blank answer is given."""
+def _prompt_nonempty(message: str, placeholder: str = "", output=None) -> str:
+    """Prompt via :func:`~ptools.lib.tui.select.text` until a non-blank answer is given."""
     while True:
-        value = _text(message, placeholder=placeholder).strip()
+        value = text(message, placeholder=placeholder, output=output).strip()
         if value:
             return value
 
@@ -653,7 +648,8 @@ def new():
     groups_meta = config.typed.groups_meta
     existing_commands = {item.command for item in items}
 
-    command_name = _prompt_nonempty("Command name:", placeholder="e.g. rfc")
+    output = picker_output()
+    command_name = _prompt_nonempty("Command name:", placeholder="e.g. rfc", output=output)
     if command_name in existing_commands:
         raise click.ClickException(
             f"A template with command '{command_name}' already exists."
@@ -662,19 +658,19 @@ def new():
     group_options = _group_picker_options(items, groups_meta) + [
         (_NEW_GROUP, "+ New group", "Create a new group")
     ]
-    group_choice = _select(group_options, "Select a group:")
+    group_choice = select(group_options, "Select a group:", output=output)
     if group_choice is None:
         click.echo(FormatUtils.warning("Cancelled."))
         return
     if group_choice == _NEW_GROUP:
-        group = _prompt_nonempty("New group name:", placeholder="e.g. docs")
+        group = _prompt_nonempty("New group name:", placeholder="e.g. docs", output=output)
     else:
         group = group_choice
 
-    name = _text("Display name:", placeholder="e.g. RFC Document")
-    description = _text("Description:", placeholder="e.g. RFC document template")
+    name = text("Display name:", placeholder="e.g. RFC Document", output=output)
+    description = text("Description:", placeholder="e.g. RFC document template", output=output)
 
-    extension = _text("Output extension:", placeholder="e.g. .md").strip()
+    extension = text("Output extension:", placeholder="e.g. .md", output=output).strip()
     if extension and not extension.startswith("."):
         extension = f".{extension}"
 

@@ -13,7 +13,7 @@ from importlib import import_module
 import click
 from click.formatting import HelpFormatter
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 
 COMMANDS = {
     "clip": {
@@ -92,13 +92,13 @@ COMMANDS = {
         "import_path": "ptools.settings:cli",
         "short_help": "Manage power tools settings.",
     },
-    "tmp": {
-        "import_path": "ptools.tmp:tmp",
-        "short_help": "Temporary command for testing purposes.",
-    },
     "vault": {
         "import_path": "ptools.vault:cli",
         "short_help": "File encryption and decryption commands.",
+    },
+    "tmp": {
+        "import_path": "ptools.tmp:tmp",
+        "short_help": "Create and run a command in a temporary directory.",
     },
 }
 

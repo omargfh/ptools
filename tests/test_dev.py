@@ -9,7 +9,12 @@ suite.
 from click.testing import CliRunner
 
 import ptools.dev as dev
-from ptools.utils.require import BinaryRequirement, KeyRequirement, LibraryRequirement
+from ptools.utils.require import (
+    BinaryRequirement,
+    KeyRequirement,
+    LibraryRequirement,
+    OSRequirement,
+)
 
 
 def _patch_registry(monkeypatch, requirements):
@@ -97,6 +102,32 @@ def test_doctor_binary_and_fails_if_any_missing(monkeypatch):
     assert "[MISSING]" in result.output
 
 
+def test_doctor_os_satisfied_when_current_os_matches(monkeypatch):
+    monkeypatch.setattr("platform.system", lambda: "Darwin")
+    _patch_registry(monkeypatch, [
+        OSRequirement(names=("darwin",), logical_operator="or"),
+    ])
+
+    runner = CliRunner()
+    result = runner.invoke(dev.cli, ["doctor"])
+
+    assert result.exit_code == 0
+    assert "[ok]      darwin" in result.output
+
+
+def test_doctor_os_missing_when_current_os_does_not_match(monkeypatch):
+    monkeypatch.setattr("platform.system", lambda: "Linux")
+    _patch_registry(monkeypatch, [
+        OSRequirement(names=("darwin",), logical_operator="or"),
+    ])
+
+    runner = CliRunner()
+    result = runner.invoke(dev.cli, ["doctor"])
+
+    assert result.exit_code != 0
+    assert "[MISSING] darwin" in result.output
+
+
 def test_doctor_key_requirement_reported_but_not_verified(monkeypatch):
     _patch_registry(monkeypatch, [
         LibraryRequirement(module="os"),
@@ -134,7 +165,7 @@ def test_doctor_no_announced_requirements(monkeypatch):
     result = runner.invoke(dev.cli, ["doctor"])
 
     assert result.exit_code == 0
-    assert result.output.count("(none announced)") == 3
+    assert result.output.count("(none announced)") == 4
     assert "All checked requirements are satisfied." in result.output
 
 
@@ -147,7 +178,7 @@ class TestEditCommand:
         assert "edit" in dev.cli.commands
 
     def test_edit_project_uses_the_editor_setting(self, monkeypatch):
-        monkeypatch.setattr(dev, "EDITOR", "nano")
+        monkeypatch.setenv("EDITOR", "nano")
         calls = []
         monkeypatch.setattr(dev.os, "system", lambda cmd: calls.append(cmd))
 
@@ -158,7 +189,7 @@ class TestEditCommand:
         assert calls == [f"nano {dev.get_project_root()}"]
 
     def test_edit_config_target_opens_the_ptools_config_dir(self, monkeypatch):
-        monkeypatch.setattr(dev, "EDITOR", "nano")
+        monkeypatch.setenv("EDITOR", "nano")
         calls = []
         monkeypatch.setattr(dev.os, "system", lambda cmd: calls.append(cmd))
 
@@ -171,7 +202,7 @@ class TestEditCommand:
         assert calls[0].endswith(".ptools")
 
     def test_edit_respects_a_different_editor_setting(self, monkeypatch):
-        monkeypatch.setattr(dev, "EDITOR", "code")
+        monkeypatch.setenv("EDITOR", "code")
         calls = []
         monkeypatch.setattr(dev.os, "system", lambda cmd: calls.append(cmd))
 

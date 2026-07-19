@@ -11,7 +11,7 @@ from prompt_toolkit.output.defaults import create_output
 from ptools.lib.tui.select import SelectApp
 from ptools.utils.print import FormatUtils
 
-__version__ = "1.1.0"
+__version__ = "2.0.0"
 
 PROJECT_SRC = os.path.expanduser("~/.ptools/projects.json")
 
@@ -328,7 +328,7 @@ def chdir(ctx, name, quiet):
 
     click.echo(full_path)
 
-@cli.command()
+@cli.command(name='list')
 def list_projects():
     """List all projects.
 
@@ -343,7 +343,7 @@ def list_projects():
     for name, path in projects.items():
         click.echo(f"Project: {FormatUtils.highlight(name)}, Path: {FormatUtils.highlight(path)}")
 
-@cli.command()
+@cli.command(name='add')
 @click.argument('name')
 @click.argument('path', default='.', type=click.Path(exists=True, file_okay=False, resolve_path=True))
 @click.option('--force', is_flag=True, help="Force add project even if it already exists.")
@@ -359,7 +359,7 @@ def add_project(name, path, force):
     projects = Projects.get_instance()
     projects.add_project(name, path, force)
 
-@cli.command()
+@cli.command(name='delete')
 @click.argument('name')
 @click.confirmation_option(prompt='Are you sure you want to delete this project?')
 def delete_project(name):
@@ -458,10 +458,3 @@ def prune():
 
     removed_names = projects.remove_missing_projects(missing)
     click.echo(FormatUtils.success(f"Removed {len(removed_names)} project(s): {', '.join(removed_names)}"))
-
-cli.add_command(chdir, name='chdir')
-cli.add_command(add_project, name='add')
-cli.add_command(list_projects, name='list')
-cli.add_command(delete_project, name='delete')
-cli.add_command(install, name='install')
-cli.add_command(prune, name='prune')

@@ -14,6 +14,7 @@ below gets a brand new ``tmp_path``.
 """
 
 import importlib
+import json
 
 import pytest
 from click.testing import CliRunner
@@ -46,7 +47,9 @@ class TestEditorSetting:
     def test_respects_editor_env_var(self, monkeypatch, tmp_path):
         settings_mod = _reload_settings(monkeypatch, tmp_path, EDITOR="nano")
         assert settings_mod.EDITOR == "nano"
-        assert settings_mod.settings.typed.EDITOR == "nano"
+        # The env override is not baked into the persisted/hard-coded
+        # tier -- only the resolved value (get()/the module constant) sees it.
+        assert settings_mod.settings.typed.EDITOR == "vim"
 
     def test_get_and_set_work_for_free_via_config_to_CLI(self, settings_module):
         """No hand-rolled CLI command needed: config_to_CLI already wires get/set."""
@@ -75,6 +78,152 @@ class TestEditorSetting:
         assert result.exit_code == 0, result.output
         assert "EDITOR" in result.output
         assert "vim" in result.output
+
+
+class TestVaultInPlaceSetting:
+    """``VAULT_IN_PLACE`` follows the same bool pattern as ``PTOOLS_DEBUG``."""
+
+    def test_defaults_to_true(self, settings_module):
+        assert settings_module.VAULT_IN_PLACE is True
+        assert settings_module.settings.typed.VAULT_IN_PLACE is True
+
+    def test_get_and_set_work_via_config_to_CLI(self, settings_module):
+        runner = CliRunner()
+
+        result = runner.invoke(settings_module.cli, ["set", "VAULT_IN_PLACE", "false"])
+        assert result.exit_code == 0, result.output
+        assert "Set 'VAULT_IN_PLACE' to 'False'." in result.output
+
+        result = runner.invoke(settings_module.cli, ["get", "VAULT_IN_PLACE"])
+        assert result.exit_code == 0, result.output
+        assert result.output.strip() == "False"
+
+    def test_set_persists_to_disk(self, settings_module, tmp_path):
+        settings_module.set("VAULT_IN_PLACE", False)
+
+        on_disk = json.loads((tmp_path / ".ptools" / "settings.json").read_text())
+        assert on_disk["data"]["VAULT_IN_PLACE"] is False
+
+    def test_appears_in_settings_list_output(self, settings_module):
+        runner = CliRunner()
+        result = runner.invoke(settings_module.cli, ["list"])
+        assert result.exit_code == 0, result.output
+        assert "VAULT_IN_PLACE" in result.output
+
+    def test_env_var_truthiness_is_exact(self, monkeypatch, tmp_path):
+        """Only \"1\" is true, matching the ``PTOOLS_DEBUG`` rule."""
+        settings_mod = _reload_settings(monkeypatch, tmp_path, VAULT_IN_PLACE="1")
+        assert settings_mod.get("VAULT_IN_PLACE") is True
+
+        monkeypatch.setenv("VAULT_IN_PLACE", "false")
+        assert settings_mod.get("VAULT_IN_PLACE") is False
+
+        monkeypatch.setenv("VAULT_IN_PLACE", "0")
+        assert settings_mod.get("VAULT_IN_PLACE") is False
+
+
+class TestEnvOverridesPersistedValue:
+    """Regression coverage for the env-over-file precedence bug.
+
+    Previously a key present in ``settings.json`` won permanently -- an
+    env var could never override it, and env values got baked into the
+    field defaults at import time. ``get()`` now resolves env, then the
+    persisted file, then the hard-coded default, on every call.
+    """
+
+    def _seed(self, tmp_path, **data):
+        config_dir = tmp_path / ".ptools"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        (config_dir / "settings.json").write_text(json.dumps({
+            "encrypted": False,
+            "data": data,
+        }))
+
+    def test_env_overrides_a_stored_value(self, monkeypatch, tmp_path):
+        self._seed(tmp_path, EDITOR="stored-nano")
+        settings_mod = _reload_settings(monkeypatch, tmp_path, EDITOR="env-code")
+
+        assert settings_mod.get("EDITOR") == "env-code"
+
+    def test_stored_value_used_when_env_is_unset(self, monkeypatch, tmp_path):
+        self._seed(tmp_path, EDITOR="stored-nano")
+        settings_mod = _reload_settings(monkeypatch, tmp_path)
+
+        assert settings_mod.get("EDITOR") == "stored-nano"
+
+    def test_hardcoded_default_when_neither_env_nor_stored(self, monkeypatch, tmp_path):
+        settings_mod = _reload_settings(monkeypatch, tmp_path)
+
+        assert settings_mod.get("EDITOR") == "vim"
+
+    def test_env_mutation_after_import_changes_the_next_get_call(self, monkeypatch, tmp_path):
+        settings_mod = _reload_settings(monkeypatch, tmp_path)
+        assert settings_mod.get("EDITOR") == "vim"
+
+        monkeypatch.setenv("EDITOR", "code")
+        assert settings_mod.get("EDITOR") == "code"
+
+    def test_env_var_is_not_persisted_to_disk(self, monkeypatch, tmp_path):
+        """A one-off env override must not get baked into the config file."""
+        settings_mod = _reload_settings(monkeypatch, tmp_path, EDITOR="one-off-editor")
+        # settings.json is created lazily on first real access to the
+        # underlying LazyConfigFile -- reloading the module alone (above)
+        # no longer touches disk, so force that materialization here to
+        # inspect what actually landed on it.
+        settings_mod.settings.data
+
+        on_disk = json.loads((tmp_path / ".ptools" / "settings.json").read_text())
+        assert on_disk["data"]["EDITOR"] == "vim"
+
+    def test_ptools_debug_env_var_truthiness_is_exact(self, monkeypatch, tmp_path):
+        """Only \"1\" is true -- matches the historical field-default rule."""
+        settings_mod = _reload_settings(monkeypatch, tmp_path, PTOOLS_DEBUG="1")
+        assert settings_mod.get("PTOOLS_DEBUG") is True
+
+        monkeypatch.setenv("PTOOLS_DEBUG", "true")
+        assert settings_mod.get("PTOOLS_DEBUG") is False
+
+        monkeypatch.setenv("PTOOLS_DEBUG", "0")
+        assert settings_mod.get("PTOOLS_DEBUG") is False
+
+    @pytest.mark.parametrize(
+        "field_name, env_var_name",
+        [
+            ("PIP_EXECUTABLE", "PIP_EXECUTABLE"),
+            ("PTOOLS_DEBUG", "PTOOLS_DEBUG"),
+            ("EDITOR", "EDITOR"),
+            ("SHELL_EXECUTABLE", "PTOOLS_SHELL"),
+            ("SHELL_CONFIG", "PTOOLS_SHELL_CONFIG"),
+        ],
+    )
+    def test_env_var_names_match_the_documented_mapping(
+        self, monkeypatch, tmp_path, field_name, env_var_name
+    ):
+        settings_mod = _reload_settings(monkeypatch, tmp_path, **{env_var_name: "probe-value"})
+
+        if field_name == "PTOOLS_DEBUG":
+            assert settings_mod.get(field_name) is False  # "probe-value" != "1"
+        else:
+            assert settings_mod.get(field_name) == "probe-value"
+
+
+class TestGetAndSetFunctions:
+    """``get``/``set`` are the documented API (``settings.py:11-16``)."""
+
+    def test_get_and_set_exist(self, settings_module):
+        assert hasattr(settings_module, "get")
+        assert hasattr(settings_module, "set")
+
+    def test_docstring_example_runs(self, settings_module):
+        """``settings.set("PIP_EXECUTABLE", "uv pip")`` from the module docstring."""
+        settings_module.set("PIP_EXECUTABLE", "uv pip")
+        assert settings_module.get("PIP_EXECUTABLE") == "uv pip"
+
+    def test_set_persists_to_the_config_file(self, settings_module, tmp_path):
+        settings_module.set("EDITOR", "helix")
+
+        on_disk = json.loads((tmp_path / ".ptools" / "settings.json").read_text())
+        assert on_disk["data"]["EDITOR"] == "helix"
 
 
 class TestSettingsModelGenericFieldAddition:
