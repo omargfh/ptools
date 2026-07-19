@@ -27,3 +27,32 @@ Note the suite has no randomising plugin installed (`pytest_randomly` and `pytes
 **Notes**: to reproduce, loop the full suite against a fresh `HOME` and stop on non-zero exit; budget ~30 runs at ~13s each. If `autouse-home-isolation-2.md` lands first, re-measure before spending time here — the flake may be a symptom of the same shared-state problem, in which case this file should be closed rather than worked.
 
 **Status**: proposed — not approved
+
+## Re-measurement 2026-07-18 (post-merge, staging/ongoing-execution)
+
+Re-ran per the Notes' instruction to re-measure after `autouse-home-isolation-2.md`
+landed. Conditions differ from the original observation: the autouse `$HOME`
+fixture is now in effect and the suite has grown 551 -> 648 tests.
+
+- 30 consecutive full-suite runs, stop-on-first-failure: **30/30 green**,
+  648 passed every run, 0 failures.
+- Command: `.venv/bin/python3 -m pytest -q`, looped 30x against the merged
+  staging branch.
+
+**This does not close the investigation.** No deterministic reproduction was
+found and no root cause was named, so neither acceptance path is satisfied:
+
+- The original rate was ~2 failures / 33 runs (~6%). At that rate a 30-run
+  clean streak occurs by chance with probability ~0.94^30 = ~15% — so this
+  result is consistent both with the flake being fixed and with it being
+  unchanged.
+- The original investigation itself recorded a 20-run green streak immediately
+  before it stopped reproducing, so long green streaks are a known behaviour of
+  this flake rather than evidence against it.
+
+Conclusion: still open, with the failure rate now bounded below the level a
+30-run sample can detect. Anyone resuming should either loop substantially more
+runs (100+ to meaningfully constrain a ~6% rate) or attack it directly via the
+shared `patch_ask_text` helper / leaked module state lead in the Description,
+which remains the only substantive hypothesis. Do not close on the strength of
+the streak above.
