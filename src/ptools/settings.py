@@ -47,6 +47,7 @@ class SettingsModel(BaseModel):
     EDITOR: str = "vim"
     SHELL_EXECUTABLE: str = Field(default_factory=detect_shell)
     SHELL_CONFIG: str = Field(default_factory=detect_shell_config)
+    VAULT_IN_PLACE: bool = True
 
 # Field name -> env var name, for the two fields whose env var differs
 # from the field name (settings.py:37-38 historically).
@@ -56,6 +57,7 @@ _ENV_VAR_NAMES = {
     "EDITOR": "EDITOR",
     "SHELL_EXECUTABLE": "PTOOLS_SHELL",
     "SHELL_CONFIG": "PTOOLS_SHELL_CONFIG",
+    "VAULT_IN_PLACE": "VAULT_IN_PLACE",
 }
 
 settings = LazyConfigFile("settings", quiet=True, model=SettingsModel)
@@ -106,6 +108,7 @@ def set(name, value):
 # which is exactly the eager cost LazyConfigFile exists to avoid.
 _MODULE_CONSTANTS = frozenset({
     "PIP_EXECUTABLE", "PTOOLS_DEBUG", "EDITOR", "SHELL_EXECUTABLE", "SHELL_CONFIG",
+    "VAULT_IN_PLACE",
 })
 
 

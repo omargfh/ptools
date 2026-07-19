@@ -1,11 +1,13 @@
 """Tests for ``ptools.vault`` -- file encryption/decryption commands.
 
 Round-trip coverage for all four commands (seal/unseal password-based,
-bury/dig keyring-based), plus the wrong-password failure path. Every
-command overwrites INPUT_FILE in place when OUTPUT_FILE is omitted
-(``vault.py:24,43,60,78``), so every fixture here creates its own
-throwaway file under ``tmp_path`` -- an in-place write can never touch
-anything outside a test's own sandbox.
+bury/dig keyring-based), plus the wrong-password failure path. By
+default, every command overwrites INPUT_FILE in place when OUTPUT_FILE
+is omitted; setting ``VAULT_IN_PLACE=false`` (``ptools.settings``)
+switches that same omitted-OUTPUT_FILE case to printing the result to
+stdout and leaving INPUT_FILE untouched instead. Every fixture here
+creates its own throwaway file under ``tmp_path`` -- an in-place write
+can never touch anything outside a test's own sandbox.
 """
 from click.testing import CliRunner
 
@@ -76,6 +78,46 @@ class TestSealUnsealRoundTrip:
         result = runner.invoke(cli, ["unseal", str(target), "-p", PASSWORD])
         assert result.exit_code == 0, result.output
         assert target.read_bytes() == PLAINTEXT  # restored in place
+
+    def test_vault_in_place_false_prints_to_stdout_and_leaves_input_untouched(self, tmp_path):
+        runner = CliRunner()
+        target = tmp_path / "in_place.txt"
+        target.write_bytes(PLAINTEXT)
+
+        result = runner.invoke(
+            cli, ["seal", str(target), "-p", PASSWORD], env={"VAULT_IN_PLACE": "0"}
+        )
+        assert result.exit_code == 0, result.output
+        assert "'nonce'" in result.output  # the encrypted dict repr, printed
+        assert target.read_bytes() == PLAINTEXT  # input left byte-identical
+
+        # Seal for real (default, in-place) so unseal has a vault file to read.
+        result = runner.invoke(cli, ["seal", str(target), "-p", PASSWORD])
+        assert result.exit_code == 0, result.output
+        sealed_bytes = target.read_bytes()
+
+        result = runner.invoke(
+            cli, ["unseal", str(target), "-p", PASSWORD], env={"VAULT_IN_PLACE": "0"}
+        )
+        assert result.exit_code == 0, result.output
+        assert result.output.encode("utf-8").rstrip(b"\n") == PLAINTEXT
+        assert target.read_bytes() == sealed_bytes  # input left byte-identical
+
+    def test_explicit_output_file_wins_over_vault_in_place_false(self, tmp_path):
+        """An explicit OUTPUT_FILE always writes to disk, setting notwithstanding."""
+        runner = CliRunner()
+        input_file = tmp_path / "plain.txt"
+        input_file.write_bytes(PLAINTEXT)
+        sealed_file = tmp_path / "sealed.vault"
+
+        result = runner.invoke(
+            cli,
+            ["seal", str(input_file), str(sealed_file), "-p", PASSWORD],
+            env={"VAULT_IN_PLACE": "0"},
+        )
+        assert result.exit_code == 0, result.output
+        assert sealed_file.read_bytes() != PLAINTEXT
+        assert input_file.read_bytes() == PLAINTEXT
 
 
 class TestWrongPassword:
@@ -195,3 +237,26 @@ class TestBuryDigRoundTrip:
         result = runner.invoke(cli, ["dig", str(target)])
         assert result.exit_code == 0, result.output
         assert target.read_bytes() == PLAINTEXT
+
+    def test_vault_in_place_false_prints_to_stdout_and_leaves_input_untouched(
+        self, tmp_path, monkeypatch
+    ):
+        _install_fake_keyring(monkeypatch)
+        runner = CliRunner()
+        target = tmp_path / "in_place.txt"
+        target.write_bytes(PLAINTEXT)
+
+        result = runner.invoke(cli, ["bury", str(target)], env={"VAULT_IN_PLACE": "0"})
+        assert result.exit_code == 0, result.output
+        assert "'nonce'" in result.output  # the encrypted dict repr, printed
+        assert target.read_bytes() == PLAINTEXT  # input left byte-identical
+
+        # Bury for real (default, in-place) so dig has a vault file to read.
+        result = runner.invoke(cli, ["bury", str(target)])
+        assert result.exit_code == 0, result.output
+        buried_bytes = target.read_bytes()
+
+        result = runner.invoke(cli, ["dig", str(target)], env={"VAULT_IN_PLACE": "0"})
+        assert result.exit_code == 0, result.output
+        assert result.output.encode("utf-8").rstrip(b"\n") == PLAINTEXT
+        assert target.read_bytes() == buried_bytes  # input left byte-identical

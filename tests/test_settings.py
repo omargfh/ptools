@@ -80,6 +80,48 @@ class TestEditorSetting:
         assert "vim" in result.output
 
 
+class TestVaultInPlaceSetting:
+    """``VAULT_IN_PLACE`` follows the same bool pattern as ``PTOOLS_DEBUG``."""
+
+    def test_defaults_to_true(self, settings_module):
+        assert settings_module.VAULT_IN_PLACE is True
+        assert settings_module.settings.typed.VAULT_IN_PLACE is True
+
+    def test_get_and_set_work_via_config_to_CLI(self, settings_module):
+        runner = CliRunner()
+
+        result = runner.invoke(settings_module.cli, ["set", "VAULT_IN_PLACE", "false"])
+        assert result.exit_code == 0, result.output
+        assert "Set 'VAULT_IN_PLACE' to 'False'." in result.output
+
+        result = runner.invoke(settings_module.cli, ["get", "VAULT_IN_PLACE"])
+        assert result.exit_code == 0, result.output
+        assert result.output.strip() == "False"
+
+    def test_set_persists_to_disk(self, settings_module, tmp_path):
+        settings_module.set("VAULT_IN_PLACE", False)
+
+        on_disk = json.loads((tmp_path / ".ptools" / "settings.json").read_text())
+        assert on_disk["data"]["VAULT_IN_PLACE"] is False
+
+    def test_appears_in_settings_list_output(self, settings_module):
+        runner = CliRunner()
+        result = runner.invoke(settings_module.cli, ["list"])
+        assert result.exit_code == 0, result.output
+        assert "VAULT_IN_PLACE" in result.output
+
+    def test_env_var_truthiness_is_exact(self, monkeypatch, tmp_path):
+        """Only \"1\" is true, matching the ``PTOOLS_DEBUG`` rule."""
+        settings_mod = _reload_settings(monkeypatch, tmp_path, VAULT_IN_PLACE="1")
+        assert settings_mod.get("VAULT_IN_PLACE") is True
+
+        monkeypatch.setenv("VAULT_IN_PLACE", "false")
+        assert settings_mod.get("VAULT_IN_PLACE") is False
+
+        monkeypatch.setenv("VAULT_IN_PLACE", "0")
+        assert settings_mod.get("VAULT_IN_PLACE") is False
+
+
 class TestEnvOverridesPersistedValue:
     """Regression coverage for the env-over-file precedence bug.
 
