@@ -100,6 +100,10 @@ COMMANDS = {
         "import_path": "ptools.tmp:tmp",
         "short_help": "Create and run a command in a temporary directory.",
     },
+    "git": {
+        "import_path": "ptools.git:cli",
+        "short_help": "Git repository utilities.",
+    },
 }
 
 
