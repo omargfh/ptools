@@ -104,6 +104,10 @@ COMMANDS = {
         "import_path": "ptools.git:cli",
         "short_help": "Git repository utilities.",
     },
+    "every": {
+        "import_path": "ptools.every:every",
+        "short_help": "Run a command at regular intervals.",
+    },
 }
 
 
