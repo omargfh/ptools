@@ -432,3 +432,37 @@ def test(ctx, keyword, verbose, exitfirst):
     rc = _run(cmd)
     if rc != 0:
         raise click.ClickException(f"pytest exited with status {rc}")
+
+@cli.command()
+def history():
+    """Show the command history for ptools"""
+    from rich.console import Console
+
+    from ptools.utils.print      import ASCIIEscapes as ae, FormatUtils as fmt
+    from ptools.lib.app.log_file import get_log_file
+    from ptools.lib.tui.tables   import rows_table
+    from ptools.lib.tui          import get_terminal_width
+
+    log = get_log_file()
+    history = log.typed.history
+
+    def format_entry(entry):
+        import datetime
+
+        timestamp = entry["timestamp"]
+        dt = datetime.datetime.fromisoformat(timestamp) \
+            if isinstance(timestamp, str) \
+            else datetime.datetime.fromtimestamp(timestamp)
+        date_str = dt.strftime("%b %d %Y")
+        time_str = dt.strftime("%H:%M:%S")
+        timestamp = f"{date_str} {ae.color(time_str, color='green')}"
+
+        return {
+            "timestamp": timestamp,
+            "command": f"ptools {' '.join(entry['command'])}",
+        }
+
+    console = Console(width=get_terminal_width(), force_terminal=False)
+    console.print(rows_table(
+        rows=[format_entry(entry.model_dump()) for entry in history],
+    ))

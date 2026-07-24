@@ -163,4 +163,10 @@ def cli():
         json      JSON manipulation tools.
         time      Timing utilities for power tools.
     """
+
+    @click.get_current_context().call_on_close
+    def on_close() -> None:
+        from ptools.lib.app.on_close import on_close
+        on_close()
+
     pass

@@ -7,3 +7,8 @@
 - :mod:`ptools.lib.tui.select`  - inline prompt_toolkit arrow-key
   single-select picker.
 """
+
+def get_terminal_width() -> int:
+    """Get the current terminal width in characters."""
+    import shutil
+    return shutil.get_terminal_size((80, 20)).columns

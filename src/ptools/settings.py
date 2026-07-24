@@ -48,6 +48,7 @@ class SettingsModel(BaseModel):
     SHELL_EXECUTABLE: str = Field(default_factory=detect_shell)
     SHELL_CONFIG: str = Field(default_factory=detect_shell_config)
     VAULT_IN_PLACE: bool = True
+    MAX_HISTORY_ENTRIES: int = 1000
 
 # Field name -> env var name, for the two fields whose env var differs
 # from the field name (settings.py:37-38 historically).
@@ -58,6 +59,7 @@ _ENV_VAR_NAMES = {
     "SHELL_EXECUTABLE": "PTOOLS_SHELL",
     "SHELL_CONFIG": "PTOOLS_SHELL_CONFIG",
     "VAULT_IN_PLACE": "VAULT_IN_PLACE",
+    "MAX_HISTORY_ENTRIES": "MAX_HISTORY_ENTRIES",
 }
 
 settings = LazyConfigFile("settings", quiet=True, model=SettingsModel)
@@ -108,7 +110,7 @@ def set(name, value):
 # which is exactly the eager cost LazyConfigFile exists to avoid.
 _MODULE_CONSTANTS = frozenset({
     "PIP_EXECUTABLE", "PTOOLS_DEBUG", "EDITOR", "SHELL_EXECUTABLE", "SHELL_CONFIG",
-    "VAULT_IN_PLACE",
+    "VAULT_IN_PLACE", "MAX_HISTORY_ENTRIES",
 })
 
 
