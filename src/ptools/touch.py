@@ -26,7 +26,7 @@ import tempfile
 
 import click
 from jinja2 import Environment, Template, meta
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, computed_field, field_serializer, model_validator, BeforeValidator
 
 import ptools.utils.require as require
 from ptools.lib.tui.select import picker_output, select, text
@@ -102,10 +102,20 @@ class TouchItem(BaseModel):
     example: str = ""
 
     # Populated in model_post_init — not user-supplied.
-    template: Template | None = None
     _undeclared_vars: set[str] = set()
 
     model_config = {"arbitrary_types_allowed": True}
+
+    @field_serializer("template")
+    def serialize_template(self, template: Template) -> str:
+        """Serialize the Jinja2 Template object to its source string."""
+        return self.template_string
+
+    @computed_field
+    @property
+    def template(self) -> Template | None:
+        """Return the Jinja2 Template object, or None if not initialized."""
+        return Template(self.template_string)
 
     def model_post_init(self, context) -> None:
         super().model_post_init(context)
@@ -124,8 +134,6 @@ class TouchItem(BaseModel):
             **{var: ArgumentSpec() for var in self._undeclared_vars},
             **explicit,
         }
-        self.template = Template(self.template_string)
-
 
 class TouchConfig(BaseModel):
     values: list[TouchItem] = []

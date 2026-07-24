@@ -135,7 +135,7 @@ class ConfigFile(Generic[T]):
     def _validate(self, data):
         if self.model is not None:
             try:
-                return self.model.model_validate(data).model_dump()
+                return self.model.model_validate(data).model_dump(mode="json")
             except Exception as e:
                 raise ValueError(f"Config data does not match the expected model: {e}")
         return data
@@ -188,12 +188,12 @@ class ConfigFile(Generic[T]):
         if self.encryption:
             content = {
                 'encrypted': True,
-                'data': self.encryption.encrypt(self.serial.dumps(data))
+                'data': self.encryption.encrypt(self.serial.dumps(self._validate(data)))
             }
         else:
             content = {
                 'encrypted': False,
-                'data': data
+                'data': self._validate(data)
             }
 
         if not isinstance(content, dict):
