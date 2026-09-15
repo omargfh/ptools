@@ -143,3 +143,21 @@ class TestTestIncludeExcludeGlob:
         assert not files.test_include_exclude_glob(None, "node_modules", str(tmp_path / "dir" / "node_modules"), relative_to=str(tmp_path / "dir"))
         assert not files.test_include_exclude_glob(None, "**/node_modules/**", str(tmp_path / "dir" / "node_modules" / "file.js"), relative_to=None)
         assert not files.test_include_exclude_glob(None, "node_modules/**", str(tmp_path / "dir" / "node_modules" / "file.js"), relative_to=str(tmp_path / "dir"))
+
+
+    def test_include_exclude_with_multiple_patterns(self, tmp_path):
+        (tmp_path / "dir").mkdir()
+        (tmp_path / "dir" / "file1.txt").write_text("1")
+        (tmp_path / "dir" / "file2.log").write_text("2")
+        (tmp_path / "dir" / "file3.md").write_text("3")
+        (tmp_path / "dir" / ".hidden").write_text("4")
+
+        # Test multiple include patterns
+        assert files.test_include_exclude_glob("*.txt|*.md", None, str(tmp_path / "dir" / "file1.txt"), relative_to=str(tmp_path))
+        assert files.test_include_exclude_glob("*.txt|*.md", None, str(tmp_path / "dir" / "file3.md"), relative_to=str(tmp_path))
+        assert not files.test_include_exclude_glob("*.txt|*.md", None, str(tmp_path / "dir" / "file2.log"), relative_to=str(tmp_path))
+
+        # Test multiple exclude patterns
+        assert not files.test_include_exclude_glob(None, "*.log|.hidden", str(tmp_path / "dir" / "file2.log"), relative_to=str(tmp_path))
+        assert not files.test_include_exclude_glob(None, "*.log|.hidden", str(tmp_path / "dir" / ".hidden"), relative_to=str(tmp_path / "dir"))
+        assert files.test_include_exclude_glob(None, "*.log|.hidden", str(tmp_path / "dir" / "file1.txt"), relative_to=str(tmp_path))

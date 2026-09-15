@@ -189,8 +189,8 @@ def findfiles(
 @click.option('--show-files/--no-files', '-f/-F', is_flag=True, default=True, help="Show files in the tree")
 @click.option('--cache/--no-cache', default=True, help="Reuse the on-disk size cache; --no-cache recomputes every size fresh from disk")
 @click.option('--interactive', '-i', is_flag=True, default=False, help="Enable interactive mode with clickable file paths")
-@click.option('--include', '-I', help="Include specific files or directories in the tree (glob patterns)")
-@click.option('--exclude', '-E', help="Exclude specific files or directories from the tree (glob patterns)")
+@click.option('--include', '-I', multiple=True, help="Include specific files or directories in the tree (glob patterns)")
+@click.option('--exclude', '-E', multiple=True, help="Exclude specific files or directories from the tree (glob patterns)")
 def tree(
     path,
     sort,
@@ -232,6 +232,9 @@ def tree(
         FromHumanized.from_humanized_size(size_flag_threshold) \
             if size_flag_threshold \
             else None
+
+    include = "|".join(include) if include else None
+    exclude = "|".join(exclude) if exclude else None
 
     is_included: Callable[[str], bool] = \
           lambda p: test_include_exclude_glob(include, exclude, p, relative_to=os.path.abspath(path)) and \

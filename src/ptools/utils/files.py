@@ -1,4 +1,5 @@
 """File-system and input-resolution helpers for ptools commands."""
+from ast import pattern
 import os
 import click
 import sys
@@ -141,10 +142,11 @@ def test_include_exclude_glob(
 
     def absrelmatch(path: str, pattern: str, relative_to: str | None) -> bool:
         """Check if the path matches the pattern either as an absolute path or relative to a given directory."""
-        absmatch = fnmatch(path, pattern)
+        patterns = pattern.split("|")
+        absmatch = any(fnmatch(path, p) for p in patterns)
         if relative_to:
             rel_path = os.path.relpath(path, start=relative_to)
-            return absmatch or fnmatch(rel_path, pattern)
+            return absmatch or any(fnmatch(rel_path, p) for p in patterns)
         return absmatch
 
     match = partial(absrelmatch, relative_to=relative_to)
