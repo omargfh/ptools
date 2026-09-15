@@ -4,7 +4,7 @@ import click
 import sys
 import requests
 
-from functools import wraps
+from functools import partial, wraps
 from typing import Optional
 
 from ptools.utils.cache import disk_cache
@@ -121,3 +121,41 @@ def get_size(path, ignore_hidden=False, use_cache=True):
     if use_cache:
         return _get_size_cached(norm, ignore_hidden=ignore_hidden)
     return _get_size(norm, ignore_hidden=ignore_hidden, use_cache=False)
+
+def test_include_exclude_glob(
+    include: str | None,
+    exclude: str | None,
+    target_path: str,
+    relative_to: str | None = None
+):
+    """Test if a target path matches include and exclude glob patterns.
+
+    :param include: Glob pattern to include (can be None).
+    :param exclude: Glob pattern to exclude (can be None).
+    :param target_path: The path to test against the patterns.
+    :param relative_to: If provided, the target path will be tested as absolute path and relative to this directory.
+                        If None, the target path is tested as-is.
+    :return: True if the target path should be included, False otherwise.
+    """
+    from fnmatch import fnmatch
+
+    def absrelmatch(path: str, pattern: str, relative_to: str | None) -> bool:
+        """Check if the path matches the pattern either as an absolute path or relative to a given directory."""
+        absmatch = fnmatch(path, pattern)
+        if relative_to:
+            rel_path = os.path.relpath(path, start=relative_to)
+            return absmatch or fnmatch(rel_path, pattern)
+        return absmatch
+
+    match = partial(absrelmatch, relative_to=relative_to)
+
+
+    # If include is specified, the target must match it or its relative
+    if include and not match(target_path, include):
+        return False
+
+    # If exclude is specified, the target must not match it
+    if exclude and match(target_path, exclude):
+        return False
+
+    return True

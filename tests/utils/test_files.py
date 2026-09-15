@@ -105,3 +105,41 @@ class TestGetSizeNoCache:
 
         assert files.get_size(str(tmp_path), use_cache=False) == 3
         assert called == []  # neither the parent nor the child hit the cache
+
+class TestTestIncludeExcludeGlob:
+    def test_basic_include_exclude_match(self, tmp_path):
+        (tmp_path / "a.txt").write_text("1")
+        (tmp_path / "b.log").write_text("2")
+        (tmp_path / "c.txt").write_text("3")
+        (tmp_path / ".hidden").write_text("4")
+
+        # Include only .txt files
+        assert files.test_include_exclude_glob("*.txt", None, str(tmp_path / "a.txt"), relative_to=str(tmp_path))
+        assert not files.test_include_exclude_glob("*.txt", None, str(tmp_path / "b.log"), relative_to=str(tmp_path))
+
+        # Exclude .log files
+        assert not files.test_include_exclude_glob(None, "*.log", str(tmp_path / "b.log"), relative_to=str(tmp_path))
+        assert files.test_include_exclude_glob(None, "*.log", str(tmp_path / "a.txt"), relative_to=str(tmp_path))
+
+        # Include .txt and exclude .hidden
+        assert files.test_include_exclude_glob("*.txt", ".hidden", str(tmp_path / "a.txt"), relative_to=str(tmp_path))
+        assert not files.test_include_exclude_glob("*.txt", ".hidden", str(tmp_path / ".hidden"), relative_to=str(tmp_path))
+
+    def test_include_exclude_with_relative_to(self, tmp_path):
+        (tmp_path / "dir").mkdir()
+        (tmp_path / "dir" / "node_modules").mkdir()
+        (tmp_path / "dir" / "node_modules" / "file.js").write_text("console.log('hi');")
+        (tmp_path / "dir" / "file.txt").write_text("hello")
+        (tmp_path / "dir" / "a.txt").write_text("1")
+        (tmp_path / "dir" / "b.log").write_text("2")
+
+        # Test that the relative_to parameter does not affect the include/exclude logic when irrelevant
+        assert files.test_include_exclude_glob("*.txt", None, str(tmp_path / "dir" / "file.txt"), relative_to=str(tmp_path / "dir"))
+        assert files.test_include_exclude_glob("*.txt", None, str(tmp_path / "dir" / "file.txt"), relative_to=None)
+
+        # Test that the relative_to parameter correctly affects the include/exclude logic
+        assert files.test_include_exclude_glob(None, "node_modules", str(tmp_path / "dir" / "node_modules" / "file.js"), relative_to=None)
+        assert files.test_include_exclude_glob(None, "node_modules", str(tmp_path / "dir" / "node_modules"), relative_to=None)
+        assert not files.test_include_exclude_glob(None, "node_modules", str(tmp_path / "dir" / "node_modules"), relative_to=str(tmp_path / "dir"))
+        assert not files.test_include_exclude_glob(None, "**/node_modules/**", str(tmp_path / "dir" / "node_modules" / "file.js"), relative_to=None)
+        assert not files.test_include_exclude_glob(None, "node_modules/**", str(tmp_path / "dir" / "node_modules" / "file.js"), relative_to=str(tmp_path / "dir"))

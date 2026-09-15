@@ -1,10 +1,14 @@
 import click
 import humanize
 
+from typing import Callable
+
+from ptools.utils.files import test_include_exclude_glob
 from ptools.utils.output import output_flavor, OutputFlavorKind
 from ptools.utils import require
 from ptools.utils.config import config_to_CLI
 from ptools.lib.fs.watchers import _get_watcher_data, _watcher_labels, _watcher_labels
+
 
 @click.group()
 def cli():
@@ -185,6 +189,8 @@ def findfiles(
 @click.option('--show-files/--no-files', '-f/-F', is_flag=True, default=True, help="Show files in the tree")
 @click.option('--cache/--no-cache', default=True, help="Reuse the on-disk size cache; --no-cache recomputes every size fresh from disk")
 @click.option('--interactive', '-i', is_flag=True, default=False, help="Enable interactive mode with clickable file paths")
+@click.option('--include', '-I', help="Include specific files or directories in the tree (glob patterns)")
+@click.option('--exclude', '-E', help="Exclude specific files or directories from the tree (glob patterns)")
 def tree(
     path,
     sort,
@@ -196,6 +202,8 @@ def tree(
     show_files,
     cache,
     interactive,
+    include,
+    exclude
 ):
     """Print a tree structure of directory content with size information.
 
@@ -224,6 +232,10 @@ def tree(
         FromHumanized.from_humanized_size(size_flag_threshold) \
             if size_flag_threshold \
             else None
+
+    is_included: Callable[[str], bool] = \
+          lambda p: test_include_exclude_glob(include, exclude, p, relative_to=os.path.abspath(path)) and \
+            not (ignore_hidden and os.path.basename(p).startswith('.'))
 
     if interactive:
         from ptools.lib.fs.file_tree_app import launch_interactive_tree, Command, NodeMeta, ConfirmScreen
@@ -288,6 +300,8 @@ def tree(
             return None
 
         name = os.path.basename(current_path) or current_path
+        # This reads the correct size independent of include/exclude options
+        # --Omar Ibrahim, Sep 15 26
         size = get_size(current_path, ignore_hidden=ignore_hidden)
         if bytes_threshold is not None and size < bytes_threshold:
             return None
@@ -305,7 +319,7 @@ def tree(
         try:
             with os.scandir(current_path) as it:
                 for entry in it:
-                    if ignore_hidden and entry.name.startswith('.'):
+                    if not is_included(entry.path):
                         continue
 
                     if entry.is_dir():
