@@ -154,8 +154,14 @@ def push(message):
     root_dir = get_project_root()
     if _run(["git", "add", "."], cwd=root_dir) != 0:
         raise click.ClickException("git add failed")
-    if _run(["git", "commit", "-m", message], cwd=root_dir) != 0:
-        raise click.ClickException("git commit failed")
+    try:
+        if _run(["git", "commit", "-m", message], cwd=root_dir) != 0:
+            raise click.ClickException("git commit failed")
+    except click.ClickException as e:
+        if "nothing to commit" in str(e):
+            click.echo(click.style("No changes to commit.", fg="yellow"))
+        else:
+            raise
     if _run(["git", "push"], cwd=root_dir) != 0:
         raise click.ClickException("git push failed")
 
