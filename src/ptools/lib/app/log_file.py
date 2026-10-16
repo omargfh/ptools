@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from ptools.utils.config import LazyConfigFile
+import datetime
 
 class HistoryEntry(BaseModel):
     executable: str
@@ -11,4 +12,6 @@ class LogFile(BaseModel):
 
 
 def get_log_file() -> "LazyConfigFile[LogFile]":
-    return LazyConfigFile("log", model=LogFile, quiet=True)
+    today = datetime.date.today().isoformat()
+    path = f"logs/log_{today}"
+    return LazyConfigFile(path, model=LogFile, quiet=True)
