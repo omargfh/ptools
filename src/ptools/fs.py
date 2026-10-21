@@ -505,10 +505,7 @@ def ext(categories, flavor):
     for category in categories:
         if not category.upper() in KnownExtensions.all_categories():
             click.echo(FormatUtils.error(
-                f"Category {category} is not recognized. Category has to be one of {
-                    ', '.join(KnownExtensions.all_categories())
-                }"
-            ))
+                f"Category {category} is not recognized. Category has to be one of {', '.join(KnownExtensions.all_categories())}"))
             errors += 1
             continue
         result.update(getattr(KnownExtensions, category.upper(), []))
