@@ -1,6 +1,6 @@
 """Terminal formatting helpers: ANSI colors, log prefixes, progress bars, trees."""
 import os
-from typing import Optional
+from typing import Counter, Optional
 from dataclasses import dataclass
 from pydantic import BaseModel
 import humanize
@@ -300,21 +300,34 @@ class FormattedText:
 class KnownExtensions:
     """Sets of well-known file extensions and the emoji icons used to render them."""
 
-    IMAGE   = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', '.avif', '.webp', '.tiff', '.ico', '.heic'}
-    VIDEO   = {'.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm', '.mpeg'}
-    AUDIO   = {'.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a', '.opus', '.alac', '.wma', '.aiff'}
-    BOOK    = {'.pdf', '.epub', '.mobi', '.azw3', '.fb2', '.djvu', '.cbz', '.cbr'}
+    IMAGE    = {'.png', '.jpg', '.jpeg', '.gif', '.bmp', '.svg', '.avif', '.webp', '.tiff', '.ico', '.heic'}
+    VIDEO    = {'.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm', '.mpeg'}
+    AUDIO    = {'.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a', '.opus', '.alac', '.wma', '.aiff'}
+    BOOK     = {'.pdf', '.epub', '.mobi', '.azw3', '.fb2', '.djvu', '.cbz', '.cbr'}
+    DOCUMENT = {'.doc', '.docx', '.odt', '.rtf', '.txt', '.tex'}
+    SLIDES   = {'.ppt', '.pptx', '.odp', '.gslides'}
+    SHEETS   = {'.xls', '.xlsx', '.ods', '.csv', '.tsv'}
+    FOLDER   = {'.folder'}
+    MARKUP   = {'.html', '.htm', '.xml', '.xhtml', '.css', '.scss', '.less', '.md', '.markdown'}
 
-    CONFIG  = {'.json', '.yaml', '.yml', '.ini', '.cfg', '.toml', '.env', '.xml', '.csv', '.tsv'}
-    BINARY  = {'.bin', '.exe', '.dll', '.so',
-               '.dylib', '.zip',
-               '.tar', '.gz', '.7z', '.rar', '.bz2',
-               '.xz', '.msi', '.deb', '.rpm', '.apk', '.jar',
-               '.pyc', '.pyo', '.class', '.o', '.obj', '.elf',
-               '.AppImage'}
-    DISC    = {'.iso', '.img', '.dmg', '.vmdk', '.qcow2', '.box', '.vhd', '.vhdx'}
-    KEY     = {'.pem', '.key', '.csr', '.crt', '.cer', '.pfx', '.p12'}
-    SYMLINK = {'.lnk', '.symlink', '.shortcut'}
+
+    CONFIG   = {'.json', '.yaml', '.yml', '.ini', '.cfg', '.toml', '.env',
+                '.conf', '.xcodeproj', '.tmpl'}
+    BINARY   = {'.bin', '.exe', '.dll', '.so',
+                '.dylib', '.crate', '.msi', '.deb', '.rpm', '.apk', '.jar',
+                '.pyc', '.pyo', '.class', '.o', '.obj', '.elf',
+                '.AppImage', '.App'}
+    ARCHIVE  = {'.zip', '.tar', '.gz', '.7z', '.rar', '.bz2', '.xz'}
+    DISC     = {'.iso', '.img', '.dmg', '.vmdk', '.qcow2', '.box', '.vhd', '.vhdx'}
+    KEY      = {'.pem', '.key', '.csr', '.crt', '.cer', '.pfx', '.p12'}
+    SYMLINK  = {'.lnk', '.symlink', '.shortcut'}
+    CODE     = {'.py', '.ipynb', '.r', '.jl',
+                '.js', '.ts', '.jsx', '.tsx', '.mjs', '.cjs', '.mts', '.cts',
+                '.java', '.c', '.cpp', '.h', '.cs', '.scala',
+                '.rb', '.go','.rs', '.php', '.swift', '.kt', '.m', '.mm',
+                '.sh', '.bat', '.ps1',
+                '.vue', '.svelte', '.astro',
+                '.nlogox', '.nlogo', '.nls', '.nlm','.nlogo3d'}
 
     ICONS  = {
         "FILE": '📄',
@@ -322,16 +335,26 @@ class KnownExtensions:
         "VIDEO": '🎬',
         "AUDIO": '🎵',
         "BOOK": '📚',
+        "DOCUMENT": '📄',
+        "SLIDES": '📊',
+        "SHEETS": '📈',
         "CONFIG": '⚙️',
         "BINARY": '📦',
         "DISC": '💿',
         "KEY": '🔑',
         "SYMLINK": '🔗',
+        "CODE": '💻',
+        "FOLDER": '📁',
         "FOLDER_CLOSED": '📁',
         "FOLDER_OPEN": '📂',
         "UNKNOWN": '❓',
         "DEFAULT": '📄',
     }
+
+    @staticmethod
+    def all_categories() -> list[str]:
+        """Return a list of all known extension categories."""
+        return [attr for attr in dir(KnownExtensions) if attr.isupper() and not attr.startswith("_") and attr != "ICONS"]
 
     @staticmethod
     def get_icon(extension: str | None, is_dir=False, is_symlink=False, has_children=False) -> str:
@@ -569,6 +592,11 @@ if __name__ == "__main__":
         ])
     ])
     print(TreeText.render_tree(custom_root))
+
+    # Test no dupes in extensions
+    all_extensions = Counter([ext for k in KnownExtensions.all_categories() for ext in list(getattr(KnownExtensions, k))])
+    for ext, count in all_extensions.items():
+        assert count == 1, f"Duplicate extension found: {ext}"
 
     # Test progress bar with \r
     import time

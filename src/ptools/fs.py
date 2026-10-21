@@ -3,12 +3,14 @@ import humanize
 
 from typing import Callable
 
+from ptools.utils.print import FormatUtils, KnownExtensions
 from ptools.utils.files import test_include_exclude_glob
 from ptools.utils.output import output_flavor, OutputFlavorKind
 from ptools.utils import require
 from ptools.utils.config import config_to_CLI
+from ptools.utils.re import parse_regex_input
 from ptools.lib.fs.watchers import _get_watcher_data, _watcher_labels, _watcher_labels
-
+from ptools.lib.fs.path_rules import protected_paths, PathAction
 
 @click.group()
 def cli():
@@ -356,6 +358,167 @@ def tree(
     else:
         click.echo("No files or directories found.")
 
+@cli.command(name="grp")
+@click.argument("directory", type=str, required=True)
+@click.option("--format", "-f", type=str, help="Format of files to group")
+@click.option("-E", "--regex", type=str, help="Regex pattern to match files for grouping")
+@click.option("--root", type=str, help="Root directory to start grouping from")
+@click.option("--deep", "-d", is_flag=True, default=False, help="Collect files from subdirectories into the target directory")
+@click.option("--recursive", is_flag=True, default=False, help="Recursively apply group in subdirectories")
+@click.option("--dry-run", is_flag=True, default=False, help="Perform a dry run without making any changes")
+def group(
+    directory,
+    format,
+    regex,
+    deep,
+    recursive,
+    root,
+    dry_run
+):
+    """Group files in a directory based on format or regex.
+
+    Examples:
+        $ ptools fs grp javascript --format js,ts,jsx,tsx
+        $ ptools fs grp javascript -E "\\.[jt]sx?$"
+        $ ptools fs grp mp3
+        $ ptools fs grp netlogo --deep
+        $ ptools fs grp netlogo --deep --recursive
+
+    Equivalent:
+        $ ptools fs grp mp3
+        $ ptools fs grp mp3 --format mp3
+        $ ptools fs grp mp3 -E "\\.mp3$"
+    """
+    import os
+    import re
+    from shutil import move as _move
+    from pathlib import Path
+
+    count = 0
+    def move(*args, **kwargs):
+        nonlocal count
+        count += 1
+        if dry_run:
+            click.echo(FormatUtils.info(f"Dry run: would move {args[0]} to {args[1]}"))
+        else:
+            _move(*args, **kwargs)
+
+    if recursive and deep:
+        click.echo(FormatUtils.error("Cannot use --deep and --recursive together."))
+        raise click.Abort()
+
+    os.makedirs(directory, exist_ok=True)
+    if not any([p.check(Path(directory), PathAction.WRITE) for p in protected_paths]):
+        click.echo(FormatUtils.warning(f"Directory {directory} is protected."))
+        raise click.Abort()
+
+    format = directory if not format and not regex else format
+    def parse_format_arg(fmt):
+        if not fmt:
+            return []
+        fmt = fmt.replace(",", " ").replace("\n", " ").replace("\t", " ")
+        fmt = fmt.strip()
+
+        fmts = [f[1:] if f.startswith(".") else f for f in fmt.split()]
+        return fmts
+
+    regex, _ = parse_regex_input(regex)
+    patterns = list((
+        re.compile(rf".{ext}$", re.IGNORECASE) for ext in parse_format_arg(format)
+        + ([regex] if regex else [])
+    ))
+
+    directory = Path(directory)
+    def is_target_directory(path):
+        return Path(path).resolve() == directory.resolve()
+
+    root = os.getcwd() if not root else root
+    for this, _, files in os.walk(root):
+        # Skip entries that are inside the target directory itself
+        if is_target_directory(this):
+            continue
+
+        # Skip nested files if collect flag is not set
+        if not deep and Path(this).resolve() != Path(root).resolve():
+            continue
+
+        # Process only files that match the specified patterns
+        for file in files:
+            if any(re.search(pattern, file) for pattern in patterns):
+                move(os.path.join(this, file), directory)
+
+        if root == this and not deep:
+            break
+
+    status_verb = "would be grouped into" if dry_run else "grouped into"
+    click.echo(FormatUtils.info(f"{count} files {status_verb} {directory}/ "))
+
+    if recursive:
+        for subdir in directory.iterdir():
+            if subdir.is_dir() and not is_target_directory(subdir):
+                group(
+                    directory=str(subdir),
+                    format=format,
+                    regex=regex,
+                    deep=deep,
+                    recursive=recursive,
+                    root=root,
+                    dry_run=dry_run
+                )
+
+@cli.command(name="unroll")
+@click.argument("directory", nargs=-1, type=str)
+@click.option("--delete", is_flag=True, default=False, help="Delete the original directory after unrolling")
+def unroll(
+    directory,
+    delete
+):
+    """Unroll a directory to its parent"""
+    import os
+    from pathlib import Path
+    from shutil import move
+
+    for dir_path in directory:
+        if not os.path.isdir(dir_path):
+            click.echo(FormatUtils.warning(f"{dir_path} is not a directory."))
+            continue
+        dir_path = Path(dir_path)
+        parent = dir_path.parent
+
+        for entry in os.scandir(dir_path):
+            move(entry.path, parent)
+
+        click.echo(FormatUtils.success(f"Unrolled {dir_path} to {parent}"))
+
+        if delete:
+            os.rmdir(dir_path)
+
+@cli.command(name="ext")
+@click.argument("categories", nargs=-1, type=str)
+@output_flavor.decorate()
+def ext(categories, flavor):
+    """List file extensions for the given categories"""
+    from ptools.lib.flow.values import OutputValue
+
+    result = set()
+    errors = 0
+    for category in categories:
+        if not category.upper() in KnownExtensions.all_categories():
+            click.echo(FormatUtils.error(
+                f"Category {category} is not recognized. Category has to be one of {
+                    ', '.join(KnownExtensions.all_categories())
+                }"
+            ))
+            errors += 1
+            continue
+        result.update(getattr(KnownExtensions, category.upper(), []))
+
+    if len(result) > 0 or len(result) == 0 and errors == 0:
+        click.echo(OutputValue(flavor=flavor).format(list(result)))
+    if errors > 0:
+        exit(1)
+
+
 @cli.group()
 @require.os(["darwin"])
 def watchers():
@@ -419,6 +582,7 @@ def watchers_kill(pid, force):
         click.echo(actions.terminate(pid, force=force))
     except actions.ActionError as e:
         click.echo(str(e), err=True)
+
 
 
 # Expose label CRUD via config_to_CLI
