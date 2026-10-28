@@ -108,6 +108,10 @@ COMMANDS = {
         "import_path": "ptools.every:every",
         "short_help": "Run a command at regular intervals.",
     },
+    "note": {
+        "import_path": "ptools.note:cli",
+        "short_help": "Take notes and manage them.",
+    }
 }
 
 

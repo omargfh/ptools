@@ -135,15 +135,25 @@ class FormatUtils:
         return ASCIIEscapes.italic(text)
 
     @staticmethod
-    def truncate(text: str, max_length: int) -> str:
+    def truncate(text: str, max_length: int, ellipsis: str = "...", truncate_middle: bool = True) -> str:
         """Truncate ``text`` to ``max_length`` characters, adding ellipsis if needed."""
         if len(text) <= max_length:
             return text
-        elif max_length > 3:
-            half = (max_length - 3) // 2
-            return text[:half] + "..." + text[-half:]
+        if truncate_middle and max_length > len(ellipsis):
+            half = (max_length - len(ellipsis)) // 2
+            return text[:half] + ellipsis + text[-half:]
         else:
-            return text[:max_length]
+            return text[:max_length - len(ellipsis)] + ellipsis
+
+    @staticmethod
+    def apply(text: str, *args) -> str:
+        """Apply multiple formatting functions in sequence."""
+        for entry in args:
+            func = entry[0]
+            arg = entry[1] if len(entry) > 1 else ()
+            kwargs = entry[2] if len(entry) > 2 else {}
+            text = func(text, *arg, **kwargs)
+        return text
 
 class PrintUtils:
     """Thin wrapper that prints :class:`FormatUtils` strings to stdout."""

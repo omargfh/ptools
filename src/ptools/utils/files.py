@@ -12,6 +12,9 @@ from ptools.utils.cache import disk_cache
 
 __version__ = "0.1.0"
 
+def get_extension(path: str, fallback: str = "") -> str:
+    ext = os.path.splitext(path)[-1]
+    return ext if ext else fallback
 
 def resolve_input(allow_stdin=True):
     """Click decorator that resolves an input from positional, ``--file``, ``--url`` or stdin.
